@@ -7,13 +7,15 @@ class SchemaProcessor:
         self.resolved_references = {}
         self.processed_features = {}
         self.seen_references = set()
+        self.descriptions = {}
 
+    # Función para cambiar y eliminar los carácteres no válidos en el formato uvl
     def sanitize_name(self, name):
         """Replace non-alphanumeric characters with underscores and ensure uniqueness."""
         return name.replace("-", "_").replace(".", "_").replace("$", "")
-
+    
+    # Función que resuelve una referencia JSON y devuelve el esquema al que se hace referencia
     def resolve_reference(self, ref):
-        """Resolve a JSON reference and return the referenced schema."""
         if ref in self.resolved_references:
             return self.resolved_references[ref]
 
@@ -23,12 +25,14 @@ class SchemaProcessor:
             schema = schema.get(part, {})
             if not schema:
                 return None
-        
+
         self.resolved_references[ref] = schema
         return schema
-
+    
+    # Función que mapea las propiedades
     def parse_properties(self, properties, required, parent_name="", depth=0):
-        feature_list = []
+        mandatory_features = []
+        optional_features = []
         queue = deque([(properties, required, parent_name, depth)])
 
         while queue:
@@ -43,7 +47,6 @@ class SchemaProcessor:
                 feature_type = 'mandatory' if prop in current_required else 'optional'
                 feature_type_data = details.get('type', 'Boolean')
 
-                # Change 'array', 'object', and 'number' types to 'Boolean' and 'Integer' respectively
                 if feature_type_data == 'array' or feature_type_data == 'object':
                     feature_type_data = 'Boolean'
                 elif feature_type_data == 'number':
@@ -57,7 +60,9 @@ class SchemaProcessor:
                     'type_data': feature_type_data
                 }
 
-                # Handle reference
+                if feature['description']:
+                    self.descriptions[full_name] = feature['description']
+
                 if '$ref' in details:
                     if details['$ref'] in self.seen_references:
                         continue
@@ -68,7 +73,7 @@ class SchemaProcessor:
                         sub_required = ref_schema.get('required', [])
                         sub_features = self.parse_properties(sub_properties, sub_required, full_name, current_depth + 1)
                         feature['sub_features'].extend(sub_features)
-                
+
                 elif feature['type_data'] == 'Boolean' and 'items' in details:
                     items = details['items']
                     if '$ref' in items:
@@ -80,12 +85,14 @@ class SchemaProcessor:
                             item_properties = self.parse_properties(ref_schema['properties'], [], full_name, current_depth + 1)
                             feature['sub_features'].extend(item_properties)
                     else:
+                        item_required = items.get('required', [])
+                        item_type = 'mandatory' if full_name in item_required else 'optional'
                         feature['sub_features'].append({
                             'name': f"{full_name}_items",
-                            'type': 'mandatory',
+                            'type': item_type,
                             'description': 'Items in the array',
                             'sub_features': [],
-                            'type_data': 'Boolean'  # Change to Boolean for UVL compatibility
+                            'type_data': 'Boolean'
                         })
 
                 if 'properties' in details:
@@ -94,14 +101,34 @@ class SchemaProcessor:
                     sub_features = self.parse_properties(sub_properties, sub_required, full_name, current_depth + 1)
                     feature['sub_features'].extend(sub_features)
 
-                feature_list.append(feature)
-                self.processed_features[full_name] = feature
-        return feature_list
+                if feature_type == 'mandatory':
+                    mandatory_features.append(feature)
+                else:
+                    optional_features.append(feature)
 
+                self.processed_features[full_name] = feature
+
+        combined_features = []
+        if mandatory_features:
+            combined_features.extend(mandatory_features)
+        if optional_features:
+            combined_features.extend(optional_features)
+
+        return combined_features
+
+    def save_descriptions(self, file_path):
+        """Save the collected descriptions to a JSON file."""
+        print(f"Saving descriptions to {file_path}...")
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(self.descriptions, f, indent=4, ensure_ascii=False)
+        print("Descriptions saved successfully.")
+
+# Se carga el archivo json con el permiso de lectura y se usa la codificación utf-8
 def load_json_file(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         return json.load(f)
-
+    
+# Se define la conversión de las propiedades a uvl
 def properties_to_uvl(feature_list, indent=1):
     uvl_output = ""
     indent_str = '\t' * indent
@@ -109,39 +136,47 @@ def properties_to_uvl(feature_list, indent=1):
         type_str = f"{feature['type_data'].capitalize()} " if feature['type_data'] else "Boolean "
         if feature['sub_features']:
             uvl_output += f"{indent_str}{type_str}{feature['name']}\n"
-            uvl_output += f"{indent_str}\t{feature['type']}\n"
-            uvl_output += properties_to_uvl(feature['sub_features'], indent + 2)
+            if feature['type'] == 'mandatory':
+                uvl_output += f"{indent_str}\tmandatory\n"
+            if feature['type'] == 'optional':
+                uvl_output += f"{indent_str}\toptional\n"
+            uvl_output += properties_to_uvl(feature['sub_features'], indent + 1)
         else:
             uvl_output += f"{indent_str}{type_str}{feature['name']} {{abstract}}\n"
     return uvl_output
 
-def generate_uvl_from_definitions(definitions_file, output_file):
+def generate_uvl_from_definitions(definitions_file, output_file, descriptions_file):
     definitions = load_json_file(definitions_file)
     processor = SchemaProcessor(definitions)
-    uvl_output = "namespace KubernetesTest1\n\nfeatures\n\tKubernetes\n\t\tmandatory\n"
-
-    # Process the entire definitions as features under Kubernetes
+    uvl_output = "namespace KubernetesTest1\n\nfeatures\n\tKubernetes\n\t\toptional\n"
+    
+    # Se procesan las definiciones completas de los esquemas como features en Kubernetes
     for schema_name, schema in definitions.get('definitions', {}).items():
         root_schema = schema.get('properties', {})
         required = schema.get('required', [])
-        print(f"Processing schema: {schema_name}")  # Debugging line
-        feature_list = processor.parse_properties(root_schema, required, processor.sanitize_name(schema_name))
+        print(f"Processing schema: {schema_name}")
+        feature_list = processor.parse_properties(root_schema, required, processor.sanitize_name(schema_name), depth=1)
+
         uvl_output += properties_to_uvl([{
             'name': processor.sanitize_name(schema_name),
-            'type': 'mandatory',
+            'type': 'mandatory' if required else 'optional',
             'description': '',
             'sub_features': feature_list,
             'type_data': 'Boolean'
-        }], indent=3)
+        }], indent=2)  # Ajuste de indentación
 
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(uvl_output)
 
-    print(f"UVL file saved as {output_file}")
+    # Guardar las descripciones
+    processor.save_descriptions(descriptions_file)
 
-# Example usage
+    print(f"UVL file saved as {output_file}")
+    print(f"Descriptions file saved as {descriptions_file}")
+
+# Rutas de archivo
 definitions_file = 'C:/projects/investigacion/kubernetes-json-v1.30.2/v1.30.2/_definitions.json'
 output_file = 'C:/projects/investigacion/scriptJsonToUvl/kubernetes_combined.uvl'
+descriptions_file = 'C:/projects/investigacion/scriptJsonToUvl/descriptions.json'
 
-# Generate UVL file from definitions
-generate_uvl_from_definitions(definitions_file, output_file)
+generate_uvl_from_definitions(definitions_file, output_file, descriptions_file)
