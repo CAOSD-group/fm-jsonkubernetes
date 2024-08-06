@@ -1,3 +1,4 @@
+#Cambiar a version dividida en grupos y ajuste de optional
 import json
 from collections import deque
 
@@ -7,6 +8,8 @@ class SchemaProcessor:
         self.resolved_references = {}
         self.processed_features = {}
         self.seen_references = set()
+        self.descriptions = {}
+        self.seen_descriptions = set()
 
     def sanitize_name(self, name):
         """Replace non-alphanumeric characters with underscores and ensure uniqueness."""
@@ -27,6 +30,15 @@ class SchemaProcessor:
         self.resolved_references[ref] = schema
         return schema
 
+    def is_valid_description(self, description):
+        """Check if the description is valid (not too short and not repetitive)."""
+        if len(description) < 10:
+            return False
+        if description in self.seen_descriptions:
+            return False
+        self.seen_descriptions.add(description)
+        return True
+    
     def parse_properties(self, properties, required, parent_name="", depth=0):
         mandatory_features = []
         optional_features = []
@@ -97,6 +109,13 @@ class SchemaProcessor:
 
         return mandatory_features, optional_features
 
+def save_descriptions(self, file_path):
+    """Save the collected descriptions to a JSON file."""
+    print(f"Saving descriptions to {file_path}...")
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(self.descriptions, f, indent=4, ensure_ascii=False)
+    print("Descriptions saved successfully.")
+
 def load_json_file(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         return json.load(f)
@@ -114,7 +133,7 @@ def properties_to_uvl(feature_list, indent=1):
                 uvl_output += f"{indent_str}{feature['name']}\n"  # {{abstract}}
     return uvl_output
 
-def generate_uvl_from_definitions(definitions_file, output_file):
+def generate_uvl_from_definitions(definitions_file, output_file, descriptions_file):
     definitions = load_json_file(definitions_file)
     processor = SchemaProcessor(definitions)
     uvl_output = "namespace KubernetesTest1\n\nfeatures\n\tKubernetes\n"
@@ -141,11 +160,15 @@ def generate_uvl_from_definitions(definitions_file, output_file):
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(uvl_output)
 
+    processor.save_descriptions(descriptions_file)
+
     print(f"UVL file saved as {output_file}")
+    print(f"Descriptions file saved as {descriptions_file}")
 
 # Example usage
 definitions_file = 'C:/projects/investigacion/kubernetes-json-v1.30.2/v1.30.2/_definitions.json'
 output_file = 'C:/projects/investigacion/scriptJsonToUvl/kubernetes_combined_sinDatos.uvl'
+descriptions_file = 'C:/projects/investigacion/scriptJsonToUvl/descriptions_sinDatos.json'
 
 # Generate UVL file from definitions
-generate_uvl_from_definitions(definitions_file, output_file)
+generate_uvl_from_definitions(definitions_file, output_file, descriptions_file)
