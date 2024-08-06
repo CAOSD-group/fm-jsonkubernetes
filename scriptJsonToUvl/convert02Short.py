@@ -112,9 +112,8 @@ def properties_to_uvl(feature_list, indent=1):
     uvl_output = ""
     indent_str = '\t' * indent
     for feature in feature_list:
-        type_str = f"{feature['type_data'].capitalize()} " if feature['type_data'] else "Boolean "
         if feature['sub_features']:
-            uvl_output += f"{indent_str}{type_str}{feature['name']}\n"
+            uvl_output += f"{indent_str}{feature['name']}\n"
 
             # Separate mandatory and optional features
             sub_mandatory = [f for f in feature['sub_features'] if f['type'] == 'mandatory']
@@ -127,7 +126,7 @@ def properties_to_uvl(feature_list, indent=1):
                 uvl_output += f"{indent_str}\toptional\n"
                 uvl_output += properties_to_uvl(sub_optional, indent + 2)
         else:
-            uvl_output += f"{indent_str}{type_str}{feature['name']} {{abstract}}\n"
+            uvl_output += f"{indent_str}{feature['name']} {{abstract}}\n"
     return uvl_output
 
 def generate_uvl_from_definitions(definitions_file, output_file):
