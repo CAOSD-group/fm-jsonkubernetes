@@ -1,4 +1,5 @@
 import json
+import re
 from collections import deque
 
 class SchemaProcessor:
@@ -6,7 +7,20 @@ class SchemaProcessor:
         self.definitions = definitions
         self.resolved_references = {}
         self.seen_references = set()
-        self.processed_features = set()  # Track seen features to avoid duplication
+        self.processed_features = set()
+        self.descriptions = {
+            'values': {'entries': []},
+            'restrictions': {'entries': []},
+            'dependencies': {'entries': []}
+        }
+        self.seen_descriptions = set()
+
+        # Patrones para clasificar descripciones
+        self.patterns = {
+            'values': re.compile(r'(valid|values are|supported|acceptable|can be)', re.IGNORECASE),
+            'restrictions': re.compile(r'(allowed|conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed)', re.IGNORECASE),
+            'dependencies': re.compile(r'(depends on|requires|if[\s\S]*?only if|relies on|contingent upon|related to)', re.IGNORECASE)
+        }
 
     def sanitize_name(self, name):
         """Replace non-alphanumeric characters with underscores."""
@@ -23,9 +37,30 @@ class SchemaProcessor:
             schema = schema.get(part, {})
             if not schema:
                 return None
-        
+
         self.resolved_references[ref] = schema
         return schema
+
+    def is_valid_description(self, description):
+        """Check if the description is valid (not too short and not repetitive)."""
+        if len(description) < 10:
+            return False
+        if description in self.seen_descriptions:
+            return False
+        self.seen_descriptions.add(description)
+        return True
+
+    def categorize_description(self, description, feature_name):
+        """Categorize the description according to the patterns."""
+        if not self.is_valid_description(description):
+            return False
+
+        for category, pattern in self.patterns.items():
+            if pattern.search(description):
+                self.descriptions[category]['entries'].append((feature_name, description))
+                return True
+        
+        return False
 
     def parse_properties(self, properties, required, parent_name="", depth=0):
         mandatory_features = []
@@ -51,10 +86,14 @@ class SchemaProcessor:
                 elif feature_type_data == 'number':
                     feature_type_data = 'Integer'
 
+                description = details.get('description', '')
+                if description:
+                    self.categorize_description(description, full_name)
+
                 feature = {
                     'name': full_name,
                     'type': feature_type,
-                    'description': details.get('description', ''),
+                    'description': description,
                     'sub_features': [],
                     'type_data': feature_type_data
                 }
@@ -109,6 +148,25 @@ class SchemaProcessor:
 
         return mandatory_features, optional_features
 
+    def save_descriptions(self, file_path):
+        """Save the collected descriptions to a JSON file."""
+        print(f"Saving descriptions to {file_path}...")
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(self.descriptions, f, indent=4, ensure_ascii=False)
+        print("Descriptions saved successfully.")
+
+    def save_descriptions_txt(self, file_path):
+        """Save only the descriptions to a TXT file."""
+        print(f"Saving descriptions to {file_path}...")
+        with open(file_path, 'w', encoding='utf-8') as f:
+            for category, data in self.descriptions.items():
+                if data['entries']:  # Write only if there are descriptions
+                    f.write(f"--- {category.upper()} ---\n")
+                    for feature_name, description in data['entries']:
+                        f.write(f"{feature_name}: {description}\n")
+                    f.write("\n")
+        print("Descriptions saved to TXT file successfully.")
+
 def load_json_file(file_path):
     """Load JSON file."""
     with open(file_path, 'r', encoding='utf-8') as f:
@@ -138,8 +196,8 @@ def properties_to_uvl(feature_list, indent=1):
             uvl_output += f"{indent_str}{feature['name']} {{abstract}}\n" #{type_str}
     return uvl_output
 
-def generate_uvl_from_definitions(definitions_file, output_file):
-    """Generate UVL from definitions."""
+def generate_uvl_from_definitions(definitions_file, output_file, descriptions_file, descriptions_txt_file):
+    """Generate UVL from definitions and save descriptions."""
     definitions = load_json_file(definitions_file)
     processor = SchemaProcessor(definitions)
     uvl_output = "namespace KubernetesTest1\n\nfeatures\n\tKubernetes\n\t\toptional\n"
@@ -147,7 +205,7 @@ def generate_uvl_from_definitions(definitions_file, output_file):
     for schema_name, schema in definitions.get('definitions', {}).items():
         root_schema = schema.get('properties', {})
         required = schema.get('required', [])
-        print(f"Processing schema: {schema_name}")  # Debugging line
+        print(f"Processing schema: {schema_name}")
         mandatory_features, optional_features = processor.parse_properties(root_schema, required, processor.sanitize_name(schema_name))
 
         if mandatory_features:
@@ -165,12 +223,17 @@ def generate_uvl_from_definitions(definitions_file, output_file):
 
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(uvl_output)
+    print(f"UVL output saved to {output_file}")
 
-    print(f"UVL file saved as {output_file}")
+    # Save descriptions
+    processor.save_descriptions(descriptions_file)
+    processor.save_descriptions_txt(descriptions_txt_file)
 
-# Example usage
+# Rutas de archivo
 definitions_file = 'C:/projects/investigacion/kubernetes-json-v1.30.2/v1.30.2/_definitions.json'
 output_file = 'C:/projects/investigacion/scriptJsonToUvl/kubernetes_combined_01.uvl'
+descriptions_file = 'C:/projects/investigacion/scriptJsonToUvl/descriptions_01.json'
+descriptions_txt_file = 'C:/projects/investigacion/scriptJsonToUvl/descriptions_01.txt'
 
-# Generate UVL file from definitions
-generate_uvl_from_definitions(definitions_file, output_file)
+# Generar archivo UVL y guardar descripciones
+generate_uvl_from_definitions(definitions_file, output_file, descriptions_file, descriptions_txt_file)
