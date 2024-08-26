@@ -8,10 +8,13 @@ class SchemaProcessor:
         self.resolved_references = {}
         self.seen_references = set()
         self.processed_features = set()
+        self.constraints = []  # Lista para almacenar las dependencias como constraints
+        
+        # Inicializamos un diccionario para almacenar descripciones por grupo
         self.descriptions = {
-            'values': {'entries': []},
-            'restrictions': {'entries': []},
-            'dependencies': {'entries': []}
+            'values': [],
+            'restrictions': [],
+            'dependencies': []
         }
         self.seen_descriptions = set()
 
@@ -23,7 +26,7 @@ class SchemaProcessor:
         }
 
     def sanitize_name(self, name):
-        """Replace non-alphanumeric characters with underscores."""
+        """Replace non-alphanumeric characters with underscores and ensure uniqueness."""
         return name.replace("-", "_").replace(".", "_").replace("$", "")
 
     def resolve_reference(self, ref):
@@ -57,7 +60,7 @@ class SchemaProcessor:
 
         for category, pattern in self.patterns.items():
             if pattern.search(description):
-                self.descriptions[category]['entries'].append((feature_name, description))
+                self.descriptions[category].append((feature_name, description))
                 return True
         
         return False
@@ -65,7 +68,6 @@ class SchemaProcessor:
     def parse_properties(self, properties, required, parent_name="", depth=0):
         mandatory_features = []
         optional_features = []
-        
         queue = deque([(properties, required, parent_name, depth)])
 
         while queue:
@@ -80,7 +82,6 @@ class SchemaProcessor:
                 feature_type = 'mandatory' if prop in current_required else 'optional'
                 feature_type_data = details.get('type', 'Boolean')
 
-                # Adjust the type_data
                 if feature_type_data in ['array', 'object']:
                     feature_type_data = 'Boolean'
                 elif feature_type_data == 'number':
@@ -88,6 +89,7 @@ class SchemaProcessor:
 
                 description = details.get('description', '')
                 if description:
+                    # Categorizar la descripción
                     self.categorize_description(description, full_name)
 
                 feature = {
@@ -104,11 +106,15 @@ class SchemaProcessor:
                     if ref not in self.seen_references:
                         self.seen_references.add(ref)
                         ref_schema = self.resolve_reference(ref)
-                        if ref_schema and 'properties' in ref_schema:
-                            sub_properties = ref_schema['properties']
-                            sub_required = ref_schema.get('required', [])
-                            sub_mandatory, sub_optional = self.parse_properties(sub_properties, sub_required, full_name, current_depth + 1)
-                            feature['sub_features'].extend(sub_mandatory + sub_optional)
+                        if ref_schema:
+                            ref_name = self.sanitize_name(ref.split('/')[-1])
+                            # Generar constraint
+                            self.constraints.append(f"{full_name} => {ref_name}")
+                            if 'properties' in ref_schema:
+                                sub_properties = ref_schema['properties']
+                                sub_required = ref_schema.get('required', [])
+                                sub_mandatory, sub_optional = self.parse_properties(sub_properties, sub_required, full_name, current_depth + 1)
+                                feature['sub_features'].extend(sub_mandatory + sub_optional)
                 
                 # Process items in arrays
                 elif feature['type_data'] == 'Boolean' and 'items' in details:
@@ -118,9 +124,13 @@ class SchemaProcessor:
                         if ref not in self.seen_references:
                             self.seen_references.add(ref)
                             ref_schema = self.resolve_reference(ref)
-                            if ref_schema and 'properties' in ref_schema:
-                                item_mandatory, item_optional = self.parse_properties(ref_schema['properties'], [], full_name, current_depth + 1)
-                                feature['sub_features'].extend(item_mandatory + item_optional)
+                            if ref_schema:
+                                ref_name = self.sanitize_name(ref.split('/')[-1])
+                                # Generar constraint
+                                self.constraints.append(f"{full_name} => {ref_name}")
+                                if ref_schema and 'properties' in ref_schema:
+                                    item_mandatory, item_optional = self.parse_properties(ref_schema['properties'], [], full_name, current_depth + 1)
+                                    feature['sub_features'].extend(item_mandatory + item_optional)
                     else:
                         item_required = items.get('required', [])
                         item_type = 'mandatory' if full_name in item_required else 'optional'
@@ -154,18 +164,15 @@ class SchemaProcessor:
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(self.descriptions, f, indent=4, ensure_ascii=False)
         print("Descriptions saved successfully.")
-
-    def save_descriptions_txt(self, file_path):
-        """Save only the descriptions to a TXT file."""
-        print(f"Saving descriptions to {file_path}...")
-        with open(file_path, 'w', encoding='utf-8') as f:
-            for category, data in self.descriptions.items():
-                if data['entries']:  # Write only if there are descriptions
-                    f.write(f"--- {category.upper()} ---\n")
-                    for feature_name, description in data['entries']:
-                        f.write(f"{feature_name}: {description}\n")
-                    f.write("\n")
-        print("Descriptions saved to TXT file successfully.")
+        
+    def save_constraints(self, file_path):
+        """Save the collected constraints to a UVL file."""
+        print(f"Saving constraints to {file_path}...")
+        with open(file_path, 'a', encoding='utf-8') as f:
+            f.write("\nconstraints\n")
+            for constraint in self.constraints:
+                f.write(f"\t{constraint}\n")
+        print("Constraints saved successfully.")
 
 def load_json_file(file_path):
     """Load JSON file."""
@@ -177,12 +184,12 @@ def properties_to_uvl(feature_list, indent=1):
     uvl_output = ""
     indent_str = '\t' * indent
     for feature in feature_list:
-        #type_str = f"{feature['type_data'].capitalize()} " if feature['type_data'] else "Boolean "
+        type_str = f"{feature['type_data'].capitalize()} " if feature['type_data'] else "Boolean "
         if feature['sub_features']:
-            uvl_output += f"{indent_str}{feature['name']}\n" #{type_str}
-            #uvl_output += f"{indent_str}\t{feature['type']}\n"
+            uvl_output += f"{indent_str}{type_str}{feature['name']}\n"  # {type_str} opcional si se necesita
+            # uvl_output += f"{indent_str}\t{feature['type']}\n" opcional si se necesita
 
-            # Separate mandatory and optional features
+            # Separar características obligatorias y opcionales
             sub_mandatory = [f for f in feature['sub_features'] if f['type'] == 'mandatory']
             sub_optional = [f for f in feature['sub_features'] if f['type'] == 'optional']
 
@@ -193,10 +200,10 @@ def properties_to_uvl(feature_list, indent=1):
                 uvl_output += f"{indent_str}\toptional\n"
                 uvl_output += properties_to_uvl(sub_optional, indent + 2)
         else:
-            uvl_output += f"{indent_str}{feature['name']} {{abstract}}\n" #{type_str}
+            uvl_output += f"{indent_str}{type_str}{feature['name']} {{abstract}}\n"  # {type_str} opcional si se necesita
     return uvl_output
 
-def generate_uvl_from_definitions(definitions_file, output_file, descriptions_file, descriptions_txt_file):
+def generate_uvl_from_definitions(definitions_file, output_file, descriptions_file):
     """Generate UVL from definitions and save descriptions."""
     definitions = load_json_file(definitions_file)
     processor = SchemaProcessor(definitions)
@@ -205,11 +212,12 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
     for schema_name, schema in definitions.get('definitions', {}).items():
         root_schema = schema.get('properties', {})
         required = schema.get('required', [])
+        type_str_feature = 'Boolean' ## Por defecto al no tener definido un tipo los features principales se les pone como Boolean
         print(f"Processing schema: {schema_name}")
         mandatory_features, optional_features = processor.parse_properties(root_schema, required, processor.sanitize_name(schema_name))
 
         if mandatory_features:
-            uvl_output += f"\t\t\t{processor.sanitize_name(schema_name)}\n"
+            uvl_output += f"\t\t\t{type_str_feature+' '}{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '}
             uvl_output += f"\t\t\t\tmandatory\n"
             uvl_output += properties_to_uvl(mandatory_features, indent=5)
 
@@ -217,7 +225,7 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
                 uvl_output += f"\t\t\t\toptional\n"
                 uvl_output += properties_to_uvl(optional_features, indent=5)
         elif optional_features:
-            uvl_output += f"\t\t\t{processor.sanitize_name(schema_name)}\n"
+            uvl_output += f"\t\t\t{type_str_feature+' '}{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '}
             uvl_output += f"\t\t\t\toptional\n"
             uvl_output += properties_to_uvl(optional_features, indent=5)
 
@@ -227,13 +235,14 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
 
     # Save descriptions
     processor.save_descriptions(descriptions_file)
-    processor.save_descriptions_txt(descriptions_txt_file)
+    
+    # Save constraints
+    processor.save_constraints(output_file)
 
 # Rutas de archivo
 definitions_file = 'C:/projects/investigacion/kubernetes-json-v1.30.2/v1.30.2/_definitions.json'
 output_file = 'C:/projects/investigacion/scriptJsonToUvl/kubernetes_combined_01.uvl'
 descriptions_file = 'C:/projects/investigacion/scriptJsonToUvl/descriptions_01.json'
-descriptions_txt_file = 'C:/projects/investigacion/scriptJsonToUvl/descriptions_01.txt'
 
 # Generar archivo UVL y guardar descripciones
-generate_uvl_from_definitions(definitions_file, output_file, descriptions_file, descriptions_txt_file)
+generate_uvl_from_definitions(definitions_file, output_file, descriptions_file)
