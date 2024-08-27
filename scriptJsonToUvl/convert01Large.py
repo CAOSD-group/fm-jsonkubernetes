@@ -39,6 +39,7 @@ class SchemaProcessor:
         for part in parts:
             schema = schema.get(part, {})
             if not schema:
+                print(f"Warning: No se pudo resolver la siguiente referencia: {ref}")
                 return None
 
         self.resolved_references[ref] = schema
@@ -115,6 +116,29 @@ class SchemaProcessor:
                                 sub_required = ref_schema.get('required', [])
                                 sub_mandatory, sub_optional = self.parse_properties(sub_properties, sub_required, full_name, current_depth + 1)
                                 feature['sub_features'].extend(sub_mandatory + sub_optional)
+                            else:
+                                # Si no hay 'properties', procesarlo como un tipo simple
+                                feature_type_data = ref_schema.get('type', 'Boolean').capitalize()
+
+                                """if feature_type_data in ['array', 'Object', 'String']:
+                                    feature_type_data = 'Boolean'
+                                elif feature_type_data == 'number':
+                                    feature_type_data = 'Integer'
+                                """
+                                # Determinar si la referencia es 'mandatory' u 'optional'
+                                feature_type = 'mandatory' if prop in current_required else 'optional'
+                                
+                                # Agregar la referencia procesada como un tipo simple
+                                feature['sub_features'].append({
+                                    'name': ref_name,
+                                    'type': feature_type,
+                                    'description': ref_schema.get('description', ''),
+                                    'sub_features': [],
+                                    'type_data': 'Boolean' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature
+                                })
+                                #print(f"Warning: Could not process reference: {ref}") # Descomentando la linea se pueden ver las estructuras simples que no tienen 'properties'
+                        #else:
+                            #print(f"Warning: Could not process reference: {ref}")
                 
                 # Process items in arrays
                 elif feature['type_data'] == 'Boolean' and 'items' in details:
@@ -213,7 +237,7 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
         root_schema = schema.get('properties', {})
         required = schema.get('required', [])
         type_str_feature = 'Boolean' ## Por defecto al no tener definido un tipo los features principales se les pone como Boolean
-        print(f"Processing schema: {schema_name}")
+        #print(f"Processing schema: {schema_name}")
         mandatory_features, optional_features = processor.parse_properties(root_schema, required, processor.sanitize_name(schema_name))
 
         if mandatory_features:
