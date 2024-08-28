@@ -54,14 +54,21 @@ class SchemaProcessor:
         self.seen_descriptions.add(description)
         return True
 
-    def categorize_description(self, description, feature_name):
+    def categorize_description(self, description, feature_name, type_data):
         """Categorize the description according to the patterns."""
         if not self.is_valid_description(description):
             return False
+        # Adicion de type_data en una estructura para tratar de mejorar la precisión de las reglas
+        description_entry = {
+        "feature_name": feature_name,
+        "description": description,
+        "type_data": type_data
+    }
 
         for category, pattern in self.patterns.items():
             if pattern.search(description):
-                self.descriptions[category].append((feature_name, description))
+                #self.descriptions[category].append((feature_name, description))
+                self.descriptions[category].append((description_entry))
                 return True
         
         return False
@@ -91,7 +98,7 @@ class SchemaProcessor:
                 description = details.get('description', '')
                 if description:
                     # Categorizar la descripción
-                    self.categorize_description(description, full_name)
+                    self.categorize_description(description, full_name, feature_type_data)
 
                 feature = {
                     'name': full_name,
@@ -118,13 +125,6 @@ class SchemaProcessor:
                                 feature['sub_features'].extend(sub_mandatory + sub_optional)
                             else:
                                 # Si no hay 'properties', procesarlo como un tipo simple
-                                feature_type_data = ref_schema.get('type', 'Boolean').capitalize()
-
-                                """if feature_type_data in ['array', 'Object', 'String']:
-                                    feature_type_data = 'Boolean'
-                                elif feature_type_data == 'number':
-                                    feature_type_data = 'Integer'
-                                """
                                 # Determinar si la referencia es 'mandatory' u 'optional'
                                 feature_type = 'mandatory' if prop in current_required else 'optional'
                                 
@@ -158,12 +158,19 @@ class SchemaProcessor:
                     else:
                         item_required = items.get('required', [])
                         item_type = 'mandatory' if full_name in item_required else 'optional'
+                        items_type_data = items.get('type', 'Boolean') ## Modificacion para que los items simples tengan tipo de datos tambien
+                        
+                        if feature_type_data in ['array', 'object']:
+                            feature_type_data = 'Boolean'
+                        elif feature_type_data == 'number':
+                            feature_type_data = 'Integer'
+
                         feature['sub_features'].append({
                             'name': f"{full_name}_items",
                             'type': item_type,
                             'description': 'Items in the array',
                             'sub_features': [],
-                            'type_data': 'Boolean'
+                            'type_data': items_type_data
                         })
 
                 # Process nested properties
@@ -193,7 +200,7 @@ class SchemaProcessor:
         """Save the collected constraints to a UVL file."""
         print(f"Saving constraints to {file_path}...")
         with open(file_path, 'a', encoding='utf-8') as f:
-            f.write("\nconstraints\n")
+            f.write("\nconstraints\n" + "//Restricciones obtenidas de las referencias:\n")
             for constraint in self.constraints:
                 f.write(f"\t{constraint}\n")
         print("Constraints saved successfully.")
