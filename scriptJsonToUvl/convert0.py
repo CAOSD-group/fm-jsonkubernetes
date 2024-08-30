@@ -1,22 +1,36 @@
-## Version erronea --> Cambiarlo
-
 import json
+import re
 from collections import deque
 
 class SchemaProcessor:
     def __init__(self, definitions):
         self.definitions = definitions
         self.resolved_references = {}
-        self.processed_features = {}
         self.seen_references = set()
-        self.descriptions = {}
+        self.processed_features = set()
+        self.constraints = []  # Lista para almacenar las dependencias como constraints
+        
+        # Inicializamos un diccionario para almacenar descripciones por grupo
+        self.descriptions = {
+            'values': [],
+            'restrictions': [],
+            'dependencies': []
+        }
         self.seen_descriptions = set()
+
+        # Patrones para clasificar descripciones
+        self.patterns = {
+            'values': re.compile(r'(valid|values are|supported|acceptable|can be)', re.IGNORECASE),
+            'restrictions': re.compile(r'(allowed|conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed)', re.IGNORECASE),
+            'dependencies': re.compile(r'(depends on|requires|if[\s\S]*?only if|relies on|contingent upon|related to)', re.IGNORECASE)
+        }
 
     def sanitize_name(self, name):
         """Replace non-alphanumeric characters with underscores and ensure uniqueness."""
         return name.replace("-", "_").replace(".", "_").replace("$", "")
-    
+
     def resolve_reference(self, ref):
+        """Resolve a reference to its actual schema."""
         if ref in self.resolved_references:
             return self.resolved_references[ref]
 
@@ -25,6 +39,7 @@ class SchemaProcessor:
         for part in parts:
             schema = schema.get(part, {})
             if not schema:
+                print(f"Warning: No se pudo resolver la siguiente referencia: {ref}")
                 return None
 
         self.resolved_references[ref] = schema
@@ -38,6 +53,25 @@ class SchemaProcessor:
             return False
         self.seen_descriptions.add(description)
         return True
+
+    def categorize_description(self, description, feature_name, type_data):
+        """Categorize the description according to the patterns."""
+        if not self.is_valid_description(description):
+            return False
+        # Adicion de type_data en una estructura para tratar de mejorar la precisión de las reglas
+        description_entry = {
+        "feature_name": feature_name,
+        "description": description,
+        "type_data": type_data
+    }
+
+        for category, pattern in self.patterns.items():
+            if pattern.search(description):
+                #self.descriptions[category].append((feature_name, description))
+                self.descriptions[category].append((description_entry))
+                return True
+        
+        return False
 
     def parse_properties(self, properties, required, parent_name="", depth=0):
         mandatory_features = []
@@ -56,14 +90,15 @@ class SchemaProcessor:
                 feature_type = 'mandatory' if prop in current_required else 'optional'
                 feature_type_data = details.get('type', 'Boolean')
 
-                if feature_type_data == 'array' or feature_type_data == 'object':
+                if feature_type_data in ['array', 'object']:
                     feature_type_data = 'Boolean'
                 elif feature_type_data == 'number':
                     feature_type_data = 'Integer'
 
                 description = details.get('description', '')
-                if description and self.is_valid_description(description):
-                    self.descriptions[full_name] = description
+                if description:
+                    # Categorizar la descripción
+                    self.categorize_description(description, full_name, feature_type_data)
 
                 feature = {
                     'name': full_name,
@@ -73,58 +108,86 @@ class SchemaProcessor:
                     'type_data': feature_type_data
                 }
 
+                # Process references
                 if '$ref' in details:
-                    if details['$ref'] in self.seen_references:
-                        continue
-                    self.seen_references.add(details['$ref'])
-                    ref_schema = self.resolve_reference(details['$ref'])
-                    if ref_schema and 'properties' in ref_schema:
-                        sub_properties = ref_schema['properties']
-                        sub_required = ref_schema.get('required', [])
-                        sub_features = self.parse_properties(sub_properties, sub_required, full_name, current_depth + 1)
-                        feature['sub_features'].extend(sub_features)
-
+                    ref = details['$ref']
+                    if ref not in self.seen_references:
+                        self.seen_references.add(ref)
+                        ref_schema = self.resolve_reference(ref)
+                        if ref_schema:
+                            ref_name = self.sanitize_name(ref.split('/')[-1])
+                            # Generar constraint
+                            self.constraints.append(f"{full_name} => {ref_name}")
+                            if 'properties' in ref_schema:
+                                sub_properties = ref_schema['properties']
+                                sub_required = ref_schema.get('required', [])
+                                sub_mandatory, sub_optional = self.parse_properties(sub_properties, sub_required, full_name, current_depth + 1)
+                                feature['sub_features'].extend(sub_mandatory + sub_optional)
+                            else:
+                                # Si no hay 'properties', procesarlo como un tipo simple
+                                # Determinar si la referencia es 'mandatory' u 'optional'
+                                feature_type = 'mandatory' if prop in current_required else 'optional'
+                                
+                                # Agregar la referencia procesada como un tipo simple
+                                feature['sub_features'].append({
+                                    'name': ref_name,
+                                    'type': feature_type,
+                                    'description': ref_schema.get('description', ''),
+                                    'sub_features': [],
+                                    'type_data': 'Boolean' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature
+                                })
+                                #print(f"Warning: Could not process reference: {ref}") # Descomentando la linea se pueden ver las estructuras simples que no tienen 'properties'
+                        #else:
+                            #print(f"Warning: Could not process reference: {ref}")
+                
+                # Process items in arrays
                 elif feature['type_data'] == 'Boolean' and 'items' in details:
                     items = details['items']
                     if '$ref' in items:
-                        if items['$ref'] in self.seen_references:
-                            continue
-                        self.seen_references.add(items['$ref'])
-                        ref_schema = self.resolve_reference(items['$ref'])
-                        if ref_schema and 'properties' in ref_schema:
-                            item_properties = self.parse_properties(ref_schema['properties'], [], full_name, current_depth + 1)
-                            feature['sub_features'].extend(item_properties)
+                        ref = items['$ref']
+                        if ref not in self.seen_references:
+                            self.seen_references.add(ref)
+                            ref_schema = self.resolve_reference(ref)
+                            if ref_schema:
+                                ref_name = self.sanitize_name(ref.split('/')[-1])
+                                # Generar constraint
+                                self.constraints.append(f"{full_name} => {ref_name}")
+                                if ref_schema and 'properties' in ref_schema:
+                                    item_mandatory, item_optional = self.parse_properties(ref_schema['properties'], [], full_name, current_depth + 1)
+                                    feature['sub_features'].extend(item_mandatory + item_optional)
                     else:
                         item_required = items.get('required', [])
                         item_type = 'mandatory' if full_name in item_required else 'optional'
+                        items_type_data = items.get('type', 'Boolean') ## Modificacion para que los items simples tengan tipo de datos tambien
+                        
+                        if feature_type_data in ['array', 'object']:
+                            feature_type_data = 'Boolean'
+                        elif feature_type_data == 'number':
+                            feature_type_data = 'Integer'
+
                         feature['sub_features'].append({
                             'name': f"{full_name}_items",
                             'type': item_type,
                             'description': 'Items in the array',
                             'sub_features': [],
-                            'type_data': 'Boolean'
+                            'type_data': items_type_data
                         })
 
+                # Process nested properties
                 if 'properties' in details:
                     sub_properties = details['properties']
                     sub_required = details.get('required', [])
-                    sub_features = self.parse_properties(sub_properties, sub_required, full_name, current_depth + 1)
-                    feature['sub_features'].extend(sub_features)
+                    sub_mandatory, sub_optional = self.parse_properties(sub_properties, sub_required, full_name, current_depth + 1)
+                    feature['sub_features'].extend(sub_mandatory + sub_optional)
 
                 if feature_type == 'mandatory':
                     mandatory_features.append(feature)
                 else:
                     optional_features.append(feature)
 
-                self.processed_features[full_name] = feature
+                self.processed_features.add(full_name)
 
-        combined_features = []
-        if mandatory_features:
-            combined_features.extend(mandatory_features)
-        if optional_features:
-            combined_features.extend(optional_features)
-
-        return combined_features
+        return mandatory_features, optional_features
 
     def save_descriptions(self, file_path):
         """Save the collected descriptions to a JSON file."""
@@ -132,57 +195,85 @@ class SchemaProcessor:
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(self.descriptions, f, indent=4, ensure_ascii=False)
         print("Descriptions saved successfully.")
+        
+    def save_constraints(self, file_path):
+        """Save the collected constraints to a UVL file."""
+        print(f"Saving constraints to {file_path}...")
+        with open(file_path, 'a', encoding='utf-8') as f:
+            f.write("\nconstraints\n" + "//Restricciones obtenidas de las referencias:\n")
+            for constraint in self.constraints:
+                f.write(f"\t{constraint}\n")
+        print("Constraints saved successfully.")
 
 def load_json_file(file_path):
+    """Load JSON file."""
     with open(file_path, 'r', encoding='utf-8') as f:
         return json.load(f)
-    
+
 def properties_to_uvl(feature_list, indent=1):
+    """Convert feature list to UVL format."""
     uvl_output = ""
     indent_str = '\t' * indent
     for feature in feature_list:
         type_str = f"{feature['type_data'].capitalize()} " if feature['type_data'] else "Boolean "
         if feature['sub_features']:
-            uvl_output += f"{indent_str}{type_str}{feature['name']}\n"
-            if feature['type'] == 'mandatory':
+            uvl_output += f"{indent_str}{type_str}{feature['name']}\n"  # {type_str} opcional si se necesita
+            # uvl_output += f"{indent_str}\t{feature['type']}\n" opcional si se necesita
+
+            # Separar características obligatorias y opcionales
+            sub_mandatory = [f for f in feature['sub_features'] if f['type'] == 'mandatory']
+            sub_optional = [f for f in feature['sub_features'] if f['type'] == 'optional']
+
+            if sub_mandatory:
                 uvl_output += f"{indent_str}\tmandatory\n"
-            if feature['type'] == 'optional':
+                uvl_output += properties_to_uvl(sub_mandatory, indent + 2)
+            if sub_optional:
                 uvl_output += f"{indent_str}\toptional\n"
-            uvl_output += properties_to_uvl(feature['sub_features'], indent + 1)
+                uvl_output += properties_to_uvl(sub_optional, indent + 2)
         else:
-            uvl_output += f"{indent_str}{type_str}{feature['name']} {{abstract}}\n"
+            uvl_output += f"{indent_str}{type_str}{feature['name']} {{abstract}}\n"  # {type_str} opcional si se necesita
     return uvl_output
 
 def generate_uvl_from_definitions(definitions_file, output_file, descriptions_file):
+    """Generate UVL from definitions and save descriptions."""
     definitions = load_json_file(definitions_file)
     processor = SchemaProcessor(definitions)
     uvl_output = "namespace KubernetesTest1\n\nfeatures\n\tKubernetes\n\t\toptional\n"
-    
+
     for schema_name, schema in definitions.get('definitions', {}).items():
         root_schema = schema.get('properties', {})
         required = schema.get('required', [])
-        print(f"Processing schema: {schema_name}")
-        feature_list = processor.parse_properties(root_schema, required, processor.sanitize_name(schema_name), depth=1)
+        type_str_feature = 'Boolean' ## Por defecto al no tener definido un tipo los features principales se les pone como Boolean
+        #print(f"Processing schema: {schema_name}")
+        mandatory_features, optional_features = processor.parse_properties(root_schema, required, processor.sanitize_name(schema_name))
 
-        uvl_output += properties_to_uvl([{
-            'name': processor.sanitize_name(schema_name),
-            'type': 'mandatory' if required else 'optional',
-            'description': '',
-            'sub_features': feature_list,
-            'type_data': 'Boolean'
-        }], indent=2)
+        if mandatory_features:
+            uvl_output += f"\t\t\t{type_str_feature+' '}{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '}
+            uvl_output += f"\t\t\t\tmandatory\n"
+            uvl_output += properties_to_uvl(mandatory_features, indent=5)
+
+            if optional_features:
+                uvl_output += f"\t\t\t\toptional\n"
+                uvl_output += properties_to_uvl(optional_features, indent=5)
+        elif optional_features:
+            uvl_output += f"\t\t\t{type_str_feature+' '}{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '}
+            uvl_output += f"\t\t\t\toptional\n"
+            uvl_output += properties_to_uvl(optional_features, indent=5)
 
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(uvl_output)
+    print(f"UVL output saved to {output_file}")
 
+    # Save descriptions
     processor.save_descriptions(descriptions_file)
-
-    print(f"UVL file saved as {output_file}")
-    print(f"Descriptions file saved as {descriptions_file}")
+    
+    # Save constraints
+    processor.save_constraints(output_file)
 
 # Rutas de archivo
 definitions_file = 'C:/projects/investigacion/kubernetes-json-v1.30.2/v1.30.2/_definitions.json'
 output_file = 'C:/projects/investigacion/scriptJsonToUvl/kubernetes_combined_01.uvl'
-descriptions_file = 'C:/projects/investigacion/scriptJsonToUvl/descriptions_02.json'
+descriptions_file = 'C:/projects/investigacion/scriptJsonToUvl/descriptions_01.json'
 
+# Generar archivo UVL y guardar descripciones
 generate_uvl_from_definitions(definitions_file, output_file, descriptions_file)

@@ -54,6 +54,40 @@ class SchemaProcessor:
         self.seen_descriptions.add(description)
         return True
 
+
+
+    def extract_values(self, description):
+        """Extract values enclosed in quotes or other delimiters, only if keywords are present."""
+        if not any(keyword in description.lower() for keyword in ['values are', 'possible values are']):
+            return None
+        
+        value_patterns = [
+            re.compile(r'(?<=Valid values are:)[\s\S]*?(?=\.)'),
+            re.compile(r'(?<=Possible values are:)[\s\S]*?(?=\.)'),
+            re.compile(r'["\'](.*?)["\']'),  # Captura valores entre comillas simples o dobles
+        ]
+
+        values = []
+        global add_quotes  # Probar si es posible usarla para usar comillas en nombre cuando sea necesaria
+        for pattern in value_patterns:
+            matches = pattern.findall(description)
+            for match in matches:
+                split_values = re.split(r',\s*|\n', match)
+                for v in split_values:
+                    v = v.strip()
+                    # Filtrar valores que contienen puntos, corchetes, llaves o que son demasiado largos
+                    if v and len(v) <= 15 and not any(char in v for char in {'.', '{', '}', '[', ']'}):
+                        values.append(v)
+                        #if ' ' in v:  # Si un valor contiene un espacio
+                        #    add_quotes = True
+
+        values = set(values)  # Eliminar duplicados
+
+        if not values:
+            return None
+        
+        return values
+
     def categorize_description(self, description, feature_name, type_data):
         """Categorize the description according to the patterns."""
         if not self.is_valid_description(description):
@@ -171,6 +205,18 @@ class SchemaProcessor:
                             'description': 'Items in the array',
                             'sub_features': [],
                             'type_data': items_type_data
+                        })
+                # Extraer y añadir valores como subfeatures
+                values = self.extract_values(description)
+                if values:
+                    for value in values:
+                        print("Los valores del feature son:"+value)
+                        feature['sub_features'].append({
+                            'name': f"{full_name}_{value}",
+                            'type': 'optional',  # Los valores individuales se tratan como opcionales
+                            'description': f"Specific value: {value}",
+                            'sub_features': [],
+                            'type_data': "String"
                         })
 
                 # Process nested properties
