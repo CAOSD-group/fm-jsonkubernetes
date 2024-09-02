@@ -2,6 +2,8 @@ import json
 import re
 from collections import deque
 
+numValores = 0
+
 class SchemaProcessor:
     def __init__(self, definitions):
         self.definitions = definitions
@@ -68,25 +70,26 @@ class SchemaProcessor:
         ]
 
         values = []
-        global add_quotes  # Probar si es posible usarla para usar comillas en nombre cuando sea necesaria
+        add_quotes = False  # Variable para verificar si se necesita añadir comillas
         for pattern in value_patterns:
             matches = pattern.findall(description)
             for match in matches:
                 split_values = re.split(r',\s*|\n', match)
                 for v in split_values:
                     v = v.strip()
+                    # Reemplazar '*' por "estrella"
+                    v = v.replace('*', 'estrella')
                     # Filtrar valores que contienen puntos, corchetes, llaves o que son demasiado largos
-                    if v and len(v) <= 15 and not any(char in v for char in {'.', '{', '}', '[', ']'}):
+                    if v and len(v) <= 15 and not any(char in v for char in {'.', '{', '}', '[', ']', ':'}):
                         values.append(v)
-                        #if ' ' in v:  # Si un valor contiene un espacio
-                        #    add_quotes = True
+                        if ' ' in v:  # Si un valor contiene un espacio
+                            add_quotes = True
 
         values = set(values)  # Eliminar duplicados
-
         if not values:
             return None
-        
-        return values
+        return values, add_quotes  # Devuelve los valores y el nombre del feature
+
 
     def categorize_description(self, description, feature_name, type_data):
         """Categorize the description according to the patterns."""
@@ -111,12 +114,14 @@ class SchemaProcessor:
         mandatory_features = []
         optional_features = []
         queue = deque([(properties, required, parent_name, depth)])
-
+        numValores = 0
         while queue:
             current_properties, current_required, current_parent, current_depth = queue.popleft()
             for prop, details in current_properties.items():
                 sanitized_name = self.sanitize_name(prop)
                 full_name = f"{current_parent}_{sanitized_name}" if current_parent else sanitized_name
+                
+
 
                 if full_name in self.processed_features:
                     continue
@@ -207,17 +212,25 @@ class SchemaProcessor:
                             'type_data': items_type_data
                         })
                 # Extraer y añadir valores como subfeatures
-                values = self.extract_values(description)
-                if values:
+                extracted_values = self.extract_values(description)
+
+                if extracted_values:
+                    values, add_quotes = extracted_values
                     for value in values:
                         print("Los valores del feature son:"+value)
+                        #combined_feature = f'"{full_name}_{value}"' if add_quotes else f"{full_name}_{value}"
+                        #print(f"Los nombres del feature son:{combined_feature}")
+
                         feature['sub_features'].append({
-                            'name': f"{full_name}_{value}",
-                            'type': 'optional',  # Los valores individuales se tratan como opcionales
+                            'name': f'"{full_name}_{value}"' if add_quotes else f"{full_name}_{value}", #f"{full_name}_{self.sanitize_name(combined_feature)}"
+                            'type': 'optional',  # Los valores individuales se tratan como opcionales ** Pendiente añadir alternative, Or ...
                             'description': f"Specific value: {value}",
                             'sub_features': [],
                             'type_data': "String"
                         })
+                        #numValores += 1
+                #print(f"Valores obtenidos: {numValores}")
+
 
                 # Process nested properties
                 if 'properties' in details:
@@ -225,7 +238,7 @@ class SchemaProcessor:
                     sub_required = details.get('required', [])
                     sub_mandatory, sub_optional = self.parse_properties(sub_properties, sub_required, full_name, current_depth + 1)
                     feature['sub_features'].extend(sub_mandatory + sub_optional)
-
+        
                 if feature_type == 'mandatory':
                     mandatory_features.append(feature)
                 else:
@@ -234,7 +247,7 @@ class SchemaProcessor:
                 self.processed_features.add(full_name)
 
         return mandatory_features, optional_features
-
+        
     def save_descriptions(self, file_path):
         """Save the collected descriptions to a JSON file."""
         print(f"Saving descriptions to {file_path}...")

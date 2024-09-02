@@ -1,4 +1,4 @@
-namespace KubernetesTest1
+namespace KubernetesTest01
 
 features
 	Kubernetes
@@ -21,21 +21,33 @@ features
 						optional
 							Boolean io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_apiGroups
 								optional
-									Boolean io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_apiGroups_items {abstract}
+									String io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_apiGroups_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_apiVersions
 								optional
-									Boolean io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_apiVersions_items {abstract}
+									String io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_apiVersions_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_operations
 								optional
-									Boolean io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_operations_items {abstract}
+									String io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_operations_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_resourceNames
 								optional
-									Boolean io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_resourceNames_items {abstract}
+									String io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_resourceNames_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_resources
 								optional
-									Boolean io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_resources_items {abstract}
-							String io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_scope {abstract}
-					String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy {abstract}
+									String io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_resources_items {abstract}
+							String io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_scope
+								optional
+									String io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_scope_Namespaced {abstract}
+									String io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_scope_Cluster {abstract}
+									String io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_scope_estrella {abstract}
+					String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy
+						optional
+							String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy_MatchResources {abstract}
+							String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy_Exact {abstract}
+							String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy_deployments {abstract}
+							String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy_apps {abstract}
+							String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy_v1 {abstract}
+							String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy_Equivalent {abstract}
+							String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy_rules {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_MatchResources_namespaceSelector
 						optional
 							Boolean io_k8s_api_admissionregistration_v1_MatchResources_namespaceSelector_matchExpressions
@@ -44,7 +56,7 @@ features
 									String io_k8s_api_admissionregistration_v1_MatchResources_namespaceSelector_matchExpressions_operator {abstract}
 									Boolean io_k8s_api_admissionregistration_v1_MatchResources_namespaceSelector_matchExpressions_values
 										optional
-											Boolean io_k8s_api_admissionregistration_v1_MatchResources_namespaceSelector_matchExpressions_values_items {abstract}
+											String io_k8s_api_admissionregistration_v1_MatchResources_namespaceSelector_matchExpressions_values_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MatchResources_namespaceSelector_matchLabels {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_MatchResources_objectSelector {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_MatchResources_resourceRules {abstract}
@@ -52,7 +64,7 @@ features
 				mandatory
 					Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_admissionReviewVersions
 						optional
-							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_admissionReviewVersions_items {abstract}
+							String io_k8s_api_admissionregistration_v1_MutatingWebhook_admissionReviewVersions_items {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_clientConfig
 						optional
 							String io_k8s_api_admissionregistration_v1_MutatingWebhook_clientConfig_caBundle {abstract}
@@ -72,25 +84,39 @@ features
 						optional
 							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchConditions_expression {abstract}
 							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchConditions_name {abstract}
-					String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchPolicy {abstract}
+					String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchPolicy
+						optional
+							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchPolicy_Exact {abstract}
+							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchPolicy_deployments {abstract}
+							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchPolicy_apps {abstract}
+							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchPolicy_v1 {abstract}
+							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchPolicy_Equivalent {abstract}
+							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchPolicy_rules {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_namespaceSelector {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_objectSelector {abstract}
-					String io_k8s_api_admissionregistration_v1_MutatingWebhook_reinvocationPolicy {abstract}
+					String io_k8s_api_admissionregistration_v1_MutatingWebhook_reinvocationPolicy
+						optional
+							String io_k8s_api_admissionregistration_v1_MutatingWebhook_reinvocationPolicy_Never {abstract}
+							String io_k8s_api_admissionregistration_v1_MutatingWebhook_reinvocationPolicy_IfNeeded {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_rules
 						optional
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_apiGroups
 								optional
-									Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_apiGroups_items {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_apiGroups_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_apiVersions
 								optional
-									Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_apiVersions_items {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_apiVersions_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_operations
 								optional
-									Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_operations_items {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_operations_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_resources
 								optional
-									Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_resources_items {abstract}
-							String io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_scope {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_resources_items {abstract}
+							String io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_scope
+								optional
+									String io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_scope_Namespaced {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_scope_Cluster {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_scope_estrella {abstract}
 					Integer io_k8s_api_admissionregistration_v1_MutatingWebhook_timeoutSeconds {abstract}
 			Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration
 				optional
@@ -99,12 +125,14 @@ features
 					Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata
 						optional
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_annotations {abstract}
-							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_creationTimestamp {abstract}
+							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_creationTimestamp
+								optional
+									Boolean io_k8s_apimachinery_pkg_apis_meta_v1_Time {abstract}
 							Integer io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_deletionGracePeriodSeconds {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_deletionTimestamp {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_finalizers
 								optional
-									Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_finalizers_items {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_finalizers_items {abstract}
 							String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_generateName {abstract}
 							Integer io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_generation {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_labels {abstract}
@@ -112,7 +140,9 @@ features
 								optional
 									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_managedFields_apiVersion {abstract}
 									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_managedFields_fieldsType {abstract}
-									Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_managedFields_fieldsV1 {abstract}
+									Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_managedFields_fieldsV1
+										optional
+											Boolean io_k8s_apimachinery_pkg_apis_meta_v1_FieldsV1 {abstract}
 									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_managedFields_manager {abstract}
 									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_managedFields_operation {abstract}
 									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_metadata_managedFields_subresource {abstract}
@@ -134,15 +164,25 @@ features
 						optional
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_admissionReviewVersions
 								optional
-									Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_admissionReviewVersions_items {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_admissionReviewVersions_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_clientConfig {abstract}
 							String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_failurePolicy {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchConditions {abstract}
-							String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchPolicy {abstract}
+							String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchPolicy
+								optional
+									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchPolicy_Exact {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchPolicy_deployments {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchPolicy_apps {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchPolicy_v1 {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchPolicy_Equivalent {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchPolicy_rules {abstract}
 							String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_name {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_namespaceSelector {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_objectSelector {abstract}
-							String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_reinvocationPolicy {abstract}
+							String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_reinvocationPolicy
+								optional
+									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_reinvocationPolicy_Never {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_reinvocationPolicy_IfNeeded {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_rules {abstract}
 							String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_sideEffects {abstract}
 							Integer io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_timeoutSeconds {abstract}
@@ -167,20 +207,24 @@ features
 				optional
 					Boolean io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_apiGroups
 						optional
-							Boolean io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_apiGroups_items {abstract}
+							String io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_apiGroups_items {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_apiVersions
 						optional
-							Boolean io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_apiVersions_items {abstract}
+							String io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_apiVersions_items {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_operations
 						optional
-							Boolean io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_operations_items {abstract}
+							String io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_operations_items {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_resourceNames
 						optional
-							Boolean io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_resourceNames_items {abstract}
+							String io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_resourceNames_items {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_resources
 						optional
-							Boolean io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_resources_items {abstract}
-					String io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_scope {abstract}
+							String io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_resources_items {abstract}
+					String io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_scope
+						optional
+							String io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_scope_Namespaced {abstract}
+							String io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_scope_Cluster {abstract}
+							String io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_scope_estrella {abstract}
 			Boolean io_k8s_api_admissionregistration_v1_ParamKind
 				optional
 					String io_k8s_api_admissionregistration_v1_ParamKind_apiVersion {abstract}
@@ -195,17 +239,21 @@ features
 				optional
 					Boolean io_k8s_api_admissionregistration_v1_RuleWithOperations_apiGroups
 						optional
-							Boolean io_k8s_api_admissionregistration_v1_RuleWithOperations_apiGroups_items {abstract}
+							String io_k8s_api_admissionregistration_v1_RuleWithOperations_apiGroups_items {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_RuleWithOperations_apiVersions
 						optional
-							Boolean io_k8s_api_admissionregistration_v1_RuleWithOperations_apiVersions_items {abstract}
+							String io_k8s_api_admissionregistration_v1_RuleWithOperations_apiVersions_items {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_RuleWithOperations_operations
 						optional
-							Boolean io_k8s_api_admissionregistration_v1_RuleWithOperations_operations_items {abstract}
+							String io_k8s_api_admissionregistration_v1_RuleWithOperations_operations_items {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_RuleWithOperations_resources
 						optional
-							Boolean io_k8s_api_admissionregistration_v1_RuleWithOperations_resources_items {abstract}
-					String io_k8s_api_admissionregistration_v1_RuleWithOperations_scope {abstract}
+							String io_k8s_api_admissionregistration_v1_RuleWithOperations_resources_items {abstract}
+					String io_k8s_api_admissionregistration_v1_RuleWithOperations_scope
+						optional
+							String io_k8s_api_admissionregistration_v1_RuleWithOperations_scope_Namespaced {abstract}
+							String io_k8s_api_admissionregistration_v1_RuleWithOperations_scope_Cluster {abstract}
+							String io_k8s_api_admissionregistration_v1_RuleWithOperations_scope_estrella {abstract}
 			Boolean io_k8s_api_admissionregistration_v1_ServiceReference
 				mandatory
 					String io_k8s_api_admissionregistration_v1_ServiceReference_name {abstract}
@@ -235,7 +283,15 @@ features
 							Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints
 								optional
 									Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_excludeResourceRules {abstract}
-									String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy {abstract}
+									String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy
+										optional
+											String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_MatchResources {abstract}
+											String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Exact {abstract}
+											String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_deployments {abstract}
+											String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_apps {abstract}
+											String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_v1 {abstract}
+											String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Equivalent {abstract}
+											String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_rules {abstract}
 									Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_namespaceSelector {abstract}
 									Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_objectSelector {abstract}
 									Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_resourceRules {abstract}
@@ -284,7 +340,10 @@ features
 							String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBinding_spec_policyName {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBinding_spec_validationActions
 								optional
-									Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBinding_spec_validationActions_items {abstract}
+									String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBinding_spec_validationActions_items {abstract}
+									String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBinding_spec_validationActions_Deny {abstract}
+									String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBinding_spec_validationActions_Warn {abstract}
+									String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBinding_spec_validationActions_Audit {abstract}
 			Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingList
 				optional
 					String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingList_apiVersion {abstract}
@@ -303,7 +362,10 @@ features
 					String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingSpec_policyName {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingSpec_validationActions
 						optional
-							Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingSpec_validationActions_items {abstract}
+							String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingSpec_validationActions_items {abstract}
+							String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingSpec_validationActions_Deny {abstract}
+							String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingSpec_validationActions_Warn {abstract}
+							String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingSpec_validationActions_Audit {abstract}
 			Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyList
 				optional
 					String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyList_apiVersion {abstract}
@@ -334,14 +396,21 @@ features
 				mandatory
 					Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhook_admissionReviewVersions
 						optional
-							Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhook_admissionReviewVersions_items {abstract}
+							String io_k8s_api_admissionregistration_v1_ValidatingWebhook_admissionReviewVersions_items {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhook_clientConfig {abstract}
 					String io_k8s_api_admissionregistration_v1_ValidatingWebhook_name {abstract}
 					String io_k8s_api_admissionregistration_v1_ValidatingWebhook_sideEffects {abstract}
 				optional
 					String io_k8s_api_admissionregistration_v1_ValidatingWebhook_failurePolicy {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchConditions {abstract}
-					String io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchPolicy {abstract}
+					String io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchPolicy
+						optional
+							String io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchPolicy_Exact {abstract}
+							String io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchPolicy_deployments {abstract}
+							String io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchPolicy_apps {abstract}
+							String io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchPolicy_v1 {abstract}
+							String io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchPolicy_Equivalent {abstract}
+							String io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchPolicy_rules {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhook_namespaceSelector {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhook_objectSelector {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhook_rules {abstract}
@@ -355,11 +424,18 @@ features
 						optional
 							Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_admissionReviewVersions
 								optional
-									Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_admissionReviewVersions_items {abstract}
+									String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_admissionReviewVersions_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_clientConfig {abstract}
 							String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_failurePolicy {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchConditions {abstract}
-							String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchPolicy {abstract}
+							String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchPolicy
+								optional
+									String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchPolicy_Exact {abstract}
+									String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchPolicy_deployments {abstract}
+									String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchPolicy_apps {abstract}
+									String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchPolicy_v1 {abstract}
+									String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchPolicy_Equivalent {abstract}
+									String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchPolicy_rules {abstract}
 							String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_name {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_namespaceSelector {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_objectSelector {abstract}
@@ -412,21 +488,33 @@ features
 						optional
 							Boolean io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_apiGroups
 								optional
-									Boolean io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_apiGroups_items {abstract}
+									String io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_apiGroups_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_apiVersions
 								optional
-									Boolean io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_apiVersions_items {abstract}
+									String io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_apiVersions_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_operations
 								optional
-									Boolean io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_operations_items {abstract}
+									String io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_operations_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_resourceNames
 								optional
-									Boolean io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_resourceNames_items {abstract}
+									String io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_resourceNames_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_resources
 								optional
-									Boolean io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_resources_items {abstract}
-							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_scope {abstract}
-					String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy {abstract}
+									String io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_resources_items {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_scope
+								optional
+									String io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_scope_Namespaced {abstract}
+									String io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_scope_Cluster {abstract}
+									String io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_scope_estrella {abstract}
+					String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy
+						optional
+							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy_MatchResources {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy_Exact {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy_deployments {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy_apps {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy_v1 {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy_Equivalent {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy_rules {abstract}
 					Boolean io_k8s_api_admissionregistration_v1alpha1_MatchResources_namespaceSelector {abstract}
 					Boolean io_k8s_api_admissionregistration_v1alpha1_MatchResources_objectSelector {abstract}
 					Boolean io_k8s_api_admissionregistration_v1alpha1_MatchResources_resourceRules {abstract}
@@ -434,20 +522,24 @@ features
 				optional
 					Boolean io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_apiGroups
 						optional
-							Boolean io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_apiGroups_items {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_apiGroups_items {abstract}
 					Boolean io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_apiVersions
 						optional
-							Boolean io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_apiVersions_items {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_apiVersions_items {abstract}
 					Boolean io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_operations
 						optional
-							Boolean io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_operations_items {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_operations_items {abstract}
 					Boolean io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_resourceNames
 						optional
-							Boolean io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_resourceNames_items {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_resourceNames_items {abstract}
 					Boolean io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_resources
 						optional
-							Boolean io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_resources_items {abstract}
-					String io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_scope {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_resources_items {abstract}
+					String io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_scope
+						optional
+							String io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_scope_Namespaced {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_scope_Cluster {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_scope_estrella {abstract}
 			Boolean io_k8s_api_admissionregistration_v1alpha1_ParamKind
 				optional
 					String io_k8s_api_admissionregistration_v1alpha1_ParamKind_apiVersion {abstract}
@@ -483,7 +575,15 @@ features
 							Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints
 								optional
 									Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_excludeResourceRules {abstract}
-									String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy {abstract}
+									String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy
+										optional
+											String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_MatchResources {abstract}
+											String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Exact {abstract}
+											String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_deployments {abstract}
+											String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_apps {abstract}
+											String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_v1 {abstract}
+											String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Equivalent {abstract}
+											String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_rules {abstract}
 									Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_namespaceSelector {abstract}
 									Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_objectSelector {abstract}
 									Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_resourceRules {abstract}
@@ -525,7 +625,10 @@ features
 							String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBinding_spec_policyName {abstract}
 							Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBinding_spec_validationActions
 								optional
-									Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBinding_spec_validationActions_items {abstract}
+									String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBinding_spec_validationActions_items {abstract}
+									String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBinding_spec_validationActions_Deny {abstract}
+									String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBinding_spec_validationActions_Warn {abstract}
+									String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBinding_spec_validationActions_Audit {abstract}
 			Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingList
 				optional
 					String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingList_apiVersion {abstract}
@@ -544,7 +647,10 @@ features
 					String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingSpec_policyName {abstract}
 					Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingSpec_validationActions
 						optional
-							Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingSpec_validationActions_items {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingSpec_validationActions_items {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingSpec_validationActions_Deny {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingSpec_validationActions_Warn {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingSpec_validationActions_Audit {abstract}
 			Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyList
 				optional
 					String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyList_apiVersion {abstract}
@@ -600,21 +706,33 @@ features
 						optional
 							Boolean io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_apiGroups
 								optional
-									Boolean io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_apiGroups_items {abstract}
+									String io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_apiGroups_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_apiVersions
 								optional
-									Boolean io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_apiVersions_items {abstract}
+									String io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_apiVersions_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_operations
 								optional
-									Boolean io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_operations_items {abstract}
+									String io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_operations_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_resourceNames
 								optional
-									Boolean io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_resourceNames_items {abstract}
+									String io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_resourceNames_items {abstract}
 							Boolean io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_resources
 								optional
-									Boolean io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_resources_items {abstract}
-							String io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_scope {abstract}
-					String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy {abstract}
+									String io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_resources_items {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_scope
+								optional
+									String io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_scope_Namespaced {abstract}
+									String io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_scope_Cluster {abstract}
+									String io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_scope_estrella {abstract}
+					String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy
+						optional
+							String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy_MatchResources {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy_Exact {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy_deployments {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy_apps {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy_v1 {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy_Equivalent {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy_rules {abstract}
 					Boolean io_k8s_api_admissionregistration_v1beta1_MatchResources_namespaceSelector {abstract}
 					Boolean io_k8s_api_admissionregistration_v1beta1_MatchResources_objectSelector {abstract}
 					Boolean io_k8s_api_admissionregistration_v1beta1_MatchResources_resourceRules {abstract}
@@ -622,20 +740,24 @@ features
 				optional
 					Boolean io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_apiGroups
 						optional
-							Boolean io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_apiGroups_items {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_apiGroups_items {abstract}
 					Boolean io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_apiVersions
 						optional
-							Boolean io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_apiVersions_items {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_apiVersions_items {abstract}
 					Boolean io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_operations
 						optional
-							Boolean io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_operations_items {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_operations_items {abstract}
 					Boolean io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_resourceNames
 						optional
-							Boolean io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_resourceNames_items {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_resourceNames_items {abstract}
 					Boolean io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_resources
 						optional
-							Boolean io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_resources_items {abstract}
-					String io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_scope {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_resources_items {abstract}
+					String io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_scope
+						optional
+							String io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_scope_Namespaced {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_scope_Cluster {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_scope_estrella {abstract}
 			Boolean io_k8s_api_admissionregistration_v1beta1_ParamKind
 				optional
 					String io_k8s_api_admissionregistration_v1beta1_ParamKind_apiVersion {abstract}
@@ -671,7 +793,15 @@ features
 							Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints
 								optional
 									Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_excludeResourceRules {abstract}
-									String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy {abstract}
+									String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy
+										optional
+											String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_MatchResources {abstract}
+											String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Exact {abstract}
+											String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_deployments {abstract}
+											String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_apps {abstract}
+											String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_v1 {abstract}
+											String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Equivalent {abstract}
+											String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_rules {abstract}
 									Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_namespaceSelector {abstract}
 									Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_objectSelector {abstract}
 									Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_resourceRules {abstract}
@@ -713,7 +843,10 @@ features
 							String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBinding_spec_policyName {abstract}
 							Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBinding_spec_validationActions
 								optional
-									Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBinding_spec_validationActions_items {abstract}
+									String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBinding_spec_validationActions_items {abstract}
+									String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBinding_spec_validationActions_Deny {abstract}
+									String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBinding_spec_validationActions_Warn {abstract}
+									String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBinding_spec_validationActions_Audit {abstract}
 			Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingList
 				optional
 					String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingList_apiVersion {abstract}
@@ -732,7 +865,10 @@ features
 					String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingSpec_policyName {abstract}
 					Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingSpec_validationActions
 						optional
-							Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingSpec_validationActions_items {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingSpec_validationActions_items {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingSpec_validationActions_Deny {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingSpec_validationActions_Warn {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingSpec_validationActions_Audit {abstract}
 			Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyList
 				optional
 					String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyList_apiVersion {abstract}
@@ -775,14 +911,16 @@ features
 					String io_k8s_api_apiserverinternal_v1alpha1_ServerStorageVersion_apiServerID {abstract}
 					Boolean io_k8s_api_apiserverinternal_v1alpha1_ServerStorageVersion_decodableVersions
 						optional
-							Boolean io_k8s_api_apiserverinternal_v1alpha1_ServerStorageVersion_decodableVersions_items {abstract}
+							String io_k8s_api_apiserverinternal_v1alpha1_ServerStorageVersion_decodableVersions_items {abstract}
 					String io_k8s_api_apiserverinternal_v1alpha1_ServerStorageVersion_encodingVersion {abstract}
 					Boolean io_k8s_api_apiserverinternal_v1alpha1_ServerStorageVersion_servedVersions
 						optional
-							Boolean io_k8s_api_apiserverinternal_v1alpha1_ServerStorageVersion_servedVersions_items {abstract}
+							String io_k8s_api_apiserverinternal_v1alpha1_ServerStorageVersion_servedVersions_items {abstract}
 			Boolean io_k8s_api_apiserverinternal_v1alpha1_StorageVersion
 				mandatory
-					Boolean io_k8s_api_apiserverinternal_v1alpha1_StorageVersion_spec {abstract}
+					Boolean io_k8s_api_apiserverinternal_v1alpha1_StorageVersion_spec
+						mandatory
+							Boolean io_k8s_api_apiserverinternal_v1alpha1_StorageVersionSpec {abstract}
 					Boolean io_k8s_api_apiserverinternal_v1alpha1_StorageVersion_status
 						optional
 							String io_k8s_api_apiserverinternal_v1alpha1_StorageVersion_status_commonEncodingVersion {abstract}
@@ -799,11 +937,11 @@ features
 									String io_k8s_api_apiserverinternal_v1alpha1_StorageVersion_status_storageVersions_apiServerID {abstract}
 									Boolean io_k8s_api_apiserverinternal_v1alpha1_StorageVersion_status_storageVersions_decodableVersions
 										optional
-											Boolean io_k8s_api_apiserverinternal_v1alpha1_StorageVersion_status_storageVersions_decodableVersions_items {abstract}
+											String io_k8s_api_apiserverinternal_v1alpha1_StorageVersion_status_storageVersions_decodableVersions_items {abstract}
 									String io_k8s_api_apiserverinternal_v1alpha1_StorageVersion_status_storageVersions_encodingVersion {abstract}
 									Boolean io_k8s_api_apiserverinternal_v1alpha1_StorageVersion_status_storageVersions_servedVersions
 										optional
-											Boolean io_k8s_api_apiserverinternal_v1alpha1_StorageVersion_status_storageVersions_servedVersions_items {abstract}
+											String io_k8s_api_apiserverinternal_v1alpha1_StorageVersion_status_storageVersions_servedVersions_items {abstract}
 				optional
 					String io_k8s_api_apiserverinternal_v1alpha1_StorageVersion_apiVersion {abstract}
 					String io_k8s_api_apiserverinternal_v1alpha1_StorageVersion_kind {abstract}
@@ -840,7 +978,9 @@ features
 					Integer io_k8s_api_apps_v1_ControllerRevision_revision {abstract}
 				optional
 					String io_k8s_api_apps_v1_ControllerRevision_apiVersion {abstract}
-					Boolean io_k8s_api_apps_v1_ControllerRevision_data {abstract}
+					Boolean io_k8s_api_apps_v1_ControllerRevision_data
+						optional
+							Boolean io_k8s_apimachinery_pkg_runtime_RawExtension {abstract}
 					String io_k8s_api_apps_v1_ControllerRevision_kind {abstract}
 					Boolean io_k8s_api_apps_v1_ControllerRevision_metadata {abstract}
 			Boolean io_k8s_api_apps_v1_ControllerRevisionList
@@ -873,10 +1013,10 @@ features
 												optional
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_args
 														optional
-															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_args_items {abstract}
+															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_args_items {abstract}
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_command
 														optional
-															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_command_items {abstract}
+															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_command_items {abstract}
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_env
 														optional
 															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_env_name {abstract}
@@ -899,7 +1039,9 @@ features
 																			String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_env_valueFrom_resourceFieldRef_resource {abstract}
 																		optional
 																			String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_env_valueFrom_resourceFieldRef_containerName {abstract}
-																			Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_env_valueFrom_resourceFieldRef_divisor {abstract}
+																			Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_env_valueFrom_resourceFieldRef_divisor
+																				optional
+																					Boolean io_k8s_apimachinery_pkg_api_resource_Quantity {abstract}
 																	Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_env_valueFrom_secretKeyRef
 																		mandatory
 																			String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_env_valueFrom_secretKeyRef_key {abstract}
@@ -927,10 +1069,12 @@ features
 																		optional
 																			Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_exec_command
 																				optional
-																					Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_exec_command_items {abstract}
+																					String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_exec_command_items {abstract}
 																	Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_httpGet
 																		mandatory
-																			Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_httpGet_port {abstract}
+																			Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_httpGet_port
+																				mandatory
+																					Boolean io_k8s_apimachinery_pkg_util_intstr_IntOrString {abstract}
 																		optional
 																			String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_httpGet_host {abstract}
 																			Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_httpGet_httpHeaders
@@ -997,10 +1141,10 @@ features
 																optional
 																	Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_securityContext_capabilities_add
 																		optional
-																			Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_securityContext_capabilities_add_items {abstract}
+																			String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_securityContext_capabilities_add_items {abstract}
 																	Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_securityContext_capabilities_drop
 																		optional
-																			Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_securityContext_capabilities_drop_items {abstract}
+																			String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_securityContext_capabilities_drop_items {abstract}
 															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_securityContext_privileged {abstract}
 															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_securityContext_procMount {abstract}
 															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_securityContext_readOnlyRootFilesystem {abstract}
@@ -1060,7 +1204,7 @@ features
 																					String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_nodeAffinity_preferredDuringSchedulingIgnoredDuringExecution_preference_matchExpressions_operator {abstract}
 																					Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_nodeAffinity_preferredDuringSchedulingIgnoredDuringExecution_preference_matchExpressions_values
 																						optional
-																							Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_nodeAffinity_preferredDuringSchedulingIgnoredDuringExecution_preference_matchExpressions_values_items {abstract}
+																							String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_nodeAffinity_preferredDuringSchedulingIgnoredDuringExecution_preference_matchExpressions_values_items {abstract}
 																			Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_nodeAffinity_preferredDuringSchedulingIgnoredDuringExecution_preference_matchFields {abstract}
 																	Integer io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_nodeAffinity_preferredDuringSchedulingIgnoredDuringExecution_weight {abstract}
 															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_nodeAffinity_requiredDuringSchedulingIgnoredDuringExecution
@@ -1077,14 +1221,14 @@ features
 																			Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_podAffinity_preferredDuringSchedulingIgnoredDuringExecution_podAffinityTerm_labelSelector {abstract}
 																			Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_podAffinity_preferredDuringSchedulingIgnoredDuringExecution_podAffinityTerm_matchLabelKeys
 																				optional
-																					Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_podAffinity_preferredDuringSchedulingIgnoredDuringExecution_podAffinityTerm_matchLabelKeys_items {abstract}
+																					String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_podAffinity_preferredDuringSchedulingIgnoredDuringExecution_podAffinityTerm_matchLabelKeys_items {abstract}
 																			Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_podAffinity_preferredDuringSchedulingIgnoredDuringExecution_podAffinityTerm_mismatchLabelKeys
 																				optional
-																					Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_podAffinity_preferredDuringSchedulingIgnoredDuringExecution_podAffinityTerm_mismatchLabelKeys_items {abstract}
+																					String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_podAffinity_preferredDuringSchedulingIgnoredDuringExecution_podAffinityTerm_mismatchLabelKeys_items {abstract}
 																			Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_podAffinity_preferredDuringSchedulingIgnoredDuringExecution_podAffinityTerm_namespaceSelector {abstract}
 																			Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_podAffinity_preferredDuringSchedulingIgnoredDuringExecution_podAffinityTerm_namespaces
 																				optional
-																					Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_podAffinity_preferredDuringSchedulingIgnoredDuringExecution_podAffinityTerm_namespaces_items {abstract}
+																					String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_podAffinity_preferredDuringSchedulingIgnoredDuringExecution_podAffinityTerm_namespaces_items {abstract}
 																	Integer io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_podAffinity_preferredDuringSchedulingIgnoredDuringExecution_weight {abstract}
 															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_podAffinity_requiredDuringSchedulingIgnoredDuringExecution {abstract}
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_affinity_podAntiAffinity
@@ -1096,24 +1240,28 @@ features
 												optional
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsConfig_nameservers
 														optional
-															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsConfig_nameservers_items {abstract}
+															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsConfig_nameservers_items {abstract}
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsConfig_options
 														optional
 															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsConfig_options_name {abstract}
 															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsConfig_options_value {abstract}
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsConfig_searches
 														optional
-															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsConfig_searches_items {abstract}
-											String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsPolicy {abstract}
+															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsConfig_searches_items {abstract}
+											String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsPolicy
+												optional
+													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsPolicy_Default {abstract}
+													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsPolicy_None {abstract}
+													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsPolicy_ClusterFirst {abstract}
 											Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_enableServiceLinks {abstract}
 											Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers
 												optional
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_args
 														optional
-															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_args_items {abstract}
+															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_args_items {abstract}
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_command
 														optional
-															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_command_items {abstract}
+															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_command_items {abstract}
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_env {abstract}
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_envFrom {abstract}
 													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_image {abstract}
@@ -1141,7 +1289,7 @@ features
 												optional
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_hostAliases_hostnames
 														optional
-															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_hostAliases_hostnames_items {abstract}
+															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_hostAliases_hostnames_items {abstract}
 													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_hostAliases_ip {abstract}
 											Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_hostIPC {abstract}
 											Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_hostNetwork {abstract}
@@ -1181,7 +1329,10 @@ features
 												optional
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_appArmorProfile {abstract}
 													Integer io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_fsGroup {abstract}
-													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_fsGroupChangePolicy {abstract}
+													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_fsGroupChangePolicy
+														optional
+															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_fsGroupChangePolicy_OnRootMismatch {abstract}
+															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_fsGroupChangePolicy_Always {abstract}
 													Integer io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_runAsGroup {abstract}
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_runAsNonRoot {abstract}
 													Integer io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_runAsUser {abstract}
@@ -1189,7 +1340,7 @@ features
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_seccompProfile {abstract}
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_supplementalGroups
 														optional
-															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_supplementalGroups_items {abstract}
+															Integer io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_supplementalGroups_items {abstract}
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_sysctls
 														optional
 															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_sysctls_name {abstract}
@@ -1213,12 +1364,16 @@ features
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_labelSelector {abstract}
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_matchLabelKeys
 														optional
-															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_matchLabelKeys_items {abstract}
+															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_matchLabelKeys_items {abstract}
 													Integer io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_maxSkew {abstract}
-													Integer io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_minDomains {abstract}
+													Integer io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_minDomains
+														optional
+															String "io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_minDomains_global minimum" {abstract}
 													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_nodeAffinityPolicy {abstract}
 													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_nodeTaintsPolicy {abstract}
-													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_topologyKey {abstract}
+													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_topologyKey
+														optional
+															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_topologyKey_bucket {abstract}
 													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_whenUnsatisfiable {abstract}
 											Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes
 												optional
@@ -1248,7 +1403,7 @@ features
 														mandatory
 															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_cephfs_monitors
 																optional
-																	Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_cephfs_monitors_items {abstract}
+																	String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_cephfs_monitors_items {abstract}
 														optional
 															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_cephfs_path {abstract}
 															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_cephfs_readOnly {abstract}
@@ -1301,7 +1456,7 @@ features
 																		optional
 																			Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_ephemeral_volumeClaimTemplate_spec_accessModes
 																				optional
-																					Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_ephemeral_volumeClaimTemplate_spec_accessModes_items {abstract}
+																					String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_ephemeral_volumeClaimTemplate_spec_accessModes_items {abstract}
 																			Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_ephemeral_volumeClaimTemplate_spec_dataSource
 																				mandatory
 																					String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_ephemeral_volumeClaimTemplate_spec_dataSource_kind {abstract}
@@ -1333,10 +1488,10 @@ features
 															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_fc_readOnly {abstract}
 															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_fc_targetWWNs
 																optional
-																	Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_fc_targetWWNs_items {abstract}
+																	String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_fc_targetWWNs_items {abstract}
 															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_fc_wwids
 																optional
-																	Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_fc_wwids_items {abstract}
+																	String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_fc_wwids_items {abstract}
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_flexVolume
 														mandatory
 															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_flexVolume_driver {abstract}
@@ -1386,7 +1541,7 @@ features
 															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_iscsi_iscsiInterface {abstract}
 															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_iscsi_portals
 																optional
-																	Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_iscsi_portals_items {abstract}
+																	String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_iscsi_portals_items {abstract}
 															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_iscsi_readOnly {abstract}
 															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_iscsi_secretRef {abstract}
 													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_name {abstract}
@@ -1458,7 +1613,7 @@ features
 															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_rbd_image {abstract}
 															Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_rbd_monitors
 																optional
-																	Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_rbd_monitors_items {abstract}
+																	String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_rbd_monitors_items {abstract}
 														optional
 															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_rbd_fsType {abstract}
 															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes_rbd_keyring {abstract}
@@ -1775,8 +1930,10 @@ features
 										optional
 											Boolean io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_accessModes
 												optional
-													Boolean io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_accessModes_items {abstract}
-											Boolean io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_allocatedResourceStatuses {abstract}
+													String io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_accessModes_items {abstract}
+											Boolean io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_allocatedResourceStatuses
+												optional
+													String io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_allocatedResourceStatuses_storage {abstract}
 											Boolean io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_allocatedResources {abstract}
 											Boolean io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_capacity {abstract}
 											Boolean io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_conditions
@@ -1890,7 +2047,7 @@ features
 									Boolean io_k8s_api_authentication_v1_SelfSubjectReview_status_userInfo_extra {abstract}
 									Boolean io_k8s_api_authentication_v1_SelfSubjectReview_status_userInfo_groups
 										optional
-											Boolean io_k8s_api_authentication_v1_SelfSubjectReview_status_userInfo_groups_items {abstract}
+											String io_k8s_api_authentication_v1_SelfSubjectReview_status_userInfo_groups_items {abstract}
 									String io_k8s_api_authentication_v1_SelfSubjectReview_status_userInfo_uid {abstract}
 									String io_k8s_api_authentication_v1_SelfSubjectReview_status_userInfo_username {abstract}
 			Boolean io_k8s_api_authentication_v1_SelfSubjectReviewStatus
@@ -1902,7 +2059,7 @@ features
 						mandatory
 							Boolean io_k8s_api_authentication_v1_TokenRequest_spec_audiences
 								optional
-									Boolean io_k8s_api_authentication_v1_TokenRequest_spec_audiences_items {abstract}
+									String io_k8s_api_authentication_v1_TokenRequest_spec_audiences_items {abstract}
 						optional
 							Boolean io_k8s_api_authentication_v1_TokenRequest_spec_boundObjectRef
 								optional
@@ -1923,7 +2080,7 @@ features
 				mandatory
 					Boolean io_k8s_api_authentication_v1_TokenRequestSpec_audiences
 						optional
-							Boolean io_k8s_api_authentication_v1_TokenRequestSpec_audiences_items {abstract}
+							String io_k8s_api_authentication_v1_TokenRequestSpec_audiences_items {abstract}
 				optional
 					Boolean io_k8s_api_authentication_v1_TokenRequestSpec_boundObjectRef {abstract}
 					Integer io_k8s_api_authentication_v1_TokenRequestSpec_expirationSeconds {abstract}
@@ -1937,7 +2094,7 @@ features
 						optional
 							Boolean io_k8s_api_authentication_v1_TokenReview_spec_audiences
 								optional
-									Boolean io_k8s_api_authentication_v1_TokenReview_spec_audiences_items {abstract}
+									String io_k8s_api_authentication_v1_TokenReview_spec_audiences_items {abstract}
 							String io_k8s_api_authentication_v1_TokenReview_spec_token {abstract}
 				optional
 					String io_k8s_api_authentication_v1_TokenReview_apiVersion {abstract}
@@ -1947,7 +2104,7 @@ features
 						optional
 							Boolean io_k8s_api_authentication_v1_TokenReview_status_audiences
 								optional
-									Boolean io_k8s_api_authentication_v1_TokenReview_status_audiences_items {abstract}
+									String io_k8s_api_authentication_v1_TokenReview_status_audiences_items {abstract}
 							Boolean io_k8s_api_authentication_v1_TokenReview_status_authenticated {abstract}
 							String io_k8s_api_authentication_v1_TokenReview_status_error {abstract}
 							Boolean io_k8s_api_authentication_v1_TokenReview_status_user {abstract}
@@ -1955,13 +2112,13 @@ features
 				optional
 					Boolean io_k8s_api_authentication_v1_TokenReviewSpec_audiences
 						optional
-							Boolean io_k8s_api_authentication_v1_TokenReviewSpec_audiences_items {abstract}
+							String io_k8s_api_authentication_v1_TokenReviewSpec_audiences_items {abstract}
 					String io_k8s_api_authentication_v1_TokenReviewSpec_token {abstract}
 			Boolean io_k8s_api_authentication_v1_TokenReviewStatus
 				optional
 					Boolean io_k8s_api_authentication_v1_TokenReviewStatus_audiences
 						optional
-							Boolean io_k8s_api_authentication_v1_TokenReviewStatus_audiences_items {abstract}
+							String io_k8s_api_authentication_v1_TokenReviewStatus_audiences_items {abstract}
 					Boolean io_k8s_api_authentication_v1_TokenReviewStatus_authenticated {abstract}
 					String io_k8s_api_authentication_v1_TokenReviewStatus_error {abstract}
 					Boolean io_k8s_api_authentication_v1_TokenReviewStatus_user {abstract}
@@ -1970,7 +2127,7 @@ features
 					Boolean io_k8s_api_authentication_v1_UserInfo_extra {abstract}
 					Boolean io_k8s_api_authentication_v1_UserInfo_groups
 						optional
-							Boolean io_k8s_api_authentication_v1_UserInfo_groups_items {abstract}
+							String io_k8s_api_authentication_v1_UserInfo_groups_items {abstract}
 					String io_k8s_api_authentication_v1_UserInfo_uid {abstract}
 					String io_k8s_api_authentication_v1_UserInfo_username {abstract}
 			Boolean io_k8s_api_authentication_v1alpha1_SelfSubjectReview
@@ -2002,7 +2159,7 @@ features
 							Boolean io_k8s_api_authorization_v1_LocalSubjectAccessReview_spec_extra {abstract}
 							Boolean io_k8s_api_authorization_v1_LocalSubjectAccessReview_spec_groups
 								optional
-									Boolean io_k8s_api_authorization_v1_LocalSubjectAccessReview_spec_groups_items {abstract}
+									String io_k8s_api_authorization_v1_LocalSubjectAccessReview_spec_groups_items {abstract}
 							Boolean io_k8s_api_authorization_v1_LocalSubjectAccessReview_spec_nonResourceAttributes
 								optional
 									String io_k8s_api_authorization_v1_LocalSubjectAccessReview_spec_nonResourceAttributes_path {abstract}
@@ -2037,11 +2194,11 @@ features
 				mandatory
 					Boolean io_k8s_api_authorization_v1_NonResourceRule_verbs
 						optional
-							Boolean io_k8s_api_authorization_v1_NonResourceRule_verbs_items {abstract}
+							String io_k8s_api_authorization_v1_NonResourceRule_verbs_items {abstract}
 				optional
 					Boolean io_k8s_api_authorization_v1_NonResourceRule_nonResourceURLs
 						optional
-							Boolean io_k8s_api_authorization_v1_NonResourceRule_nonResourceURLs_items {abstract}
+							String io_k8s_api_authorization_v1_NonResourceRule_nonResourceURLs_items {abstract}
 			Boolean io_k8s_api_authorization_v1_ResourceAttributes
 				optional
 					String io_k8s_api_authorization_v1_ResourceAttributes_group {abstract}
@@ -2055,17 +2212,17 @@ features
 				mandatory
 					Boolean io_k8s_api_authorization_v1_ResourceRule_verbs
 						optional
-							Boolean io_k8s_api_authorization_v1_ResourceRule_verbs_items {abstract}
+							String io_k8s_api_authorization_v1_ResourceRule_verbs_items {abstract}
 				optional
 					Boolean io_k8s_api_authorization_v1_ResourceRule_apiGroups
 						optional
-							Boolean io_k8s_api_authorization_v1_ResourceRule_apiGroups_items {abstract}
+							String io_k8s_api_authorization_v1_ResourceRule_apiGroups_items {abstract}
 					Boolean io_k8s_api_authorization_v1_ResourceRule_resourceNames
 						optional
-							Boolean io_k8s_api_authorization_v1_ResourceRule_resourceNames_items {abstract}
+							String io_k8s_api_authorization_v1_ResourceRule_resourceNames_items {abstract}
 					Boolean io_k8s_api_authorization_v1_ResourceRule_resources
 						optional
-							Boolean io_k8s_api_authorization_v1_ResourceRule_resources_items {abstract}
+							String io_k8s_api_authorization_v1_ResourceRule_resources_items {abstract}
 			Boolean io_k8s_api_authorization_v1_SelfSubjectAccessReview
 				mandatory
 					Boolean io_k8s_api_authorization_v1_SelfSubjectAccessReview_spec
@@ -2097,24 +2254,24 @@ features
 								optional
 									Boolean io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_nonResourceRules_nonResourceURLs
 										optional
-											Boolean io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_nonResourceRules_nonResourceURLs_items {abstract}
+											String io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_nonResourceRules_nonResourceURLs_items {abstract}
 									Boolean io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_nonResourceRules_verbs
 										optional
-											Boolean io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_nonResourceRules_verbs_items {abstract}
+											String io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_nonResourceRules_verbs_items {abstract}
 							Boolean io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_resourceRules
 								optional
 									Boolean io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_resourceRules_apiGroups
 										optional
-											Boolean io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_resourceRules_apiGroups_items {abstract}
+											String io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_resourceRules_apiGroups_items {abstract}
 									Boolean io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_resourceRules_resourceNames
 										optional
-											Boolean io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_resourceRules_resourceNames_items {abstract}
+											String io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_resourceRules_resourceNames_items {abstract}
 									Boolean io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_resourceRules_resources
 										optional
-											Boolean io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_resourceRules_resources_items {abstract}
+											String io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_resourceRules_resources_items {abstract}
 									Boolean io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_resourceRules_verbs
 										optional
-											Boolean io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_resourceRules_verbs_items {abstract}
+											String io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_resourceRules_verbs_items {abstract}
 						optional
 							String io_k8s_api_authorization_v1_SelfSubjectRulesReview_status_evaluationError {abstract}
 			Boolean io_k8s_api_authorization_v1_SelfSubjectRulesReviewSpec
@@ -2133,7 +2290,7 @@ features
 					Boolean io_k8s_api_authorization_v1_SubjectAccessReviewSpec_extra {abstract}
 					Boolean io_k8s_api_authorization_v1_SubjectAccessReviewSpec_groups
 						optional
-							Boolean io_k8s_api_authorization_v1_SubjectAccessReviewSpec_groups_items {abstract}
+							String io_k8s_api_authorization_v1_SubjectAccessReviewSpec_groups_items {abstract}
 					Boolean io_k8s_api_authorization_v1_SubjectAccessReviewSpec_nonResourceAttributes {abstract}
 					Boolean io_k8s_api_authorization_v1_SubjectAccessReviewSpec_resourceAttributes {abstract}
 					String io_k8s_api_authorization_v1_SubjectAccessReviewSpec_uid {abstract}
@@ -2487,7 +2644,10 @@ features
 									Boolean io_k8s_api_batch_v1_CronJob_spec_jobTemplate_metadata {abstract}
 									Boolean io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec
 										mandatory
-											Boolean io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_template {abstract}
+											Boolean io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_template
+												optional
+													String io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_template_Never {abstract}
+													String io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_template_OnFailure {abstract}
 										optional
 											Integer io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_activeDeadlineSeconds {abstract}
 											Integer io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_backoffLimit {abstract}
@@ -2505,10 +2665,12 @@ features
 															String io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_podFailurePolicy_rules_action {abstract}
 															Boolean io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_podFailurePolicy_rules_onExitCodes
 																mandatory
-																	String io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_podFailurePolicy_rules_onExitCodes_operator {abstract}
+																	String io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_podFailurePolicy_rules_onExitCodes_operator
+																		optional
+																			String io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_podFailurePolicy_rules_onExitCodes_operator_containerName {abstract}
 																	Boolean io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_podFailurePolicy_rules_onExitCodes_values
 																		optional
-																			Boolean io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_podFailurePolicy_rules_onExitCodes_values_items {abstract}
+																			Integer io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_podFailurePolicy_rules_onExitCodes_values_items {abstract}
 																optional
 																	String io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_podFailurePolicy_rules_onExitCodes_containerName {abstract}
 															Boolean io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_podFailurePolicy_rules_onPodConditions
@@ -2527,7 +2689,10 @@ features
 											Integer io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_ttlSecondsAfterFinished {abstract}
 							String io_k8s_api_batch_v1_CronJob_spec_schedule {abstract}
 						optional
-							String io_k8s_api_batch_v1_CronJob_spec_concurrencyPolicy {abstract}
+							String io_k8s_api_batch_v1_CronJob_spec_concurrencyPolicy
+								optional
+									String io_k8s_api_batch_v1_CronJob_spec_concurrencyPolicy_Forbid {abstract}
+									String io_k8s_api_batch_v1_CronJob_spec_concurrencyPolicy_Allow {abstract}
 							Integer io_k8s_api_batch_v1_CronJob_spec_failedJobsHistoryLimit {abstract}
 							Integer io_k8s_api_batch_v1_CronJob_spec_startingDeadlineSeconds {abstract}
 							Integer io_k8s_api_batch_v1_CronJob_spec_successfulJobsHistoryLimit {abstract}
@@ -2564,7 +2729,10 @@ features
 					Boolean io_k8s_api_batch_v1_CronJobSpec_jobTemplate {abstract}
 					String io_k8s_api_batch_v1_CronJobSpec_schedule {abstract}
 				optional
-					String io_k8s_api_batch_v1_CronJobSpec_concurrencyPolicy {abstract}
+					String io_k8s_api_batch_v1_CronJobSpec_concurrencyPolicy
+						optional
+							String io_k8s_api_batch_v1_CronJobSpec_concurrencyPolicy_Forbid {abstract}
+							String io_k8s_api_batch_v1_CronJobSpec_concurrencyPolicy_Allow {abstract}
 					Integer io_k8s_api_batch_v1_CronJobSpec_failedJobsHistoryLimit {abstract}
 					Integer io_k8s_api_batch_v1_CronJobSpec_startingDeadlineSeconds {abstract}
 					Integer io_k8s_api_batch_v1_CronJobSpec_successfulJobsHistoryLimit {abstract}
@@ -2604,10 +2772,10 @@ features
 								optional
 									Boolean io_k8s_api_batch_v1_Job_status_uncountedTerminatedPods_failed
 										optional
-											Boolean io_k8s_api_batch_v1_Job_status_uncountedTerminatedPods_failed_items {abstract}
+											String io_k8s_api_batch_v1_Job_status_uncountedTerminatedPods_failed_items {abstract}
 									Boolean io_k8s_api_batch_v1_Job_status_uncountedTerminatedPods_succeeded
 										optional
-											Boolean io_k8s_api_batch_v1_Job_status_uncountedTerminatedPods_succeeded_items {abstract}
+											String io_k8s_api_batch_v1_Job_status_uncountedTerminatedPods_succeeded_items {abstract}
 			Boolean io_k8s_api_batch_v1_JobCondition
 				mandatory
 					String io_k8s_api_batch_v1_JobCondition_status {abstract}
@@ -2632,7 +2800,10 @@ features
 					Boolean io_k8s_api_batch_v1_JobList_metadata {abstract}
 			Boolean io_k8s_api_batch_v1_JobSpec
 				mandatory
-					Boolean io_k8s_api_batch_v1_JobSpec_template {abstract}
+					Boolean io_k8s_api_batch_v1_JobSpec_template
+						optional
+							String io_k8s_api_batch_v1_JobSpec_template_Never {abstract}
+							String io_k8s_api_batch_v1_JobSpec_template_OnFailure {abstract}
 				optional
 					Integer io_k8s_api_batch_v1_JobSpec_activeDeadlineSeconds {abstract}
 					Integer io_k8s_api_batch_v1_JobSpec_backoffLimit {abstract}
@@ -2671,10 +2842,12 @@ features
 					Boolean io_k8s_api_batch_v1_PodFailurePolicy_rules {abstract}
 			Boolean io_k8s_api_batch_v1_PodFailurePolicyOnExitCodesRequirement
 				mandatory
-					String io_k8s_api_batch_v1_PodFailurePolicyOnExitCodesRequirement_operator {abstract}
+					String io_k8s_api_batch_v1_PodFailurePolicyOnExitCodesRequirement_operator
+						optional
+							String io_k8s_api_batch_v1_PodFailurePolicyOnExitCodesRequirement_operator_containerName {abstract}
 					Boolean io_k8s_api_batch_v1_PodFailurePolicyOnExitCodesRequirement_values
 						optional
-							Boolean io_k8s_api_batch_v1_PodFailurePolicyOnExitCodesRequirement_values_items {abstract}
+							Integer io_k8s_api_batch_v1_PodFailurePolicyOnExitCodesRequirement_values_items {abstract}
 				optional
 					String io_k8s_api_batch_v1_PodFailurePolicyOnExitCodesRequirement_containerName {abstract}
 			Boolean io_k8s_api_batch_v1_PodFailurePolicyOnPodConditionsPattern
@@ -2698,10 +2871,10 @@ features
 				optional
 					Boolean io_k8s_api_batch_v1_UncountedTerminatedPods_failed
 						optional
-							Boolean io_k8s_api_batch_v1_UncountedTerminatedPods_failed_items {abstract}
+							String io_k8s_api_batch_v1_UncountedTerminatedPods_failed_items {abstract}
 					Boolean io_k8s_api_batch_v1_UncountedTerminatedPods_succeeded
 						optional
-							Boolean io_k8s_api_batch_v1_UncountedTerminatedPods_succeeded_items {abstract}
+							String io_k8s_api_batch_v1_UncountedTerminatedPods_succeeded_items {abstract}
 			Boolean io_k8s_api_certificates_v1_CertificateSigningRequest
 				mandatory
 					Boolean io_k8s_api_certificates_v1_CertificateSigningRequest_spec
@@ -2713,11 +2886,28 @@ features
 							Boolean io_k8s_api_certificates_v1_CertificateSigningRequest_spec_extra {abstract}
 							Boolean io_k8s_api_certificates_v1_CertificateSigningRequest_spec_groups
 								optional
-									Boolean io_k8s_api_certificates_v1_CertificateSigningRequest_spec_groups_items {abstract}
+									String io_k8s_api_certificates_v1_CertificateSigningRequest_spec_groups_items {abstract}
 							String io_k8s_api_certificates_v1_CertificateSigningRequest_spec_uid {abstract}
 							Boolean io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages
 								optional
-									Boolean io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_items {abstract}
+									String io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_items {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_signing" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_key agreement" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_crl sign" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_decipher only" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_netscape sgc" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_server auth" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_encipher only" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_code signing" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_client auth" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_cert sign" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_s/mime" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_any" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_ipsec user" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_ocsp signing" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_microsoft sgc" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_timestamping" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_ipsec tunnel" {abstract}
 							String io_k8s_api_certificates_v1_CertificateSigningRequest_spec_username {abstract}
 				optional
 					String io_k8s_api_certificates_v1_CertificateSigningRequest_apiVersion {abstract}
@@ -2765,11 +2955,28 @@ features
 					Boolean io_k8s_api_certificates_v1_CertificateSigningRequestSpec_extra {abstract}
 					Boolean io_k8s_api_certificates_v1_CertificateSigningRequestSpec_groups
 						optional
-							Boolean io_k8s_api_certificates_v1_CertificateSigningRequestSpec_groups_items {abstract}
+							String io_k8s_api_certificates_v1_CertificateSigningRequestSpec_groups_items {abstract}
 					String io_k8s_api_certificates_v1_CertificateSigningRequestSpec_uid {abstract}
 					Boolean io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages
 						optional
-							Boolean io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_items {abstract}
+							String io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_items {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_signing" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_key agreement" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_crl sign" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_decipher only" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_netscape sgc" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_server auth" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_encipher only" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_code signing" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_client auth" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_cert sign" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_s/mime" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_any" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_ipsec user" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_ocsp signing" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_microsoft sgc" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_timestamping" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_ipsec tunnel" {abstract}
 					String io_k8s_api_certificates_v1_CertificateSigningRequestSpec_username {abstract}
 			Boolean io_k8s_api_certificates_v1_CertificateSigningRequestStatus
 				optional
@@ -2810,7 +3017,9 @@ features
 					Boolean io_k8s_api_coordination_v1_Lease_metadata {abstract}
 					Boolean io_k8s_api_coordination_v1_Lease_spec
 						optional
-							Boolean io_k8s_api_coordination_v1_Lease_spec_acquireTime {abstract}
+							Boolean io_k8s_api_coordination_v1_Lease_spec_acquireTime
+								optional
+									Boolean io_k8s_apimachinery_pkg_apis_meta_v1_MicroTime {abstract}
 							String io_k8s_api_coordination_v1_Lease_spec_holderIdentity {abstract}
 							Integer io_k8s_api_coordination_v1_Lease_spec_leaseDurationSeconds {abstract}
 							Integer io_k8s_api_coordination_v1_Lease_spec_leaseTransitions {abstract}
@@ -2912,15 +3121,15 @@ features
 				optional
 					Boolean io_k8s_api_core_v1_Capabilities_add
 						optional
-							Boolean io_k8s_api_core_v1_Capabilities_add_items {abstract}
+							String io_k8s_api_core_v1_Capabilities_add_items {abstract}
 					Boolean io_k8s_api_core_v1_Capabilities_drop
 						optional
-							Boolean io_k8s_api_core_v1_Capabilities_drop_items {abstract}
+							String io_k8s_api_core_v1_Capabilities_drop_items {abstract}
 			Boolean io_k8s_api_core_v1_CephFSPersistentVolumeSource
 				mandatory
 					Boolean io_k8s_api_core_v1_CephFSPersistentVolumeSource_monitors
 						optional
-							Boolean io_k8s_api_core_v1_CephFSPersistentVolumeSource_monitors_items {abstract}
+							String io_k8s_api_core_v1_CephFSPersistentVolumeSource_monitors_items {abstract}
 				optional
 					String io_k8s_api_core_v1_CephFSPersistentVolumeSource_path {abstract}
 					Boolean io_k8s_api_core_v1_CephFSPersistentVolumeSource_readOnly {abstract}
@@ -2931,7 +3140,7 @@ features
 				mandatory
 					Boolean io_k8s_api_core_v1_CephFSVolumeSource_monitors
 						optional
-							Boolean io_k8s_api_core_v1_CephFSVolumeSource_monitors_items {abstract}
+							String io_k8s_api_core_v1_CephFSVolumeSource_monitors_items {abstract}
 				optional
 					String io_k8s_api_core_v1_CephFSVolumeSource_path {abstract}
 					Boolean io_k8s_api_core_v1_CephFSVolumeSource_readOnly {abstract}
@@ -3054,10 +3263,10 @@ features
 				optional
 					Boolean io_k8s_api_core_v1_Container_args
 						optional
-							Boolean io_k8s_api_core_v1_Container_args_items {abstract}
+							String io_k8s_api_core_v1_Container_args_items {abstract}
 					Boolean io_k8s_api_core_v1_Container_command
 						optional
-							Boolean io_k8s_api_core_v1_Container_command_items {abstract}
+							String io_k8s_api_core_v1_Container_command_items {abstract}
 					Boolean io_k8s_api_core_v1_Container_env {abstract}
 					Boolean io_k8s_api_core_v1_Container_envFrom {abstract}
 					String io_k8s_api_core_v1_Container_image {abstract}
@@ -3083,7 +3292,7 @@ features
 				optional
 					Boolean io_k8s_api_core_v1_ContainerImage_names
 						optional
-							Boolean io_k8s_api_core_v1_ContainerImage_names_items {abstract}
+							String io_k8s_api_core_v1_ContainerImage_names_items {abstract}
 					Integer io_k8s_api_core_v1_ContainerImage_sizeBytes {abstract}
 			Boolean io_k8s_api_core_v1_ContainerPort
 				mandatory
@@ -3252,10 +3461,10 @@ features
 				optional
 					Boolean io_k8s_api_core_v1_EphemeralContainer_args
 						optional
-							Boolean io_k8s_api_core_v1_EphemeralContainer_args_items {abstract}
+							String io_k8s_api_core_v1_EphemeralContainer_args_items {abstract}
 					Boolean io_k8s_api_core_v1_EphemeralContainer_command
 						optional
-							Boolean io_k8s_api_core_v1_EphemeralContainer_command_items {abstract}
+							String io_k8s_api_core_v1_EphemeralContainer_command_items {abstract}
 					Boolean io_k8s_api_core_v1_EphemeralContainer_env {abstract}
 					Boolean io_k8s_api_core_v1_EphemeralContainer_envFrom {abstract}
 					String io_k8s_api_core_v1_EphemeralContainer_image {abstract}
@@ -3344,7 +3553,7 @@ features
 				optional
 					Boolean io_k8s_api_core_v1_ExecAction_command
 						optional
-							Boolean io_k8s_api_core_v1_ExecAction_command_items {abstract}
+							String io_k8s_api_core_v1_ExecAction_command_items {abstract}
 			Boolean io_k8s_api_core_v1_FCVolumeSource
 				optional
 					String io_k8s_api_core_v1_FCVolumeSource_fsType {abstract}
@@ -3352,10 +3561,10 @@ features
 					Boolean io_k8s_api_core_v1_FCVolumeSource_readOnly {abstract}
 					Boolean io_k8s_api_core_v1_FCVolumeSource_targetWWNs
 						optional
-							Boolean io_k8s_api_core_v1_FCVolumeSource_targetWWNs_items {abstract}
+							String io_k8s_api_core_v1_FCVolumeSource_targetWWNs_items {abstract}
 					Boolean io_k8s_api_core_v1_FCVolumeSource_wwids
 						optional
-							Boolean io_k8s_api_core_v1_FCVolumeSource_wwids_items {abstract}
+							String io_k8s_api_core_v1_FCVolumeSource_wwids_items {abstract}
 			Boolean io_k8s_api_core_v1_FlexPersistentVolumeSource
 				mandatory
 					String io_k8s_api_core_v1_FlexPersistentVolumeSource_driver {abstract}
@@ -3425,7 +3634,7 @@ features
 				optional
 					Boolean io_k8s_api_core_v1_HostAlias_hostnames
 						optional
-							Boolean io_k8s_api_core_v1_HostAlias_hostnames_items {abstract}
+							String io_k8s_api_core_v1_HostAlias_hostnames_items {abstract}
 			Boolean io_k8s_api_core_v1_HostIP
 				optional
 					String io_k8s_api_core_v1_HostIP_ip {abstract}
@@ -3447,7 +3656,7 @@ features
 					String io_k8s_api_core_v1_ISCSIPersistentVolumeSource_iscsiInterface {abstract}
 					Boolean io_k8s_api_core_v1_ISCSIPersistentVolumeSource_portals
 						optional
-							Boolean io_k8s_api_core_v1_ISCSIPersistentVolumeSource_portals_items {abstract}
+							String io_k8s_api_core_v1_ISCSIPersistentVolumeSource_portals_items {abstract}
 					Boolean io_k8s_api_core_v1_ISCSIPersistentVolumeSource_readOnly {abstract}
 					Boolean io_k8s_api_core_v1_ISCSIPersistentVolumeSource_secretRef {abstract}
 			Boolean io_k8s_api_core_v1_ISCSIVolumeSource
@@ -3463,7 +3672,7 @@ features
 					String io_k8s_api_core_v1_ISCSIVolumeSource_iscsiInterface {abstract}
 					Boolean io_k8s_api_core_v1_ISCSIVolumeSource_portals
 						optional
-							Boolean io_k8s_api_core_v1_ISCSIVolumeSource_portals_items {abstract}
+							String io_k8s_api_core_v1_ISCSIVolumeSource_portals_items {abstract}
 					Boolean io_k8s_api_core_v1_ISCSIVolumeSource_readOnly {abstract}
 					Boolean io_k8s_api_core_v1_ISCSIVolumeSource_secretRef {abstract}
 			Boolean io_k8s_api_core_v1_KeyToPath
@@ -3530,7 +3739,11 @@ features
 						optional
 							String io_k8s_api_core_v1_LoadBalancerIngress_ports_error {abstract}
 							Integer io_k8s_api_core_v1_LoadBalancerIngress_ports_port {abstract}
-							String io_k8s_api_core_v1_LoadBalancerIngress_ports_protocol {abstract}
+							String io_k8s_api_core_v1_LoadBalancerIngress_ports_protocol
+								optional
+									String io_k8s_api_core_v1_LoadBalancerIngress_ports_protocol_SCTP {abstract}
+									String io_k8s_api_core_v1_LoadBalancerIngress_ports_protocol_UDP {abstract}
+									String io_k8s_api_core_v1_LoadBalancerIngress_ports_protocol_TCP {abstract}
 			Boolean io_k8s_api_core_v1_LoadBalancerStatus
 				optional
 					Boolean io_k8s_api_core_v1_LoadBalancerStatus_ingress
@@ -3567,7 +3780,7 @@ features
 						optional
 							Boolean io_k8s_api_core_v1_Namespace_spec_finalizers
 								optional
-									Boolean io_k8s_api_core_v1_Namespace_spec_finalizers_items {abstract}
+									String io_k8s_api_core_v1_Namespace_spec_finalizers_items {abstract}
 					Boolean io_k8s_api_core_v1_Namespace_status
 						optional
 							Boolean io_k8s_api_core_v1_Namespace_status_conditions
@@ -3603,7 +3816,7 @@ features
 				optional
 					Boolean io_k8s_api_core_v1_NamespaceSpec_finalizers
 						optional
-							Boolean io_k8s_api_core_v1_NamespaceSpec_finalizers_items {abstract}
+							String io_k8s_api_core_v1_NamespaceSpec_finalizers_items {abstract}
 			Boolean io_k8s_api_core_v1_NamespaceStatus
 				optional
 					Boolean io_k8s_api_core_v1_NamespaceStatus_conditions {abstract}
@@ -3629,7 +3842,7 @@ features
 							String io_k8s_api_core_v1_Node_spec_podCIDR {abstract}
 							Boolean io_k8s_api_core_v1_Node_spec_podCIDRs
 								optional
-									Boolean io_k8s_api_core_v1_Node_spec_podCIDRs_items {abstract}
+									String io_k8s_api_core_v1_Node_spec_podCIDRs_items {abstract}
 							String io_k8s_api_core_v1_Node_spec_providerID {abstract}
 							Boolean io_k8s_api_core_v1_Node_spec_taints
 								optional
@@ -3669,7 +3882,7 @@ features
 								optional
 									Boolean io_k8s_api_core_v1_Node_status_images_names
 										optional
-											Boolean io_k8s_api_core_v1_Node_status_images_names_items {abstract}
+											String io_k8s_api_core_v1_Node_status_images_names_items {abstract}
 									Integer io_k8s_api_core_v1_Node_status_images_sizeBytes {abstract}
 							Boolean io_k8s_api_core_v1_Node_status_nodeInfo
 								mandatory
@@ -3696,7 +3909,7 @@ features
 									String io_k8s_api_core_v1_Node_status_volumesAttached_name {abstract}
 							Boolean io_k8s_api_core_v1_Node_status_volumesInUse
 								optional
-									Boolean io_k8s_api_core_v1_Node_status_volumesInUse_items {abstract}
+									String io_k8s_api_core_v1_Node_status_volumesInUse_items {abstract}
 			Boolean io_k8s_api_core_v1_NodeAddress
 				mandatory
 					String io_k8s_api_core_v1_NodeAddress_address {abstract}
@@ -3756,7 +3969,7 @@ features
 				optional
 					Boolean io_k8s_api_core_v1_NodeSelectorRequirement_values
 						optional
-							Boolean io_k8s_api_core_v1_NodeSelectorRequirement_values_items {abstract}
+							String io_k8s_api_core_v1_NodeSelectorRequirement_values_items {abstract}
 			Boolean io_k8s_api_core_v1_NodeSelectorTerm
 				optional
 					Boolean io_k8s_api_core_v1_NodeSelectorTerm_matchExpressions {abstract}
@@ -3768,7 +3981,7 @@ features
 					String io_k8s_api_core_v1_NodeSpec_podCIDR {abstract}
 					Boolean io_k8s_api_core_v1_NodeSpec_podCIDRs
 						optional
-							Boolean io_k8s_api_core_v1_NodeSpec_podCIDRs_items {abstract}
+							String io_k8s_api_core_v1_NodeSpec_podCIDRs_items {abstract}
 					String io_k8s_api_core_v1_NodeSpec_providerID {abstract}
 					Boolean io_k8s_api_core_v1_NodeSpec_taints {abstract}
 					Boolean io_k8s_api_core_v1_NodeSpec_unschedulable {abstract}
@@ -3787,7 +4000,7 @@ features
 					Boolean io_k8s_api_core_v1_NodeStatus_volumesAttached {abstract}
 					Boolean io_k8s_api_core_v1_NodeStatus_volumesInUse
 						optional
-							Boolean io_k8s_api_core_v1_NodeStatus_volumesInUse_items {abstract}
+							String io_k8s_api_core_v1_NodeStatus_volumesInUse_items {abstract}
 			Boolean io_k8s_api_core_v1_NodeSystemInfo
 				mandatory
 					String io_k8s_api_core_v1_NodeSystemInfo_architecture {abstract}
@@ -3823,7 +4036,7 @@ features
 						optional
 							Boolean io_k8s_api_core_v1_PersistentVolume_spec_accessModes
 								optional
-									Boolean io_k8s_api_core_v1_PersistentVolume_spec_accessModes_items {abstract}
+									String io_k8s_api_core_v1_PersistentVolume_spec_accessModes_items {abstract}
 							Boolean io_k8s_api_core_v1_PersistentVolume_spec_awsElasticBlockStore {abstract}
 							Boolean io_k8s_api_core_v1_PersistentVolume_spec_azureDisk {abstract}
 							Boolean io_k8s_api_core_v1_PersistentVolume_spec_azureFile
@@ -3838,7 +4051,7 @@ features
 								mandatory
 									Boolean io_k8s_api_core_v1_PersistentVolume_spec_cephfs_monitors
 										optional
-											Boolean io_k8s_api_core_v1_PersistentVolume_spec_cephfs_monitors_items {abstract}
+											String io_k8s_api_core_v1_PersistentVolume_spec_cephfs_monitors_items {abstract}
 								optional
 									String io_k8s_api_core_v1_PersistentVolume_spec_cephfs_path {abstract}
 									Boolean io_k8s_api_core_v1_PersistentVolume_spec_cephfs_readOnly {abstract}
@@ -3898,7 +4111,7 @@ features
 									String io_k8s_api_core_v1_PersistentVolume_spec_iscsi_iscsiInterface {abstract}
 									Boolean io_k8s_api_core_v1_PersistentVolume_spec_iscsi_portals
 										optional
-											Boolean io_k8s_api_core_v1_PersistentVolume_spec_iscsi_portals_items {abstract}
+											String io_k8s_api_core_v1_PersistentVolume_spec_iscsi_portals_items {abstract}
 									Boolean io_k8s_api_core_v1_PersistentVolume_spec_iscsi_readOnly {abstract}
 									Boolean io_k8s_api_core_v1_PersistentVolume_spec_iscsi_secretRef {abstract}
 							Boolean io_k8s_api_core_v1_PersistentVolume_spec_local
@@ -3908,7 +4121,7 @@ features
 									String io_k8s_api_core_v1_PersistentVolume_spec_local_fsType {abstract}
 							Boolean io_k8s_api_core_v1_PersistentVolume_spec_mountOptions
 								optional
-									Boolean io_k8s_api_core_v1_PersistentVolume_spec_mountOptions_items {abstract}
+									String io_k8s_api_core_v1_PersistentVolume_spec_mountOptions_items {abstract}
 							Boolean io_k8s_api_core_v1_PersistentVolume_spec_nfs {abstract}
 							Boolean io_k8s_api_core_v1_PersistentVolume_spec_nodeAffinity
 								optional
@@ -3922,7 +4135,7 @@ features
 									String io_k8s_api_core_v1_PersistentVolume_spec_rbd_image {abstract}
 									Boolean io_k8s_api_core_v1_PersistentVolume_spec_rbd_monitors
 										optional
-											Boolean io_k8s_api_core_v1_PersistentVolume_spec_rbd_monitors_items {abstract}
+											String io_k8s_api_core_v1_PersistentVolume_spec_rbd_monitors_items {abstract}
 								optional
 									String io_k8s_api_core_v1_PersistentVolume_spec_rbd_fsType {abstract}
 									String io_k8s_api_core_v1_PersistentVolume_spec_rbd_keyring {abstract}
@@ -3987,7 +4200,7 @@ features
 				optional
 					Boolean io_k8s_api_core_v1_PersistentVolumeClaimSpec_accessModes
 						optional
-							Boolean io_k8s_api_core_v1_PersistentVolumeClaimSpec_accessModes_items {abstract}
+							String io_k8s_api_core_v1_PersistentVolumeClaimSpec_accessModes_items {abstract}
 					Boolean io_k8s_api_core_v1_PersistentVolumeClaimSpec_dataSource {abstract}
 					Boolean io_k8s_api_core_v1_PersistentVolumeClaimSpec_dataSourceRef {abstract}
 					Boolean io_k8s_api_core_v1_PersistentVolumeClaimSpec_resources {abstract}
@@ -4000,8 +4213,10 @@ features
 				optional
 					Boolean io_k8s_api_core_v1_PersistentVolumeClaimStatus_accessModes
 						optional
-							Boolean io_k8s_api_core_v1_PersistentVolumeClaimStatus_accessModes_items {abstract}
-					Boolean io_k8s_api_core_v1_PersistentVolumeClaimStatus_allocatedResourceStatuses {abstract}
+							String io_k8s_api_core_v1_PersistentVolumeClaimStatus_accessModes_items {abstract}
+					Boolean io_k8s_api_core_v1_PersistentVolumeClaimStatus_allocatedResourceStatuses
+						optional
+							String io_k8s_api_core_v1_PersistentVolumeClaimStatus_allocatedResourceStatuses_storage {abstract}
 					Boolean io_k8s_api_core_v1_PersistentVolumeClaimStatus_allocatedResources {abstract}
 					Boolean io_k8s_api_core_v1_PersistentVolumeClaimStatus_capacity {abstract}
 					Boolean io_k8s_api_core_v1_PersistentVolumeClaimStatus_conditions {abstract}
@@ -4035,7 +4250,7 @@ features
 				optional
 					Boolean io_k8s_api_core_v1_PersistentVolumeSpec_accessModes
 						optional
-							Boolean io_k8s_api_core_v1_PersistentVolumeSpec_accessModes_items {abstract}
+							String io_k8s_api_core_v1_PersistentVolumeSpec_accessModes_items {abstract}
 					Boolean io_k8s_api_core_v1_PersistentVolumeSpec_awsElasticBlockStore {abstract}
 					Boolean io_k8s_api_core_v1_PersistentVolumeSpec_azureDisk {abstract}
 					Boolean io_k8s_api_core_v1_PersistentVolumeSpec_azureFile {abstract}
@@ -4054,7 +4269,7 @@ features
 					Boolean io_k8s_api_core_v1_PersistentVolumeSpec_local {abstract}
 					Boolean io_k8s_api_core_v1_PersistentVolumeSpec_mountOptions
 						optional
-							Boolean io_k8s_api_core_v1_PersistentVolumeSpec_mountOptions_items {abstract}
+							String io_k8s_api_core_v1_PersistentVolumeSpec_mountOptions_items {abstract}
 					Boolean io_k8s_api_core_v1_PersistentVolumeSpec_nfs {abstract}
 					Boolean io_k8s_api_core_v1_PersistentVolumeSpec_nodeAffinity {abstract}
 					String io_k8s_api_core_v1_PersistentVolumeSpec_persistentVolumeReclaimPolicy {abstract}
@@ -4141,14 +4356,14 @@ features
 					Boolean io_k8s_api_core_v1_PodAffinityTerm_labelSelector {abstract}
 					Boolean io_k8s_api_core_v1_PodAffinityTerm_matchLabelKeys
 						optional
-							Boolean io_k8s_api_core_v1_PodAffinityTerm_matchLabelKeys_items {abstract}
+							String io_k8s_api_core_v1_PodAffinityTerm_matchLabelKeys_items {abstract}
 					Boolean io_k8s_api_core_v1_PodAffinityTerm_mismatchLabelKeys
 						optional
-							Boolean io_k8s_api_core_v1_PodAffinityTerm_mismatchLabelKeys_items {abstract}
+							String io_k8s_api_core_v1_PodAffinityTerm_mismatchLabelKeys_items {abstract}
 					Boolean io_k8s_api_core_v1_PodAffinityTerm_namespaceSelector {abstract}
 					Boolean io_k8s_api_core_v1_PodAffinityTerm_namespaces
 						optional
-							Boolean io_k8s_api_core_v1_PodAffinityTerm_namespaces_items {abstract}
+							String io_k8s_api_core_v1_PodAffinityTerm_namespaces_items {abstract}
 			Boolean io_k8s_api_core_v1_PodAntiAffinity
 				optional
 					Boolean io_k8s_api_core_v1_PodAntiAffinity_preferredDuringSchedulingIgnoredDuringExecution {abstract}
@@ -4166,11 +4381,11 @@ features
 				optional
 					Boolean io_k8s_api_core_v1_PodDNSConfig_nameservers
 						optional
-							Boolean io_k8s_api_core_v1_PodDNSConfig_nameservers_items {abstract}
+							String io_k8s_api_core_v1_PodDNSConfig_nameservers_items {abstract}
 					Boolean io_k8s_api_core_v1_PodDNSConfig_options {abstract}
 					Boolean io_k8s_api_core_v1_PodDNSConfig_searches
 						optional
-							Boolean io_k8s_api_core_v1_PodDNSConfig_searches_items {abstract}
+							String io_k8s_api_core_v1_PodDNSConfig_searches_items {abstract}
 			Boolean io_k8s_api_core_v1_PodDNSConfigOption
 				optional
 					String io_k8s_api_core_v1_PodDNSConfigOption_name {abstract}
@@ -4214,7 +4429,10 @@ features
 				optional
 					Boolean io_k8s_api_core_v1_PodSecurityContext_appArmorProfile {abstract}
 					Integer io_k8s_api_core_v1_PodSecurityContext_fsGroup {abstract}
-					String io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy {abstract}
+					String io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy
+						optional
+							String io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy_OnRootMismatch {abstract}
+							String io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy_Always {abstract}
 					Integer io_k8s_api_core_v1_PodSecurityContext_runAsGroup {abstract}
 					Boolean io_k8s_api_core_v1_PodSecurityContext_runAsNonRoot {abstract}
 					Integer io_k8s_api_core_v1_PodSecurityContext_runAsUser {abstract}
@@ -4222,7 +4440,7 @@ features
 					Boolean io_k8s_api_core_v1_PodSecurityContext_seccompProfile {abstract}
 					Boolean io_k8s_api_core_v1_PodSecurityContext_supplementalGroups
 						optional
-							Boolean io_k8s_api_core_v1_PodSecurityContext_supplementalGroups_items {abstract}
+							Integer io_k8s_api_core_v1_PodSecurityContext_supplementalGroups_items {abstract}
 					Boolean io_k8s_api_core_v1_PodSecurityContext_sysctls {abstract}
 					Boolean io_k8s_api_core_v1_PodSecurityContext_windowsOptions {abstract}
 			Boolean io_k8s_api_core_v1_PodSpec
@@ -4233,7 +4451,11 @@ features
 					Boolean io_k8s_api_core_v1_PodSpec_affinity {abstract}
 					Boolean io_k8s_api_core_v1_PodSpec_automountServiceAccountToken {abstract}
 					Boolean io_k8s_api_core_v1_PodSpec_dnsConfig {abstract}
-					String io_k8s_api_core_v1_PodSpec_dnsPolicy {abstract}
+					String io_k8s_api_core_v1_PodSpec_dnsPolicy
+						optional
+							String io_k8s_api_core_v1_PodSpec_dnsPolicy_Default {abstract}
+							String io_k8s_api_core_v1_PodSpec_dnsPolicy_None {abstract}
+							String io_k8s_api_core_v1_PodSpec_dnsPolicy_ClusterFirst {abstract}
 					Boolean io_k8s_api_core_v1_PodSpec_enableServiceLinks {abstract}
 					Boolean io_k8s_api_core_v1_PodSpec_ephemeralContainers {abstract}
 					Boolean io_k8s_api_core_v1_PodSpec_hostAliases {abstract}
@@ -4310,7 +4532,11 @@ features
 			Boolean io_k8s_api_core_v1_PortStatus
 				mandatory
 					Integer io_k8s_api_core_v1_PortStatus_port {abstract}
-					String io_k8s_api_core_v1_PortStatus_protocol {abstract}
+					String io_k8s_api_core_v1_PortStatus_protocol
+						optional
+							String io_k8s_api_core_v1_PortStatus_protocol_SCTP {abstract}
+							String io_k8s_api_core_v1_PortStatus_protocol_UDP {abstract}
+							String io_k8s_api_core_v1_PortStatus_protocol_TCP {abstract}
 				optional
 					String io_k8s_api_core_v1_PortStatus_error {abstract}
 			Boolean io_k8s_api_core_v1_PortworxVolumeSource
@@ -4353,7 +4579,7 @@ features
 					String io_k8s_api_core_v1_RBDPersistentVolumeSource_image {abstract}
 					Boolean io_k8s_api_core_v1_RBDPersistentVolumeSource_monitors
 						optional
-							Boolean io_k8s_api_core_v1_RBDPersistentVolumeSource_monitors_items {abstract}
+							String io_k8s_api_core_v1_RBDPersistentVolumeSource_monitors_items {abstract}
 				optional
 					String io_k8s_api_core_v1_RBDPersistentVolumeSource_fsType {abstract}
 					String io_k8s_api_core_v1_RBDPersistentVolumeSource_keyring {abstract}
@@ -4366,7 +4592,7 @@ features
 					String io_k8s_api_core_v1_RBDVolumeSource_image {abstract}
 					Boolean io_k8s_api_core_v1_RBDVolumeSource_monitors
 						optional
-							Boolean io_k8s_api_core_v1_RBDVolumeSource_monitors_items {abstract}
+							String io_k8s_api_core_v1_RBDVolumeSource_monitors_items {abstract}
 				optional
 					String io_k8s_api_core_v1_RBDVolumeSource_fsType {abstract}
 					String io_k8s_api_core_v1_RBDVolumeSource_keyring {abstract}
@@ -4461,10 +4687,10 @@ features
 											String io_k8s_api_core_v1_ResourceQuota_spec_scopeSelector_matchExpressions_scopeName {abstract}
 											Boolean io_k8s_api_core_v1_ResourceQuota_spec_scopeSelector_matchExpressions_values
 												optional
-													Boolean io_k8s_api_core_v1_ResourceQuota_spec_scopeSelector_matchExpressions_values_items {abstract}
+													String io_k8s_api_core_v1_ResourceQuota_spec_scopeSelector_matchExpressions_values_items {abstract}
 							Boolean io_k8s_api_core_v1_ResourceQuota_spec_scopes
 								optional
-									Boolean io_k8s_api_core_v1_ResourceQuota_spec_scopes_items {abstract}
+									String io_k8s_api_core_v1_ResourceQuota_spec_scopes_items {abstract}
 					Boolean io_k8s_api_core_v1_ResourceQuota_status
 						optional
 							Boolean io_k8s_api_core_v1_ResourceQuota_status_hard {abstract}
@@ -4488,7 +4714,7 @@ features
 					Boolean io_k8s_api_core_v1_ResourceQuotaSpec_scopeSelector {abstract}
 					Boolean io_k8s_api_core_v1_ResourceQuotaSpec_scopes
 						optional
-							Boolean io_k8s_api_core_v1_ResourceQuotaSpec_scopes_items {abstract}
+							String io_k8s_api_core_v1_ResourceQuotaSpec_scopes_items {abstract}
 			Boolean io_k8s_api_core_v1_ResourceQuotaStatus
 				optional
 					Boolean io_k8s_api_core_v1_ResourceQuotaStatus_hard {abstract}
@@ -4540,7 +4766,7 @@ features
 				optional
 					Boolean io_k8s_api_core_v1_ScopedResourceSelectorRequirement_values
 						optional
-							Boolean io_k8s_api_core_v1_ScopedResourceSelectorRequirement_values_items {abstract}
+							String io_k8s_api_core_v1_ScopedResourceSelectorRequirement_values_items {abstract}
 			Boolean io_k8s_api_core_v1_SeccompProfile
 				mandatory
 					String io_k8s_api_core_v1_SeccompProfile_type {abstract}
@@ -4617,26 +4843,32 @@ features
 					Boolean io_k8s_api_core_v1_Service_spec
 						optional
 							Boolean io_k8s_api_core_v1_Service_spec_allocateLoadBalancerNodePorts {abstract}
-							String io_k8s_api_core_v1_Service_spec_clusterIP {abstract}
+							String io_k8s_api_core_v1_Service_spec_clusterIP
+								optional
+									String io_k8s_api_core_v1_Service_spec_clusterIP_None {abstract}
 							Boolean io_k8s_api_core_v1_Service_spec_clusterIPs
 								optional
-									Boolean io_k8s_api_core_v1_Service_spec_clusterIPs_items {abstract}
+									String io_k8s_api_core_v1_Service_spec_clusterIPs_items {abstract}
+									String io_k8s_api_core_v1_Service_spec_clusterIPs_None {abstract}
 							Boolean io_k8s_api_core_v1_Service_spec_externalIPs
 								optional
-									Boolean io_k8s_api_core_v1_Service_spec_externalIPs_items {abstract}
+									String io_k8s_api_core_v1_Service_spec_externalIPs_items {abstract}
 							String io_k8s_api_core_v1_Service_spec_externalName {abstract}
 							String io_k8s_api_core_v1_Service_spec_externalTrafficPolicy {abstract}
 							Integer io_k8s_api_core_v1_Service_spec_healthCheckNodePort {abstract}
 							String io_k8s_api_core_v1_Service_spec_internalTrafficPolicy {abstract}
 							Boolean io_k8s_api_core_v1_Service_spec_ipFamilies
 								optional
-									Boolean io_k8s_api_core_v1_Service_spec_ipFamilies_items {abstract}
+									String io_k8s_api_core_v1_Service_spec_ipFamilies_items {abstract}
+									String io_k8s_api_core_v1_Service_spec_ipFamilies_IPv6 {abstract}
+									String io_k8s_api_core_v1_Service_spec_ipFamilies_headless {abstract}
+									String io_k8s_api_core_v1_Service_spec_ipFamilies_IPv4 {abstract}
 							String io_k8s_api_core_v1_Service_spec_ipFamilyPolicy {abstract}
 							String io_k8s_api_core_v1_Service_spec_loadBalancerClass {abstract}
 							String io_k8s_api_core_v1_Service_spec_loadBalancerIP {abstract}
 							Boolean io_k8s_api_core_v1_Service_spec_loadBalancerSourceRanges
 								optional
-									Boolean io_k8s_api_core_v1_Service_spec_loadBalancerSourceRanges_items {abstract}
+									String io_k8s_api_core_v1_Service_spec_loadBalancerSourceRanges_items {abstract}
 							Boolean io_k8s_api_core_v1_Service_spec_ports
 								optional
 									String io_k8s_api_core_v1_Service_spec_ports_appProtocol {abstract}
@@ -4714,26 +4946,32 @@ features
 			Boolean io_k8s_api_core_v1_ServiceSpec
 				optional
 					Boolean io_k8s_api_core_v1_ServiceSpec_allocateLoadBalancerNodePorts {abstract}
-					String io_k8s_api_core_v1_ServiceSpec_clusterIP {abstract}
+					String io_k8s_api_core_v1_ServiceSpec_clusterIP
+						optional
+							String io_k8s_api_core_v1_ServiceSpec_clusterIP_None {abstract}
 					Boolean io_k8s_api_core_v1_ServiceSpec_clusterIPs
 						optional
-							Boolean io_k8s_api_core_v1_ServiceSpec_clusterIPs_items {abstract}
+							String io_k8s_api_core_v1_ServiceSpec_clusterIPs_items {abstract}
+							String io_k8s_api_core_v1_ServiceSpec_clusterIPs_None {abstract}
 					Boolean io_k8s_api_core_v1_ServiceSpec_externalIPs
 						optional
-							Boolean io_k8s_api_core_v1_ServiceSpec_externalIPs_items {abstract}
+							String io_k8s_api_core_v1_ServiceSpec_externalIPs_items {abstract}
 					String io_k8s_api_core_v1_ServiceSpec_externalName {abstract}
 					String io_k8s_api_core_v1_ServiceSpec_externalTrafficPolicy {abstract}
 					Integer io_k8s_api_core_v1_ServiceSpec_healthCheckNodePort {abstract}
 					String io_k8s_api_core_v1_ServiceSpec_internalTrafficPolicy {abstract}
 					Boolean io_k8s_api_core_v1_ServiceSpec_ipFamilies
 						optional
-							Boolean io_k8s_api_core_v1_ServiceSpec_ipFamilies_items {abstract}
+							String io_k8s_api_core_v1_ServiceSpec_ipFamilies_items {abstract}
+							String io_k8s_api_core_v1_ServiceSpec_ipFamilies_IPv6 {abstract}
+							String io_k8s_api_core_v1_ServiceSpec_ipFamilies_headless {abstract}
+							String io_k8s_api_core_v1_ServiceSpec_ipFamilies_IPv4 {abstract}
 					String io_k8s_api_core_v1_ServiceSpec_ipFamilyPolicy {abstract}
 					String io_k8s_api_core_v1_ServiceSpec_loadBalancerClass {abstract}
 					String io_k8s_api_core_v1_ServiceSpec_loadBalancerIP {abstract}
 					Boolean io_k8s_api_core_v1_ServiceSpec_loadBalancerSourceRanges
 						optional
-							Boolean io_k8s_api_core_v1_ServiceSpec_loadBalancerSourceRanges_items {abstract}
+							String io_k8s_api_core_v1_ServiceSpec_loadBalancerSourceRanges_items {abstract}
 					Boolean io_k8s_api_core_v1_ServiceSpec_ports {abstract}
 					Boolean io_k8s_api_core_v1_ServiceSpec_publishNotReadyAddresses {abstract}
 					Boolean io_k8s_api_core_v1_ServiceSpec_selector {abstract}
@@ -4793,7 +5031,7 @@ features
 					String io_k8s_api_core_v1_TopologySelectorLabelRequirement_key {abstract}
 					Boolean io_k8s_api_core_v1_TopologySelectorLabelRequirement_values
 						optional
-							Boolean io_k8s_api_core_v1_TopologySelectorLabelRequirement_values_items {abstract}
+							String io_k8s_api_core_v1_TopologySelectorLabelRequirement_values_items {abstract}
 			Boolean io_k8s_api_core_v1_TopologySelectorTerm
 				optional
 					Boolean io_k8s_api_core_v1_TopologySelectorTerm_matchLabelExpressions
@@ -4801,18 +5039,22 @@ features
 							String io_k8s_api_core_v1_TopologySelectorTerm_matchLabelExpressions_key {abstract}
 							Boolean io_k8s_api_core_v1_TopologySelectorTerm_matchLabelExpressions_values
 								optional
-									Boolean io_k8s_api_core_v1_TopologySelectorTerm_matchLabelExpressions_values_items {abstract}
+									String io_k8s_api_core_v1_TopologySelectorTerm_matchLabelExpressions_values_items {abstract}
 			Boolean io_k8s_api_core_v1_TopologySpreadConstraint
 				mandatory
 					Integer io_k8s_api_core_v1_TopologySpreadConstraint_maxSkew {abstract}
-					String io_k8s_api_core_v1_TopologySpreadConstraint_topologyKey {abstract}
+					String io_k8s_api_core_v1_TopologySpreadConstraint_topologyKey
+						optional
+							String io_k8s_api_core_v1_TopologySpreadConstraint_topologyKey_bucket {abstract}
 					String io_k8s_api_core_v1_TopologySpreadConstraint_whenUnsatisfiable {abstract}
 				optional
 					Boolean io_k8s_api_core_v1_TopologySpreadConstraint_labelSelector {abstract}
 					Boolean io_k8s_api_core_v1_TopologySpreadConstraint_matchLabelKeys
 						optional
-							Boolean io_k8s_api_core_v1_TopologySpreadConstraint_matchLabelKeys_items {abstract}
-					Integer io_k8s_api_core_v1_TopologySpreadConstraint_minDomains {abstract}
+							String io_k8s_api_core_v1_TopologySpreadConstraint_matchLabelKeys_items {abstract}
+					Integer io_k8s_api_core_v1_TopologySpreadConstraint_minDomains
+						optional
+							String "io_k8s_api_core_v1_TopologySpreadConstraint_minDomains_global minimum" {abstract}
 					String io_k8s_api_core_v1_TopologySpreadConstraint_nodeAffinityPolicy {abstract}
 					String io_k8s_api_core_v1_TopologySpreadConstraint_nodeTaintsPolicy {abstract}
 			Boolean io_k8s_api_core_v1_TypedLocalObjectReference
@@ -4917,7 +5159,7 @@ features
 				mandatory
 					Boolean io_k8s_api_discovery_v1_Endpoint_addresses
 						optional
-							Boolean io_k8s_api_discovery_v1_Endpoint_addresses_items {abstract}
+							String io_k8s_api_discovery_v1_Endpoint_addresses_items {abstract}
 				optional
 					Boolean io_k8s_api_discovery_v1_Endpoint_conditions
 						optional
@@ -4955,7 +5197,7 @@ features
 						optional
 							Boolean io_k8s_api_discovery_v1_EndpointSlice_endpoints_addresses
 								optional
-									Boolean io_k8s_api_discovery_v1_EndpointSlice_endpoints_addresses_items {abstract}
+									String io_k8s_api_discovery_v1_EndpointSlice_endpoints_addresses_items {abstract}
 							Boolean io_k8s_api_discovery_v1_EndpointSlice_endpoints_conditions {abstract}
 							Boolean io_k8s_api_discovery_v1_EndpointSlice_endpoints_deprecatedTopology {abstract}
 							Boolean io_k8s_api_discovery_v1_EndpointSlice_endpoints_hints {abstract}
@@ -5070,25 +5312,25 @@ features
 										optional
 											Boolean io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_nonResourceRules_nonResourceURLs
 												optional
-													Boolean io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_nonResourceRules_nonResourceURLs_items {abstract}
+													String io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_nonResourceRules_nonResourceURLs_items {abstract}
 											Boolean io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_nonResourceRules_verbs
 												optional
-													Boolean io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_nonResourceRules_verbs_items {abstract}
+													String io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_nonResourceRules_verbs_items {abstract}
 									Boolean io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_resourceRules
 										optional
 											Boolean io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_resourceRules_apiGroups
 												optional
-													Boolean io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_resourceRules_apiGroups_items {abstract}
+													String io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_resourceRules_apiGroups_items {abstract}
 											Boolean io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_resourceRules_clusterScope {abstract}
 											Boolean io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_resourceRules_namespaces
 												optional
-													Boolean io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_resourceRules_namespaces_items {abstract}
+													String io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_resourceRules_namespaces_items {abstract}
 											Boolean io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_resourceRules_resources
 												optional
-													Boolean io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_resourceRules_resources_items {abstract}
+													String io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_resourceRules_resources_items {abstract}
 											Boolean io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_resourceRules_verbs
 												optional
-													Boolean io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_resourceRules_verbs_items {abstract}
+													String io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_resourceRules_verbs_items {abstract}
 									Boolean io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_subjects
 										optional
 											Boolean io_k8s_api_flowcontrol_v1_FlowSchema_spec_rules_subjects_group
@@ -5167,10 +5409,10 @@ features
 				mandatory
 					Boolean io_k8s_api_flowcontrol_v1_NonResourcePolicyRule_nonResourceURLs
 						optional
-							Boolean io_k8s_api_flowcontrol_v1_NonResourcePolicyRule_nonResourceURLs_items {abstract}
+							String io_k8s_api_flowcontrol_v1_NonResourcePolicyRule_nonResourceURLs_items {abstract}
 					Boolean io_k8s_api_flowcontrol_v1_NonResourcePolicyRule_verbs
 						optional
-							Boolean io_k8s_api_flowcontrol_v1_NonResourcePolicyRule_verbs_items {abstract}
+							String io_k8s_api_flowcontrol_v1_NonResourcePolicyRule_verbs_items {abstract}
 			Boolean io_k8s_api_flowcontrol_v1_PolicyRulesWithSubjects
 				mandatory
 					Boolean io_k8s_api_flowcontrol_v1_PolicyRulesWithSubjects_subjects {abstract}
@@ -5246,18 +5488,18 @@ features
 				mandatory
 					Boolean io_k8s_api_flowcontrol_v1_ResourcePolicyRule_apiGroups
 						optional
-							Boolean io_k8s_api_flowcontrol_v1_ResourcePolicyRule_apiGroups_items {abstract}
+							String io_k8s_api_flowcontrol_v1_ResourcePolicyRule_apiGroups_items {abstract}
 					Boolean io_k8s_api_flowcontrol_v1_ResourcePolicyRule_resources
 						optional
-							Boolean io_k8s_api_flowcontrol_v1_ResourcePolicyRule_resources_items {abstract}
+							String io_k8s_api_flowcontrol_v1_ResourcePolicyRule_resources_items {abstract}
 					Boolean io_k8s_api_flowcontrol_v1_ResourcePolicyRule_verbs
 						optional
-							Boolean io_k8s_api_flowcontrol_v1_ResourcePolicyRule_verbs_items {abstract}
+							String io_k8s_api_flowcontrol_v1_ResourcePolicyRule_verbs_items {abstract}
 				optional
 					Boolean io_k8s_api_flowcontrol_v1_ResourcePolicyRule_clusterScope {abstract}
 					Boolean io_k8s_api_flowcontrol_v1_ResourcePolicyRule_namespaces
 						optional
-							Boolean io_k8s_api_flowcontrol_v1_ResourcePolicyRule_namespaces_items {abstract}
+							String io_k8s_api_flowcontrol_v1_ResourcePolicyRule_namespaces_items {abstract}
 			Boolean io_k8s_api_flowcontrol_v1_ServiceAccountSubject
 				mandatory
 					String io_k8s_api_flowcontrol_v1_ServiceAccountSubject_name {abstract}
@@ -5300,25 +5542,25 @@ features
 										optional
 											Boolean io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_nonResourceRules_nonResourceURLs
 												optional
-													Boolean io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_nonResourceRules_nonResourceURLs_items {abstract}
+													String io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_nonResourceRules_nonResourceURLs_items {abstract}
 											Boolean io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_nonResourceRules_verbs
 												optional
-													Boolean io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_nonResourceRules_verbs_items {abstract}
+													String io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_nonResourceRules_verbs_items {abstract}
 									Boolean io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_resourceRules
 										optional
 											Boolean io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_resourceRules_apiGroups
 												optional
-													Boolean io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_resourceRules_apiGroups_items {abstract}
+													String io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_resourceRules_apiGroups_items {abstract}
 											Boolean io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_resourceRules_clusterScope {abstract}
 											Boolean io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_resourceRules_namespaces
 												optional
-													Boolean io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_resourceRules_namespaces_items {abstract}
+													String io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_resourceRules_namespaces_items {abstract}
 											Boolean io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_resourceRules_resources
 												optional
-													Boolean io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_resourceRules_resources_items {abstract}
+													String io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_resourceRules_resources_items {abstract}
 											Boolean io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_resourceRules_verbs
 												optional
-													Boolean io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_resourceRules_verbs_items {abstract}
+													String io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_resourceRules_verbs_items {abstract}
 									Boolean io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_subjects
 										optional
 											Boolean io_k8s_api_flowcontrol_v1beta3_FlowSchema_spec_rules_subjects_group
@@ -5397,10 +5639,10 @@ features
 				mandatory
 					Boolean io_k8s_api_flowcontrol_v1beta3_NonResourcePolicyRule_nonResourceURLs
 						optional
-							Boolean io_k8s_api_flowcontrol_v1beta3_NonResourcePolicyRule_nonResourceURLs_items {abstract}
+							String io_k8s_api_flowcontrol_v1beta3_NonResourcePolicyRule_nonResourceURLs_items {abstract}
 					Boolean io_k8s_api_flowcontrol_v1beta3_NonResourcePolicyRule_verbs
 						optional
-							Boolean io_k8s_api_flowcontrol_v1beta3_NonResourcePolicyRule_verbs_items {abstract}
+							String io_k8s_api_flowcontrol_v1beta3_NonResourcePolicyRule_verbs_items {abstract}
 			Boolean io_k8s_api_flowcontrol_v1beta3_PolicyRulesWithSubjects
 				mandatory
 					Boolean io_k8s_api_flowcontrol_v1beta3_PolicyRulesWithSubjects_subjects {abstract}
@@ -5476,18 +5718,18 @@ features
 				mandatory
 					Boolean io_k8s_api_flowcontrol_v1beta3_ResourcePolicyRule_apiGroups
 						optional
-							Boolean io_k8s_api_flowcontrol_v1beta3_ResourcePolicyRule_apiGroups_items {abstract}
+							String io_k8s_api_flowcontrol_v1beta3_ResourcePolicyRule_apiGroups_items {abstract}
 					Boolean io_k8s_api_flowcontrol_v1beta3_ResourcePolicyRule_resources
 						optional
-							Boolean io_k8s_api_flowcontrol_v1beta3_ResourcePolicyRule_resources_items {abstract}
+							String io_k8s_api_flowcontrol_v1beta3_ResourcePolicyRule_resources_items {abstract}
 					Boolean io_k8s_api_flowcontrol_v1beta3_ResourcePolicyRule_verbs
 						optional
-							Boolean io_k8s_api_flowcontrol_v1beta3_ResourcePolicyRule_verbs_items {abstract}
+							String io_k8s_api_flowcontrol_v1beta3_ResourcePolicyRule_verbs_items {abstract}
 				optional
 					Boolean io_k8s_api_flowcontrol_v1beta3_ResourcePolicyRule_clusterScope {abstract}
 					Boolean io_k8s_api_flowcontrol_v1beta3_ResourcePolicyRule_namespaces
 						optional
-							Boolean io_k8s_api_flowcontrol_v1beta3_ResourcePolicyRule_namespaces_items {abstract}
+							String io_k8s_api_flowcontrol_v1beta3_ResourcePolicyRule_namespaces_items {abstract}
 			Boolean io_k8s_api_flowcontrol_v1beta3_ServiceAccountSubject
 				mandatory
 					String io_k8s_api_flowcontrol_v1beta3_ServiceAccountSubject_name {abstract}
@@ -5531,7 +5773,7 @@ features
 				optional
 					Boolean io_k8s_api_networking_v1_IPBlock_except
 						optional
-							Boolean io_k8s_api_networking_v1_IPBlock_except_items {abstract}
+							String io_k8s_api_networking_v1_IPBlock_except_items {abstract}
 			Boolean io_k8s_api_networking_v1_Ingress
 				optional
 					String io_k8s_api_networking_v1_Ingress_apiVersion {abstract}
@@ -5551,7 +5793,7 @@ features
 								optional
 									Boolean io_k8s_api_networking_v1_Ingress_spec_tls_hosts
 										optional
-											Boolean io_k8s_api_networking_v1_Ingress_spec_tls_hosts_items {abstract}
+											String io_k8s_api_networking_v1_Ingress_spec_tls_hosts_items {abstract}
 									String io_k8s_api_networking_v1_Ingress_spec_tls_secretName {abstract}
 					Boolean io_k8s_api_networking_v1_Ingress_status
 						optional
@@ -5565,7 +5807,11 @@ features
 												optional
 													String io_k8s_api_networking_v1_Ingress_status_loadBalancer_ingress_ports_error {abstract}
 													Integer io_k8s_api_networking_v1_Ingress_status_loadBalancer_ingress_ports_port {abstract}
-													String io_k8s_api_networking_v1_Ingress_status_loadBalancer_ingress_ports_protocol {abstract}
+													String io_k8s_api_networking_v1_Ingress_status_loadBalancer_ingress_ports_protocol
+														optional
+															String io_k8s_api_networking_v1_Ingress_status_loadBalancer_ingress_ports_protocol_SCTP {abstract}
+															String io_k8s_api_networking_v1_Ingress_status_loadBalancer_ingress_ports_protocol_UDP {abstract}
+															String io_k8s_api_networking_v1_Ingress_status_loadBalancer_ingress_ports_protocol_TCP {abstract}
 			Boolean io_k8s_api_networking_v1_IngressBackend
 				optional
 					Boolean io_k8s_api_networking_v1_IngressBackend_resource {abstract}
@@ -5634,7 +5880,11 @@ features
 			Boolean io_k8s_api_networking_v1_IngressPortStatus
 				mandatory
 					Integer io_k8s_api_networking_v1_IngressPortStatus_port {abstract}
-					String io_k8s_api_networking_v1_IngressPortStatus_protocol {abstract}
+					String io_k8s_api_networking_v1_IngressPortStatus_protocol
+						optional
+							String io_k8s_api_networking_v1_IngressPortStatus_protocol_SCTP {abstract}
+							String io_k8s_api_networking_v1_IngressPortStatus_protocol_UDP {abstract}
+							String io_k8s_api_networking_v1_IngressPortStatus_protocol_TCP {abstract}
 				optional
 					String io_k8s_api_networking_v1_IngressPortStatus_error {abstract}
 			Boolean io_k8s_api_networking_v1_IngressRule
@@ -5659,7 +5909,7 @@ features
 				optional
 					Boolean io_k8s_api_networking_v1_IngressTLS_hosts
 						optional
-							Boolean io_k8s_api_networking_v1_IngressTLS_hosts_items {abstract}
+							String io_k8s_api_networking_v1_IngressTLS_hosts_items {abstract}
 					String io_k8s_api_networking_v1_IngressTLS_secretName {abstract}
 			Boolean io_k8s_api_networking_v1_NetworkPolicy
 				optional
@@ -5685,7 +5935,7 @@ features
 												optional
 													Boolean io_k8s_api_networking_v1_NetworkPolicy_spec_egress_to_ipBlock_except
 														optional
-															Boolean io_k8s_api_networking_v1_NetworkPolicy_spec_egress_to_ipBlock_except_items {abstract}
+															String io_k8s_api_networking_v1_NetworkPolicy_spec_egress_to_ipBlock_except_items {abstract}
 											Boolean io_k8s_api_networking_v1_NetworkPolicy_spec_egress_to_namespaceSelector {abstract}
 											Boolean io_k8s_api_networking_v1_NetworkPolicy_spec_egress_to_podSelector {abstract}
 							Boolean io_k8s_api_networking_v1_NetworkPolicy_spec_ingress
@@ -5694,7 +5944,7 @@ features
 									Boolean io_k8s_api_networking_v1_NetworkPolicy_spec_ingress_ports {abstract}
 							Boolean io_k8s_api_networking_v1_NetworkPolicy_spec_policyTypes
 								optional
-									Boolean io_k8s_api_networking_v1_NetworkPolicy_spec_policyTypes_items {abstract}
+									String io_k8s_api_networking_v1_NetworkPolicy_spec_policyTypes_items {abstract}
 			Boolean io_k8s_api_networking_v1_NetworkPolicyEgressRule
 				optional
 					Boolean io_k8s_api_networking_v1_NetworkPolicyEgressRule_ports {abstract}
@@ -5733,7 +5983,7 @@ features
 					Boolean io_k8s_api_networking_v1_NetworkPolicySpec_ingress {abstract}
 					Boolean io_k8s_api_networking_v1_NetworkPolicySpec_policyTypes
 						optional
-							Boolean io_k8s_api_networking_v1_NetworkPolicySpec_policyTypes_items {abstract}
+							String io_k8s_api_networking_v1_NetworkPolicySpec_policyTypes_items {abstract}
 			Boolean io_k8s_api_networking_v1_ServiceBackendPort
 				optional
 					String io_k8s_api_networking_v1_ServiceBackendPort_name {abstract}
@@ -5783,7 +6033,7 @@ features
 						optional
 							Boolean io_k8s_api_networking_v1alpha1_ServiceCIDR_spec_cidrs
 								optional
-									Boolean io_k8s_api_networking_v1alpha1_ServiceCIDR_spec_cidrs_items {abstract}
+									String io_k8s_api_networking_v1alpha1_ServiceCIDR_spec_cidrs_items {abstract}
 					Boolean io_k8s_api_networking_v1alpha1_ServiceCIDR_status
 						optional
 							Boolean io_k8s_api_networking_v1alpha1_ServiceCIDR_status_conditions {abstract}
@@ -5804,7 +6054,7 @@ features
 				optional
 					Boolean io_k8s_api_networking_v1alpha1_ServiceCIDRSpec_cidrs
 						optional
-							Boolean io_k8s_api_networking_v1alpha1_ServiceCIDRSpec_cidrs_items {abstract}
+							String io_k8s_api_networking_v1alpha1_ServiceCIDRSpec_cidrs_items {abstract}
 			Boolean io_k8s_api_networking_v1alpha1_ServiceCIDRStatus
 				optional
 					Boolean io_k8s_api_networking_v1alpha1_ServiceCIDRStatus_conditions {abstract}
@@ -5813,7 +6063,9 @@ features
 					Boolean io_k8s_api_node_v1_Overhead_podFixed {abstract}
 			Boolean io_k8s_api_node_v1_RuntimeClass
 				mandatory
-					String io_k8s_api_node_v1_RuntimeClass_handler {abstract}
+					String io_k8s_api_node_v1_RuntimeClass_handler
+						optional
+							String io_k8s_api_node_v1_RuntimeClass_handler_runc {abstract}
 				optional
 					String io_k8s_api_node_v1_RuntimeClass_apiVersion {abstract}
 					String io_k8s_api_node_v1_RuntimeClass_kind {abstract}
@@ -5830,7 +6082,9 @@ features
 					Boolean io_k8s_api_node_v1_RuntimeClassList_items
 						optional
 							String io_k8s_api_node_v1_RuntimeClassList_items_apiVersion {abstract}
-							String io_k8s_api_node_v1_RuntimeClassList_items_handler {abstract}
+							String io_k8s_api_node_v1_RuntimeClassList_items_handler
+								optional
+									String io_k8s_api_node_v1_RuntimeClassList_items_handler_runc {abstract}
 							String io_k8s_api_node_v1_RuntimeClassList_items_kind {abstract}
 							Boolean io_k8s_api_node_v1_RuntimeClassList_items_metadata {abstract}
 							Boolean io_k8s_api_node_v1_RuntimeClassList_items_overhead {abstract}
@@ -5851,7 +6105,7 @@ features
 							String io_k8s_api_policy_v1_Eviction_deleteOptions_apiVersion {abstract}
 							Boolean io_k8s_api_policy_v1_Eviction_deleteOptions_dryRun
 								optional
-									Boolean io_k8s_api_policy_v1_Eviction_deleteOptions_dryRun_items {abstract}
+									String io_k8s_api_policy_v1_Eviction_deleteOptions_dryRun_items {abstract}
 							Integer io_k8s_api_policy_v1_Eviction_deleteOptions_gracePeriodSeconds {abstract}
 							String io_k8s_api_policy_v1_Eviction_deleteOptions_kind {abstract}
 							Boolean io_k8s_api_policy_v1_Eviction_deleteOptions_orphanDependents {abstract}
@@ -5859,7 +6113,11 @@ features
 								optional
 									String io_k8s_api_policy_v1_Eviction_deleteOptions_preconditions_resourceVersion {abstract}
 									String io_k8s_api_policy_v1_Eviction_deleteOptions_preconditions_uid {abstract}
-							String io_k8s_api_policy_v1_Eviction_deleteOptions_propagationPolicy {abstract}
+							String io_k8s_api_policy_v1_Eviction_deleteOptions_propagationPolicy
+								optional
+									String io_k8s_api_policy_v1_Eviction_deleteOptions_propagationPolicy_Background {abstract}
+									String io_k8s_api_policy_v1_Eviction_deleteOptions_propagationPolicy_Foreground {abstract}
+									String io_k8s_api_policy_v1_Eviction_deleteOptions_propagationPolicy_Orphan {abstract}
 					String io_k8s_api_policy_v1_Eviction_kind {abstract}
 					Boolean io_k8s_api_policy_v1_Eviction_metadata {abstract}
 			Boolean io_k8s_api_policy_v1_PodDisruptionBudget
@@ -5927,19 +6185,19 @@ features
 						optional
 							Boolean io_k8s_api_rbac_v1_ClusterRole_rules_apiGroups
 								optional
-									Boolean io_k8s_api_rbac_v1_ClusterRole_rules_apiGroups_items {abstract}
+									String io_k8s_api_rbac_v1_ClusterRole_rules_apiGroups_items {abstract}
 							Boolean io_k8s_api_rbac_v1_ClusterRole_rules_nonResourceURLs
 								optional
-									Boolean io_k8s_api_rbac_v1_ClusterRole_rules_nonResourceURLs_items {abstract}
+									String io_k8s_api_rbac_v1_ClusterRole_rules_nonResourceURLs_items {abstract}
 							Boolean io_k8s_api_rbac_v1_ClusterRole_rules_resourceNames
 								optional
-									Boolean io_k8s_api_rbac_v1_ClusterRole_rules_resourceNames_items {abstract}
+									String io_k8s_api_rbac_v1_ClusterRole_rules_resourceNames_items {abstract}
 							Boolean io_k8s_api_rbac_v1_ClusterRole_rules_resources
 								optional
-									Boolean io_k8s_api_rbac_v1_ClusterRole_rules_resources_items {abstract}
+									String io_k8s_api_rbac_v1_ClusterRole_rules_resources_items {abstract}
 							Boolean io_k8s_api_rbac_v1_ClusterRole_rules_verbs
 								optional
-									Boolean io_k8s_api_rbac_v1_ClusterRole_rules_verbs_items {abstract}
+									String io_k8s_api_rbac_v1_ClusterRole_rules_verbs_items {abstract}
 			Boolean io_k8s_api_rbac_v1_ClusterRoleBinding
 				mandatory
 					Boolean io_k8s_api_rbac_v1_ClusterRoleBinding_roleRef
@@ -5987,20 +6245,20 @@ features
 				mandatory
 					Boolean io_k8s_api_rbac_v1_PolicyRule_verbs
 						optional
-							Boolean io_k8s_api_rbac_v1_PolicyRule_verbs_items {abstract}
+							String io_k8s_api_rbac_v1_PolicyRule_verbs_items {abstract}
 				optional
 					Boolean io_k8s_api_rbac_v1_PolicyRule_apiGroups
 						optional
-							Boolean io_k8s_api_rbac_v1_PolicyRule_apiGroups_items {abstract}
+							String io_k8s_api_rbac_v1_PolicyRule_apiGroups_items {abstract}
 					Boolean io_k8s_api_rbac_v1_PolicyRule_nonResourceURLs
 						optional
-							Boolean io_k8s_api_rbac_v1_PolicyRule_nonResourceURLs_items {abstract}
+							String io_k8s_api_rbac_v1_PolicyRule_nonResourceURLs_items {abstract}
 					Boolean io_k8s_api_rbac_v1_PolicyRule_resourceNames
 						optional
-							Boolean io_k8s_api_rbac_v1_PolicyRule_resourceNames_items {abstract}
+							String io_k8s_api_rbac_v1_PolicyRule_resourceNames_items {abstract}
 					Boolean io_k8s_api_rbac_v1_PolicyRule_resources
 						optional
-							Boolean io_k8s_api_rbac_v1_PolicyRule_resources_items {abstract}
+							String io_k8s_api_rbac_v1_PolicyRule_resources_items {abstract}
 			Boolean io_k8s_api_rbac_v1_Role
 				optional
 					String io_k8s_api_rbac_v1_Role_apiVersion {abstract}
@@ -6099,14 +6357,14 @@ features
 						mandatory
 							Boolean io_k8s_api_resource_v1alpha2_NamedResourcesAttribute_intSlice_ints
 								optional
-									Boolean io_k8s_api_resource_v1alpha2_NamedResourcesAttribute_intSlice_ints_items {abstract}
+									Integer io_k8s_api_resource_v1alpha2_NamedResourcesAttribute_intSlice_ints_items {abstract}
 					Boolean io_k8s_api_resource_v1alpha2_NamedResourcesAttribute_quantity {abstract}
 					String io_k8s_api_resource_v1alpha2_NamedResourcesAttribute_string {abstract}
 					Boolean io_k8s_api_resource_v1alpha2_NamedResourcesAttribute_stringSlice
 						mandatory
 							Boolean io_k8s_api_resource_v1alpha2_NamedResourcesAttribute_stringSlice_strings
 								optional
-									Boolean io_k8s_api_resource_v1alpha2_NamedResourcesAttribute_stringSlice_strings_items {abstract}
+									String io_k8s_api_resource_v1alpha2_NamedResourcesAttribute_stringSlice_strings_items {abstract}
 					String io_k8s_api_resource_v1alpha2_NamedResourcesAttribute_version {abstract}
 			Boolean io_k8s_api_resource_v1alpha2_NamedResourcesFilter
 				mandatory
@@ -6129,7 +6387,7 @@ features
 				mandatory
 					Boolean io_k8s_api_resource_v1alpha2_NamedResourcesIntSlice_ints
 						optional
-							Boolean io_k8s_api_resource_v1alpha2_NamedResourcesIntSlice_ints_items {abstract}
+							Integer io_k8s_api_resource_v1alpha2_NamedResourcesIntSlice_ints_items {abstract}
 			Boolean io_k8s_api_resource_v1alpha2_NamedResourcesRequest
 				mandatory
 					String io_k8s_api_resource_v1alpha2_NamedResourcesRequest_selector {abstract}
@@ -6143,14 +6401,14 @@ features
 				mandatory
 					Boolean io_k8s_api_resource_v1alpha2_NamedResourcesStringSlice_strings
 						optional
-							Boolean io_k8s_api_resource_v1alpha2_NamedResourcesStringSlice_strings_items {abstract}
+							String io_k8s_api_resource_v1alpha2_NamedResourcesStringSlice_strings_items {abstract}
 			Boolean io_k8s_api_resource_v1alpha2_PodSchedulingContext
 				mandatory
 					Boolean io_k8s_api_resource_v1alpha2_PodSchedulingContext_spec
 						optional
 							Boolean io_k8s_api_resource_v1alpha2_PodSchedulingContext_spec_potentialNodes
 								optional
-									Boolean io_k8s_api_resource_v1alpha2_PodSchedulingContext_spec_potentialNodes_items {abstract}
+									String io_k8s_api_resource_v1alpha2_PodSchedulingContext_spec_potentialNodes_items {abstract}
 							String io_k8s_api_resource_v1alpha2_PodSchedulingContext_spec_selectedNode {abstract}
 				optional
 					String io_k8s_api_resource_v1alpha2_PodSchedulingContext_apiVersion {abstract}
@@ -6163,7 +6421,7 @@ features
 									String io_k8s_api_resource_v1alpha2_PodSchedulingContext_status_resourceClaims_name {abstract}
 									Boolean io_k8s_api_resource_v1alpha2_PodSchedulingContext_status_resourceClaims_unsuitableNodes
 										optional
-											Boolean io_k8s_api_resource_v1alpha2_PodSchedulingContext_status_resourceClaims_unsuitableNodes_items {abstract}
+											String io_k8s_api_resource_v1alpha2_PodSchedulingContext_status_resourceClaims_unsuitableNodes_items {abstract}
 			Boolean io_k8s_api_resource_v1alpha2_PodSchedulingContextList
 				mandatory
 					Boolean io_k8s_api_resource_v1alpha2_PodSchedulingContextList_items
@@ -6181,7 +6439,7 @@ features
 				optional
 					Boolean io_k8s_api_resource_v1alpha2_PodSchedulingContextSpec_potentialNodes
 						optional
-							Boolean io_k8s_api_resource_v1alpha2_PodSchedulingContextSpec_potentialNodes_items {abstract}
+							String io_k8s_api_resource_v1alpha2_PodSchedulingContextSpec_potentialNodes_items {abstract}
 					String io_k8s_api_resource_v1alpha2_PodSchedulingContextSpec_selectedNode {abstract}
 			Boolean io_k8s_api_resource_v1alpha2_PodSchedulingContextStatus
 				optional
@@ -6275,7 +6533,7 @@ features
 					String io_k8s_api_resource_v1alpha2_ResourceClaimSchedulingStatus_name {abstract}
 					Boolean io_k8s_api_resource_v1alpha2_ResourceClaimSchedulingStatus_unsuitableNodes
 						optional
-							Boolean io_k8s_api_resource_v1alpha2_ResourceClaimSchedulingStatus_unsuitableNodes_items {abstract}
+							String io_k8s_api_resource_v1alpha2_ResourceClaimSchedulingStatus_unsuitableNodes_items {abstract}
 			Boolean io_k8s_api_resource_v1alpha2_ResourceClaimSpec
 				mandatory
 					String io_k8s_api_resource_v1alpha2_ResourceClaimSpec_resourceClassName {abstract}
@@ -6474,7 +6732,7 @@ features
 									Integer io_k8s_api_storage_v1_CSIDriver_spec_tokenRequests_expirationSeconds {abstract}
 							Boolean io_k8s_api_storage_v1_CSIDriver_spec_volumeLifecycleModes
 								optional
-									Boolean io_k8s_api_storage_v1_CSIDriver_spec_volumeLifecycleModes_items {abstract}
+									String io_k8s_api_storage_v1_CSIDriver_spec_volumeLifecycleModes_items {abstract}
 				optional
 					String io_k8s_api_storage_v1_CSIDriver_apiVersion {abstract}
 					String io_k8s_api_storage_v1_CSIDriver_kind {abstract}
@@ -6502,7 +6760,7 @@ features
 					Boolean io_k8s_api_storage_v1_CSIDriverSpec_tokenRequests {abstract}
 					Boolean io_k8s_api_storage_v1_CSIDriverSpec_volumeLifecycleModes
 						optional
-							Boolean io_k8s_api_storage_v1_CSIDriverSpec_volumeLifecycleModes_items {abstract}
+							String io_k8s_api_storage_v1_CSIDriverSpec_volumeLifecycleModes_items {abstract}
 			Boolean io_k8s_api_storage_v1_CSINode
 				mandatory
 					Boolean io_k8s_api_storage_v1_CSINode_spec
@@ -6516,7 +6774,7 @@ features
 									String io_k8s_api_storage_v1_CSINode_spec_drivers_nodeID {abstract}
 									Boolean io_k8s_api_storage_v1_CSINode_spec_drivers_topologyKeys
 										optional
-											Boolean io_k8s_api_storage_v1_CSINode_spec_drivers_topologyKeys_items {abstract}
+											String io_k8s_api_storage_v1_CSINode_spec_drivers_topologyKeys_items {abstract}
 				optional
 					String io_k8s_api_storage_v1_CSINode_apiVersion {abstract}
 					String io_k8s_api_storage_v1_CSINode_kind {abstract}
@@ -6529,7 +6787,7 @@ features
 					Boolean io_k8s_api_storage_v1_CSINodeDriver_allocatable {abstract}
 					Boolean io_k8s_api_storage_v1_CSINodeDriver_topologyKeys
 						optional
-							Boolean io_k8s_api_storage_v1_CSINodeDriver_topologyKeys_items {abstract}
+							String io_k8s_api_storage_v1_CSINodeDriver_topologyKeys_items {abstract}
 			Boolean io_k8s_api_storage_v1_CSINodeList
 				mandatory
 					Boolean io_k8s_api_storage_v1_CSINodeList_items
@@ -6583,7 +6841,7 @@ features
 					Boolean io_k8s_api_storage_v1_StorageClass_metadata {abstract}
 					Boolean io_k8s_api_storage_v1_StorageClass_mountOptions
 						optional
-							Boolean io_k8s_api_storage_v1_StorageClass_mountOptions_items {abstract}
+							String io_k8s_api_storage_v1_StorageClass_mountOptions_items {abstract}
 					Boolean io_k8s_api_storage_v1_StorageClass_parameters {abstract}
 					String io_k8s_api_storage_v1_StorageClass_reclaimPolicy {abstract}
 					String io_k8s_api_storage_v1_StorageClass_volumeBindingMode {abstract}
@@ -6598,7 +6856,7 @@ features
 							Boolean io_k8s_api_storage_v1_StorageClassList_items_metadata {abstract}
 							Boolean io_k8s_api_storage_v1_StorageClassList_items_mountOptions
 								optional
-									Boolean io_k8s_api_storage_v1_StorageClassList_items_mountOptions_items {abstract}
+									String io_k8s_api_storage_v1_StorageClassList_items_mountOptions_items {abstract}
 							Boolean io_k8s_api_storage_v1_StorageClassList_items_parameters {abstract}
 							String io_k8s_api_storage_v1_StorageClassList_items_provisioner {abstract}
 							String io_k8s_api_storage_v1_StorageClassList_items_reclaimPolicy {abstract}
@@ -6679,7 +6937,9 @@ features
 					String io_k8s_api_storage_v1alpha1_VolumeAttributesClass_apiVersion {abstract}
 					String io_k8s_api_storage_v1alpha1_VolumeAttributesClass_kind {abstract}
 					Boolean io_k8s_api_storage_v1alpha1_VolumeAttributesClass_metadata {abstract}
-					Boolean io_k8s_api_storage_v1alpha1_VolumeAttributesClass_parameters {abstract}
+					Boolean io_k8s_api_storage_v1alpha1_VolumeAttributesClass_parameters
+						optional
+							String io_k8s_api_storage_v1alpha1_VolumeAttributesClass_parameters_Infeasible {abstract}
 			Boolean io_k8s_api_storage_v1alpha1_VolumeAttributesClassList
 				mandatory
 					Boolean io_k8s_api_storage_v1alpha1_VolumeAttributesClassList_items
@@ -6688,7 +6948,9 @@ features
 							String io_k8s_api_storage_v1alpha1_VolumeAttributesClassList_items_driverName {abstract}
 							String io_k8s_api_storage_v1alpha1_VolumeAttributesClassList_items_kind {abstract}
 							Boolean io_k8s_api_storage_v1alpha1_VolumeAttributesClassList_items_metadata {abstract}
-							Boolean io_k8s_api_storage_v1alpha1_VolumeAttributesClassList_items_parameters {abstract}
+							Boolean io_k8s_api_storage_v1alpha1_VolumeAttributesClassList_items_parameters
+								optional
+									String io_k8s_api_storage_v1alpha1_VolumeAttributesClassList_items_parameters_Infeasible {abstract}
 				optional
 					String io_k8s_api_storage_v1alpha1_VolumeAttributesClassList_apiVersion {abstract}
 					String io_k8s_api_storage_v1alpha1_VolumeAttributesClassList_kind {abstract}
@@ -6763,13 +7025,16 @@ features
 					Integer io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceColumnDefinition_priority {abstract}
 			Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceConversion
 				mandatory
-					String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceConversion_strategy {abstract}
+					String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceConversion_strategy
+						optional
+							String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceConversion_strategy_None {abstract}
+							String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceConversion_strategy_Webhook {abstract}
 				optional
 					Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceConversion_webhook
 						mandatory
 							Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceConversion_webhook_conversionReviewVersions
 								optional
-									Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceConversion_webhook_conversionReviewVersions_items {abstract}
+									String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceConversion_webhook_conversionReviewVersions_items {abstract}
 						optional
 							Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceConversion_webhook_clientConfig
 								optional
@@ -6794,11 +7059,11 @@ features
 								optional
 									Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_names_categories
 										optional
-											Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_names_categories_items {abstract}
+											String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_names_categories_items {abstract}
 									String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_names_listKind {abstract}
 									Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_names_shortNames
 										optional
-											Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_names_shortNames_items {abstract}
+											String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_names_shortNames_items {abstract}
 									String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_names_singular {abstract}
 							String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_scope {abstract}
 							Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions
@@ -6820,11 +7085,15 @@ features
 												optional
 													String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_ref {abstract}
 													String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_schema {abstract}
-													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_additionalItems {abstract}
+													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_additionalItems
+														optional
+															Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_JSONSchemaPropsOrBool {abstract}
 													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_additionalProperties {abstract}
 													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_allOf {abstract}
 													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_anyOf {abstract}
-													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_default {abstract}
+													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_default
+														optional
+															Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_JSON {abstract}
 													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_definitions {abstract}
 													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_dependencies {abstract}
 													String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_description {abstract}
@@ -6838,7 +7107,9 @@ features
 															String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_externalDocs_url {abstract}
 													String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_format {abstract}
 													String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_id {abstract}
-													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_items {abstract}
+													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_items
+														optional
+															Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_JSONSchemaPropsOrArray {abstract}
 													Integer io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_maxItems {abstract}
 													Integer io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_maxLength {abstract}
 													Integer io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_maxProperties {abstract}
@@ -6856,7 +7127,7 @@ features
 													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_properties {abstract}
 													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_required
 														optional
-															Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_required_items {abstract}
+															String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_required_items {abstract}
 													String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_title {abstract}
 													String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_type {abstract}
 													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_uniqueItems {abstract}
@@ -6864,7 +7135,7 @@ features
 													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_x_kubernetes_int_or_string {abstract}
 													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_x_kubernetes_list_map_keys
 														optional
-															Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_x_kubernetes_list_map_keys_items {abstract}
+															String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_x_kubernetes_list_map_keys_items {abstract}
 													String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_x_kubernetes_list_type {abstract}
 													String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_x_kubernetes_map_type {abstract}
 													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_schema_openAPIV3Schema_x_kubernetes_preserve_unknown_fields {abstract}
@@ -6889,11 +7160,16 @@ features
 													String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_subresources_scale_statusReplicasPath {abstract}
 												optional
 													String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_subresources_scale_labelSelectorPath {abstract}
-											Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_subresources_status {abstract}
+											Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_versions_subresources_status
+												optional
+													Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceSubresourceStatus {abstract}
 						optional
 							Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_conversion
 								mandatory
-									String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_conversion_strategy {abstract}
+									String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_conversion_strategy
+										optional
+											String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_conversion_strategy_None {abstract}
+											String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_conversion_strategy_Webhook {abstract}
 								optional
 									Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_conversion_webhook {abstract}
 							Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_preserveUnknownFields {abstract}
@@ -6913,7 +7189,7 @@ features
 									String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_status_conditions_type {abstract}
 							Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_status_storedVersions
 								optional
-									Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_status_storedVersions_items {abstract}
+									String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_status_storedVersions_items {abstract}
 			Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinitionCondition
 				mandatory
 					String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinitionCondition_status {abstract}
@@ -6942,11 +7218,11 @@ features
 				optional
 					Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinitionNames_categories
 						optional
-							Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinitionNames_categories_items {abstract}
+							String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinitionNames_categories_items {abstract}
 					String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinitionNames_listKind {abstract}
 					Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinitionNames_shortNames
 						optional
-							Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinitionNames_shortNames_items {abstract}
+							String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinitionNames_shortNames_items {abstract}
 					String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinitionNames_singular {abstract}
 			Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinitionSpec
 				mandatory
@@ -6963,7 +7239,7 @@ features
 					Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinitionStatus_conditions {abstract}
 					Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinitionStatus_storedVersions
 						optional
-							Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinitionStatus_storedVersions_items {abstract}
+							String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinitionStatus_storedVersions_items {abstract}
 			Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinitionVersion
 				mandatory
 					String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinitionVersion_name {abstract}
@@ -7030,7 +7306,7 @@ features
 					Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_JSONSchemaProps_properties {abstract}
 					Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_JSONSchemaProps_required
 						optional
-							Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_JSONSchemaProps_required_items {abstract}
+							String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_JSONSchemaProps_required_items {abstract}
 					String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_JSONSchemaProps_title {abstract}
 					String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_JSONSchemaProps_type {abstract}
 					Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_JSONSchemaProps_uniqueItems {abstract}
@@ -7038,7 +7314,7 @@ features
 					Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_JSONSchemaProps_x_kubernetes_int_or_string {abstract}
 					Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_JSONSchemaProps_x_kubernetes_list_map_keys
 						optional
-							Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_JSONSchemaProps_x_kubernetes_list_map_keys_items {abstract}
+							String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_JSONSchemaProps_x_kubernetes_list_map_keys_items {abstract}
 					String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_JSONSchemaProps_x_kubernetes_list_type {abstract}
 					String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_JSONSchemaProps_x_kubernetes_map_type {abstract}
 					Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_JSONSchemaProps_x_kubernetes_preserve_unknown_fields {abstract}
@@ -7071,7 +7347,7 @@ features
 				mandatory
 					Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_WebhookConversion_conversionReviewVersions
 						optional
-							Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_WebhookConversion_conversionReviewVersions_items {abstract}
+							String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_WebhookConversion_conversionReviewVersions_items {abstract}
 				optional
 					Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_WebhookConversion_clientConfig {abstract}
 			Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIGroup
@@ -7110,15 +7386,15 @@ features
 					String io_k8s_apimachinery_pkg_apis_meta_v1_APIResource_singularName {abstract}
 					Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIResource_verbs
 						optional
-							Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIResource_verbs_items {abstract}
+							String io_k8s_apimachinery_pkg_apis_meta_v1_APIResource_verbs_items {abstract}
 				optional
 					Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIResource_categories
 						optional
-							Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIResource_categories_items {abstract}
+							String io_k8s_apimachinery_pkg_apis_meta_v1_APIResource_categories_items {abstract}
 					String io_k8s_apimachinery_pkg_apis_meta_v1_APIResource_group {abstract}
 					Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIResource_shortNames
 						optional
-							Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIResource_shortNames_items {abstract}
+							String io_k8s_apimachinery_pkg_apis_meta_v1_APIResource_shortNames_items {abstract}
 					String io_k8s_apimachinery_pkg_apis_meta_v1_APIResource_storageVersionHash {abstract}
 					String io_k8s_apimachinery_pkg_apis_meta_v1_APIResource_version {abstract}
 			Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList
@@ -7128,19 +7404,19 @@ features
 						optional
 							Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList_resources_categories
 								optional
-									Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList_resources_categories_items {abstract}
+									String io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList_resources_categories_items {abstract}
 							String io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList_resources_group {abstract}
 							String io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList_resources_kind {abstract}
 							String io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList_resources_name {abstract}
 							Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList_resources_namespaced {abstract}
 							Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList_resources_shortNames
 								optional
-									Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList_resources_shortNames_items {abstract}
+									String io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList_resources_shortNames_items {abstract}
 							String io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList_resources_singularName {abstract}
 							String io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList_resources_storageVersionHash {abstract}
 							Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList_resources_verbs
 								optional
-									Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList_resources_verbs_items {abstract}
+									String io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList_resources_verbs_items {abstract}
 							String io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList_resources_version {abstract}
 				optional
 					String io_k8s_apimachinery_pkg_apis_meta_v1_APIResourceList_apiVersion {abstract}
@@ -7150,7 +7426,7 @@ features
 					Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIVersions_serverAddressByClientCIDRs {abstract}
 					Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIVersions_versions
 						optional
-							Boolean io_k8s_apimachinery_pkg_apis_meta_v1_APIVersions_versions_items {abstract}
+							String io_k8s_apimachinery_pkg_apis_meta_v1_APIVersions_versions_items {abstract}
 				optional
 					String io_k8s_apimachinery_pkg_apis_meta_v1_APIVersions_apiVersion {abstract}
 					String io_k8s_apimachinery_pkg_apis_meta_v1_APIVersions_kind {abstract}
@@ -7168,12 +7444,16 @@ features
 					String io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_apiVersion {abstract}
 					Boolean io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_dryRun
 						optional
-							Boolean io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_dryRun_items {abstract}
+							String io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_dryRun_items {abstract}
 					Integer io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_gracePeriodSeconds {abstract}
 					String io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_kind {abstract}
 					Boolean io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_orphanDependents {abstract}
 					Boolean io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_preconditions {abstract}
-					String io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_propagationPolicy {abstract}
+					String io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_propagationPolicy
+						optional
+							String io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_propagationPolicy_Background {abstract}
+							String io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_propagationPolicy_Foreground {abstract}
+							String io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_propagationPolicy_Orphan {abstract}
 			Boolean io_k8s_apimachinery_pkg_apis_meta_v1_GroupVersionForDiscovery
 				mandatory
 					String io_k8s_apimachinery_pkg_apis_meta_v1_GroupVersionForDiscovery_groupVersion {abstract}
@@ -7189,7 +7469,7 @@ features
 				optional
 					Boolean io_k8s_apimachinery_pkg_apis_meta_v1_LabelSelectorRequirement_values
 						optional
-							Boolean io_k8s_apimachinery_pkg_apis_meta_v1_LabelSelectorRequirement_values_items {abstract}
+							String io_k8s_apimachinery_pkg_apis_meta_v1_LabelSelectorRequirement_values_items {abstract}
 			Boolean io_k8s_apimachinery_pkg_apis_meta_v1_ListMeta
 				optional
 					String io_k8s_apimachinery_pkg_apis_meta_v1_ListMeta_continue {abstract}
@@ -7213,7 +7493,7 @@ features
 					Boolean io_k8s_apimachinery_pkg_apis_meta_v1_ObjectMeta_deletionTimestamp {abstract}
 					Boolean io_k8s_apimachinery_pkg_apis_meta_v1_ObjectMeta_finalizers
 						optional
-							Boolean io_k8s_apimachinery_pkg_apis_meta_v1_ObjectMeta_finalizers_items {abstract}
+							String io_k8s_apimachinery_pkg_apis_meta_v1_ObjectMeta_finalizers_items {abstract}
 					String io_k8s_apimachinery_pkg_apis_meta_v1_ObjectMeta_generateName {abstract}
 					Integer io_k8s_apimachinery_pkg_apis_meta_v1_ObjectMeta_generation {abstract}
 					Boolean io_k8s_apimachinery_pkg_apis_meta_v1_ObjectMeta_labels {abstract}
@@ -7359,6 +7639,7 @@ features
 					Integer io_k8s_kube_aggregator_pkg_apis_apiregistration_v1_ServiceReference_port {abstract}
 
 constraints
+//Restricciones obtenidas de las referencias:
 	io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules => io_k8s_api_admissionregistration_v1_NamedRuleWithOperations
 	io_k8s_api_admissionregistration_v1_MatchResources_namespaceSelector => io_k8s_apimachinery_pkg_apis_meta_v1_LabelSelector
 	io_k8s_api_admissionregistration_v1_MatchResources_namespaceSelector_matchExpressions => io_k8s_apimachinery_pkg_apis_meta_v1_LabelSelectorRequirement
@@ -7894,7 +8175,6 @@ constraints
 	io_k8s_kube_aggregator_pkg_apis_apiregistration_v1_APIService_status => io_k8s_kube_aggregator_pkg_apis_apiregistration_v1_APIServiceStatus
 	io_k8s_kube_aggregator_pkg_apis_apiregistration_v1_APIService_status_conditions => io_k8s_kube_aggregator_pkg_apis_apiregistration_v1_APIServiceCondition
 	io_k8s_kube_aggregator_pkg_apis_apiregistration_v1_APIServiceList_items => io_k8s_kube_aggregator_pkg_apis_apiregistration_v1_APIService
-
 
 	io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_apiGroups =='*' => length(io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_apiGroups) == 1
 	io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_apiVersions =='*' => length(io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_apiVersions) == 1
