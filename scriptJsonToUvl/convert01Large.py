@@ -48,7 +48,7 @@ class SchemaProcessor:
         return schema
 
     def is_valid_description(self, description):
-        """Check if the description is valid (not too short and not repetitive)."""
+        """Chequeamos si una descripción es válida (No muy corta y sin repeticiones)"""
         if len(description) < 10:
             return False
         if description in self.seen_descriptions:
@@ -56,7 +56,10 @@ class SchemaProcessor:
         self.seen_descriptions.add(description)
         return True
 
-
+    def is_required_based_on_description(self, description):
+        """Determina si una propiedad es obligatoria basándose en si aparece Required en su descripción"""
+        # Verificamos si "Required." aparece al final de la descripción
+        return description.strip().endswith("Required.")
 
     def extract_values(self, description):
         """Extract values enclosed in quotes or other delimiters, only if keywords are present."""
@@ -114,19 +117,21 @@ class SchemaProcessor:
         mandatory_features = []
         optional_features = []
         queue = deque([(properties, required, parent_name, depth)])
-        numValores = 0
+        #numValores = 0
         while queue:
             current_properties, current_required, current_parent, current_depth = queue.popleft()
             for prop, details in current_properties.items():
                 sanitized_name = self.sanitize_name(prop)
                 full_name = f"{current_parent}_{sanitized_name}" if current_parent else sanitized_name
                 
-
-
                 if full_name in self.processed_features:
                     continue
+                # Verificar si la propiedad es requerida basado en su descripción
+                description = details.get('description', '')
+                is_required_by_description = self.is_required_based_on_description(description)
 
-                feature_type = 'mandatory' if prop in current_required else 'optional'
+                #feature_type = 'mandatory' if prop in current_required else 'optional'
+                feature_type = 'mandatory' if prop in current_required or is_required_by_description else 'optional' # Variante para usar los Required de las descripciones
                 feature_type_data = details.get('type', 'Boolean')
 
                 if feature_type_data in ['array', 'object']:
@@ -134,7 +139,7 @@ class SchemaProcessor:
                 elif feature_type_data == 'number':
                     feature_type_data = 'Integer'
 
-                description = details.get('description', '')
+                #description = details.get('description', '')
                 if description:
                     # Categorizar la descripción
                     self.categorize_description(description, full_name, feature_type_data)
