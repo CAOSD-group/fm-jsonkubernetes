@@ -35,19 +35,19 @@ features
 								optional
 									String io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_resources_items {abstract}
 							String io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_scope
-								optional
-									String io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_scope_Namespaced {abstract}
-									String io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_scope_Cluster {abstract}
+								alternative
 									String io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_scope_estrella {abstract}
+									String io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_scope_Cluster {abstract}
+									String io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules_scope_Namespaced {abstract}
 					String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy
-						optional
-							String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy_MatchResources {abstract}
-							String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy_Exact {abstract}
+						alternative
 							String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy_deployments {abstract}
+							String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy_Equivalent {abstract}
 							String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy_apps {abstract}
 							String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy_v1 {abstract}
-							String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy_Equivalent {abstract}
+							String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy_Exact {abstract}
 							String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy_rules {abstract}
+							String io_k8s_api_admissionregistration_v1_MatchResources_matchPolicy_MatchResources {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_MatchResources_namespaceSelector
 						optional
 							Boolean io_k8s_api_admissionregistration_v1_MatchResources_namespaceSelector_matchExpressions
@@ -85,19 +85,19 @@ features
 							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchConditions_expression {abstract}
 							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchConditions_name {abstract}
 					String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchPolicy
-						optional
-							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchPolicy_Exact {abstract}
+						alternative
 							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchPolicy_deployments {abstract}
+							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchPolicy_Equivalent {abstract}
 							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchPolicy_apps {abstract}
 							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchPolicy_v1 {abstract}
-							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchPolicy_Equivalent {abstract}
+							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchPolicy_Exact {abstract}
 							String io_k8s_api_admissionregistration_v1_MutatingWebhook_matchPolicy_rules {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_namespaceSelector {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_objectSelector {abstract}
 					String io_k8s_api_admissionregistration_v1_MutatingWebhook_reinvocationPolicy
-						optional
-							String io_k8s_api_admissionregistration_v1_MutatingWebhook_reinvocationPolicy_Never {abstract}
+						alternative
 							String io_k8s_api_admissionregistration_v1_MutatingWebhook_reinvocationPolicy_IfNeeded {abstract}
+							String io_k8s_api_admissionregistration_v1_MutatingWebhook_reinvocationPolicy_Never {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_rules
 						optional
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_apiGroups
@@ -113,10 +113,10 @@ features
 								optional
 									String io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_resources_items {abstract}
 							String io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_scope
-								optional
-									String io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_scope_Namespaced {abstract}
-									String io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_scope_Cluster {abstract}
+								alternative
 									String io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_scope_estrella {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_scope_Cluster {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhook_rules_scope_Namespaced {abstract}
 					Integer io_k8s_api_admissionregistration_v1_MutatingWebhook_timeoutSeconds {abstract}
 			Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration
 				optional
@@ -169,20 +169,20 @@ features
 							String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_failurePolicy {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchConditions {abstract}
 							String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchPolicy
-								optional
-									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchPolicy_Exact {abstract}
+								alternative
 									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchPolicy_deployments {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchPolicy_Equivalent {abstract}
 									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchPolicy_apps {abstract}
 									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchPolicy_v1 {abstract}
-									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchPolicy_Equivalent {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchPolicy_Exact {abstract}
 									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_matchPolicy_rules {abstract}
 							String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_name {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_namespaceSelector {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_objectSelector {abstract}
 							String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_reinvocationPolicy
-								optional
-									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_reinvocationPolicy_Never {abstract}
+								alternative
 									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_reinvocationPolicy_IfNeeded {abstract}
+									String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_reinvocationPolicy_Never {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_rules {abstract}
 							String io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_sideEffects {abstract}
 							Integer io_k8s_api_admissionregistration_v1_MutatingWebhookConfiguration_webhooks_timeoutSeconds {abstract}
@@ -221,10 +221,10 @@ features
 						optional
 							String io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_resources_items {abstract}
 					String io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_scope
-						optional
-							String io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_scope_Namespaced {abstract}
-							String io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_scope_Cluster {abstract}
+						alternative
 							String io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_scope_estrella {abstract}
+							String io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_scope_Cluster {abstract}
+							String io_k8s_api_admissionregistration_v1_NamedRuleWithOperations_scope_Namespaced {abstract}
 			Boolean io_k8s_api_admissionregistration_v1_ParamKind
 				optional
 					String io_k8s_api_admissionregistration_v1_ParamKind_apiVersion {abstract}
@@ -250,10 +250,10 @@ features
 						optional
 							String io_k8s_api_admissionregistration_v1_RuleWithOperations_resources_items {abstract}
 					String io_k8s_api_admissionregistration_v1_RuleWithOperations_scope
-						optional
-							String io_k8s_api_admissionregistration_v1_RuleWithOperations_scope_Namespaced {abstract}
-							String io_k8s_api_admissionregistration_v1_RuleWithOperations_scope_Cluster {abstract}
+						alternative
 							String io_k8s_api_admissionregistration_v1_RuleWithOperations_scope_estrella {abstract}
+							String io_k8s_api_admissionregistration_v1_RuleWithOperations_scope_Cluster {abstract}
+							String io_k8s_api_admissionregistration_v1_RuleWithOperations_scope_Namespaced {abstract}
 			Boolean io_k8s_api_admissionregistration_v1_ServiceReference
 				mandatory
 					String io_k8s_api_admissionregistration_v1_ServiceReference_name {abstract}
@@ -284,14 +284,14 @@ features
 								optional
 									Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_excludeResourceRules {abstract}
 									String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy
-										optional
-											String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_MatchResources {abstract}
-											String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Exact {abstract}
+										alternative
 											String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_deployments {abstract}
+											String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Equivalent {abstract}
 											String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_apps {abstract}
 											String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_v1 {abstract}
-											String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Equivalent {abstract}
+											String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Exact {abstract}
 											String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_rules {abstract}
+											String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_MatchResources {abstract}
 									Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_namespaceSelector {abstract}
 									Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_objectSelector {abstract}
 									Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicy_spec_matchConstraints_resourceRules {abstract}
@@ -341,9 +341,10 @@ features
 							Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBinding_spec_validationActions
 								optional
 									String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBinding_spec_validationActions_items {abstract}
-									String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBinding_spec_validationActions_Deny {abstract}
-									String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBinding_spec_validationActions_Warn {abstract}
+								alternative
 									String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBinding_spec_validationActions_Audit {abstract}
+									String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBinding_spec_validationActions_Warn {abstract}
+									String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBinding_spec_validationActions_Deny {abstract}
 			Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingList
 				optional
 					String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingList_apiVersion {abstract}
@@ -363,9 +364,10 @@ features
 					Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingSpec_validationActions
 						optional
 							String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingSpec_validationActions_items {abstract}
-							String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingSpec_validationActions_Deny {abstract}
-							String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingSpec_validationActions_Warn {abstract}
+						alternative
 							String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingSpec_validationActions_Audit {abstract}
+							String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingSpec_validationActions_Warn {abstract}
+							String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyBindingSpec_validationActions_Deny {abstract}
 			Boolean io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyList
 				optional
 					String io_k8s_api_admissionregistration_v1_ValidatingAdmissionPolicyList_apiVersion {abstract}
@@ -404,12 +406,12 @@ features
 					String io_k8s_api_admissionregistration_v1_ValidatingWebhook_failurePolicy {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchConditions {abstract}
 					String io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchPolicy
-						optional
-							String io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchPolicy_Exact {abstract}
+						alternative
 							String io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchPolicy_deployments {abstract}
+							String io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchPolicy_Equivalent {abstract}
 							String io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchPolicy_apps {abstract}
 							String io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchPolicy_v1 {abstract}
-							String io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchPolicy_Equivalent {abstract}
+							String io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchPolicy_Exact {abstract}
 							String io_k8s_api_admissionregistration_v1_ValidatingWebhook_matchPolicy_rules {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhook_namespaceSelector {abstract}
 					Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhook_objectSelector {abstract}
@@ -429,12 +431,12 @@ features
 							String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_failurePolicy {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchConditions {abstract}
 							String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchPolicy
-								optional
-									String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchPolicy_Exact {abstract}
+								alternative
 									String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchPolicy_deployments {abstract}
+									String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchPolicy_Equivalent {abstract}
 									String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchPolicy_apps {abstract}
 									String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchPolicy_v1 {abstract}
-									String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchPolicy_Equivalent {abstract}
+									String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchPolicy_Exact {abstract}
 									String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_matchPolicy_rules {abstract}
 							String io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_name {abstract}
 							Boolean io_k8s_api_admissionregistration_v1_ValidatingWebhookConfiguration_webhooks_namespaceSelector {abstract}
@@ -502,19 +504,19 @@ features
 								optional
 									String io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_resources_items {abstract}
 							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_scope
-								optional
-									String io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_scope_Namespaced {abstract}
-									String io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_scope_Cluster {abstract}
+								alternative
 									String io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_scope_estrella {abstract}
+									String io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_scope_Cluster {abstract}
+									String io_k8s_api_admissionregistration_v1alpha1_MatchResources_excludeResourceRules_scope_Namespaced {abstract}
 					String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy
-						optional
-							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy_MatchResources {abstract}
-							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy_Exact {abstract}
+						alternative
 							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy_deployments {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy_Equivalent {abstract}
 							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy_apps {abstract}
 							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy_v1 {abstract}
-							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy_Equivalent {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy_Exact {abstract}
 							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy_rules {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_MatchResources_matchPolicy_MatchResources {abstract}
 					Boolean io_k8s_api_admissionregistration_v1alpha1_MatchResources_namespaceSelector {abstract}
 					Boolean io_k8s_api_admissionregistration_v1alpha1_MatchResources_objectSelector {abstract}
 					Boolean io_k8s_api_admissionregistration_v1alpha1_MatchResources_resourceRules {abstract}
@@ -536,10 +538,10 @@ features
 						optional
 							String io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_resources_items {abstract}
 					String io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_scope
-						optional
-							String io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_scope_Namespaced {abstract}
-							String io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_scope_Cluster {abstract}
+						alternative
 							String io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_scope_estrella {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_scope_Cluster {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_NamedRuleWithOperations_scope_Namespaced {abstract}
 			Boolean io_k8s_api_admissionregistration_v1alpha1_ParamKind
 				optional
 					String io_k8s_api_admissionregistration_v1alpha1_ParamKind_apiVersion {abstract}
@@ -576,14 +578,14 @@ features
 								optional
 									Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_excludeResourceRules {abstract}
 									String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy
-										optional
-											String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_MatchResources {abstract}
-											String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Exact {abstract}
+										alternative
 											String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_deployments {abstract}
+											String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Equivalent {abstract}
 											String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_apps {abstract}
 											String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_v1 {abstract}
-											String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Equivalent {abstract}
+											String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Exact {abstract}
 											String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_rules {abstract}
+											String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_MatchResources {abstract}
 									Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_namespaceSelector {abstract}
 									Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_objectSelector {abstract}
 									Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicy_spec_matchConstraints_resourceRules {abstract}
@@ -626,9 +628,10 @@ features
 							Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBinding_spec_validationActions
 								optional
 									String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBinding_spec_validationActions_items {abstract}
-									String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBinding_spec_validationActions_Deny {abstract}
-									String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBinding_spec_validationActions_Warn {abstract}
+								alternative
 									String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBinding_spec_validationActions_Audit {abstract}
+									String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBinding_spec_validationActions_Warn {abstract}
+									String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBinding_spec_validationActions_Deny {abstract}
 			Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingList
 				optional
 					String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingList_apiVersion {abstract}
@@ -648,9 +651,10 @@ features
 					Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingSpec_validationActions
 						optional
 							String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingSpec_validationActions_items {abstract}
-							String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingSpec_validationActions_Deny {abstract}
-							String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingSpec_validationActions_Warn {abstract}
+						alternative
 							String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingSpec_validationActions_Audit {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingSpec_validationActions_Warn {abstract}
+							String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyBindingSpec_validationActions_Deny {abstract}
 			Boolean io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyList
 				optional
 					String io_k8s_api_admissionregistration_v1alpha1_ValidatingAdmissionPolicyList_apiVersion {abstract}
@@ -720,19 +724,19 @@ features
 								optional
 									String io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_resources_items {abstract}
 							String io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_scope
-								optional
-									String io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_scope_Namespaced {abstract}
-									String io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_scope_Cluster {abstract}
+								alternative
 									String io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_scope_estrella {abstract}
+									String io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_scope_Cluster {abstract}
+									String io_k8s_api_admissionregistration_v1beta1_MatchResources_excludeResourceRules_scope_Namespaced {abstract}
 					String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy
-						optional
-							String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy_MatchResources {abstract}
-							String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy_Exact {abstract}
+						alternative
 							String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy_deployments {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy_Equivalent {abstract}
 							String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy_apps {abstract}
 							String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy_v1 {abstract}
-							String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy_Equivalent {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy_Exact {abstract}
 							String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy_rules {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_MatchResources_matchPolicy_MatchResources {abstract}
 					Boolean io_k8s_api_admissionregistration_v1beta1_MatchResources_namespaceSelector {abstract}
 					Boolean io_k8s_api_admissionregistration_v1beta1_MatchResources_objectSelector {abstract}
 					Boolean io_k8s_api_admissionregistration_v1beta1_MatchResources_resourceRules {abstract}
@@ -754,10 +758,10 @@ features
 						optional
 							String io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_resources_items {abstract}
 					String io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_scope
-						optional
-							String io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_scope_Namespaced {abstract}
-							String io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_scope_Cluster {abstract}
+						alternative
 							String io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_scope_estrella {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_scope_Cluster {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_NamedRuleWithOperations_scope_Namespaced {abstract}
 			Boolean io_k8s_api_admissionregistration_v1beta1_ParamKind
 				optional
 					String io_k8s_api_admissionregistration_v1beta1_ParamKind_apiVersion {abstract}
@@ -794,14 +798,14 @@ features
 								optional
 									Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_excludeResourceRules {abstract}
 									String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy
-										optional
-											String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_MatchResources {abstract}
-											String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Exact {abstract}
+										alternative
 											String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_deployments {abstract}
+											String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Equivalent {abstract}
 											String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_apps {abstract}
 											String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_v1 {abstract}
-											String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Equivalent {abstract}
+											String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_Exact {abstract}
 											String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_rules {abstract}
+											String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_matchPolicy_MatchResources {abstract}
 									Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_namespaceSelector {abstract}
 									Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_objectSelector {abstract}
 									Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicy_spec_matchConstraints_resourceRules {abstract}
@@ -844,9 +848,10 @@ features
 							Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBinding_spec_validationActions
 								optional
 									String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBinding_spec_validationActions_items {abstract}
-									String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBinding_spec_validationActions_Deny {abstract}
-									String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBinding_spec_validationActions_Warn {abstract}
+								alternative
 									String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBinding_spec_validationActions_Audit {abstract}
+									String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBinding_spec_validationActions_Warn {abstract}
+									String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBinding_spec_validationActions_Deny {abstract}
 			Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingList
 				optional
 					String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingList_apiVersion {abstract}
@@ -866,9 +871,10 @@ features
 					Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingSpec_validationActions
 						optional
 							String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingSpec_validationActions_items {abstract}
-							String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingSpec_validationActions_Deny {abstract}
-							String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingSpec_validationActions_Warn {abstract}
+						alternative
 							String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingSpec_validationActions_Audit {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingSpec_validationActions_Warn {abstract}
+							String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyBindingSpec_validationActions_Deny {abstract}
 			Boolean io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyList
 				optional
 					String io_k8s_api_admissionregistration_v1beta1_ValidatingAdmissionPolicyList_apiVersion {abstract}
@@ -1249,10 +1255,10 @@ features
 														optional
 															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsConfig_searches_items {abstract}
 											String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsPolicy
-												optional
+												alternative
+													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsPolicy_ClusterFirst {abstract}
 													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsPolicy_Default {abstract}
 													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsPolicy_None {abstract}
-													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_dnsPolicy_ClusterFirst {abstract}
 											Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_enableServiceLinks {abstract}
 											Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers
 												optional
@@ -1264,7 +1270,7 @@ features
 															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_command_items {abstract}
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_env {abstract}
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_envFrom {abstract}
-													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_image {abstract}
+													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_image {abstraat}
 													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_imagePullPolicy {abstract}
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_lifecycle {abstract}
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_livenessProbe {abstract}
@@ -1330,7 +1336,7 @@ features
 													Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_appArmorProfile {abstract}
 													Integer io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_fsGroup {abstract}
 													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_fsGroupChangePolicy
-														optional
+														alternative
 															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_fsGroupChangePolicy_OnRootMismatch {abstract}
 															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_fsGroupChangePolicy_Always {abstract}
 													Integer io_k8s_api_apps_v1_DaemonSet_spec_template_spec_securityContext_runAsGroup {abstract}
@@ -1367,12 +1373,12 @@ features
 															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_matchLabelKeys_items {abstract}
 													Integer io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_maxSkew {abstract}
 													Integer io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_minDomains
-														optional
+														alternative
 															String "io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_minDomains_global minimum" {abstract}
 													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_nodeAffinityPolicy {abstract}
 													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_nodeTaintsPolicy {abstract}
 													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_topologyKey
-														optional
+														alternative
 															String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_topologyKey_bucket {abstract}
 													String io_k8s_api_apps_v1_DaemonSet_spec_template_spec_topologySpreadConstraints_whenUnsatisfiable {abstract}
 											Boolean io_k8s_api_apps_v1_DaemonSet_spec_template_spec_volumes
@@ -1932,7 +1938,7 @@ features
 												optional
 													String io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_accessModes_items {abstract}
 											Boolean io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_allocatedResourceStatuses
-												optional
+												alternative
 													String io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_allocatedResourceStatuses_storage {abstract}
 											Boolean io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_allocatedResources {abstract}
 											Boolean io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_capacity {abstract}
@@ -2645,9 +2651,9 @@ features
 									Boolean io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec
 										mandatory
 											Boolean io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_template
-												optional
-													String io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_template_Never {abstract}
+												alternative
 													String io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_template_OnFailure {abstract}
+													String io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_template_Never {abstract}
 										optional
 											Integer io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_activeDeadlineSeconds {abstract}
 											Integer io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_backoffLimit {abstract}
@@ -2666,7 +2672,7 @@ features
 															Boolean io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_podFailurePolicy_rules_onExitCodes
 																mandatory
 																	String io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_podFailurePolicy_rules_onExitCodes_operator
-																		optional
+																		alternative
 																			String io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_podFailurePolicy_rules_onExitCodes_operator_containerName {abstract}
 																	Boolean io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_podFailurePolicy_rules_onExitCodes_values
 																		optional
@@ -2690,7 +2696,7 @@ features
 							String io_k8s_api_batch_v1_CronJob_spec_schedule {abstract}
 						optional
 							String io_k8s_api_batch_v1_CronJob_spec_concurrencyPolicy
-								optional
+								alternative
 									String io_k8s_api_batch_v1_CronJob_spec_concurrencyPolicy_Forbid {abstract}
 									String io_k8s_api_batch_v1_CronJob_spec_concurrencyPolicy_Allow {abstract}
 							Integer io_k8s_api_batch_v1_CronJob_spec_failedJobsHistoryLimit {abstract}
@@ -2730,7 +2736,7 @@ features
 					String io_k8s_api_batch_v1_CronJobSpec_schedule {abstract}
 				optional
 					String io_k8s_api_batch_v1_CronJobSpec_concurrencyPolicy
-						optional
+						alternative
 							String io_k8s_api_batch_v1_CronJobSpec_concurrencyPolicy_Forbid {abstract}
 							String io_k8s_api_batch_v1_CronJobSpec_concurrencyPolicy_Allow {abstract}
 					Integer io_k8s_api_batch_v1_CronJobSpec_failedJobsHistoryLimit {abstract}
@@ -2801,9 +2807,9 @@ features
 			Boolean io_k8s_api_batch_v1_JobSpec
 				mandatory
 					Boolean io_k8s_api_batch_v1_JobSpec_template
-						optional
-							String io_k8s_api_batch_v1_JobSpec_template_Never {abstract}
+						alternative
 							String io_k8s_api_batch_v1_JobSpec_template_OnFailure {abstract}
+							String io_k8s_api_batch_v1_JobSpec_template_Never {abstract}
 				optional
 					Integer io_k8s_api_batch_v1_JobSpec_activeDeadlineSeconds {abstract}
 					Integer io_k8s_api_batch_v1_JobSpec_backoffLimit {abstract}
@@ -2843,7 +2849,7 @@ features
 			Boolean io_k8s_api_batch_v1_PodFailurePolicyOnExitCodesRequirement
 				mandatory
 					String io_k8s_api_batch_v1_PodFailurePolicyOnExitCodesRequirement_operator
-						optional
+						alternative
 							String io_k8s_api_batch_v1_PodFailurePolicyOnExitCodesRequirement_operator_containerName {abstract}
 					Boolean io_k8s_api_batch_v1_PodFailurePolicyOnExitCodesRequirement_values
 						optional
@@ -2891,23 +2897,24 @@ features
 							Boolean io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages
 								optional
 									String io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_items {abstract}
-									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_signing" {abstract}
-									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_key agreement" {abstract}
-									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_crl sign" {abstract}
-									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_decipher only" {abstract}
-									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_netscape sgc" {abstract}
+								alternative
 									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_server auth" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_timestamping" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_ipsec user" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_signing" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_cert sign" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_decipher only" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_any" {abstract}
 									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_encipher only" {abstract}
 									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_code signing" {abstract}
-									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_client auth" {abstract}
-									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_cert sign" {abstract}
 									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_s/mime" {abstract}
-									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_any" {abstract}
-									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_ipsec user" {abstract}
-									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_ocsp signing" {abstract}
 									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_microsoft sgc" {abstract}
-									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_timestamping" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_netscape sgc" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_crl sign" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_ocsp signing" {abstract}
 									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_ipsec tunnel" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_client auth" {abstract}
+									String "io_k8s_api_certificates_v1_CertificateSigningRequest_spec_usages_key agreement" {abstract}
 							String io_k8s_api_certificates_v1_CertificateSigningRequest_spec_username {abstract}
 				optional
 					String io_k8s_api_certificates_v1_CertificateSigningRequest_apiVersion {abstract}
@@ -2960,23 +2967,24 @@ features
 					Boolean io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages
 						optional
 							String io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_items {abstract}
-							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_signing" {abstract}
-							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_key agreement" {abstract}
-							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_crl sign" {abstract}
-							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_decipher only" {abstract}
-							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_netscape sgc" {abstract}
+						alternative
 							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_server auth" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_timestamping" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_ipsec user" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_signing" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_cert sign" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_decipher only" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_any" {abstract}
 							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_encipher only" {abstract}
 							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_code signing" {abstract}
-							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_client auth" {abstract}
-							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_cert sign" {abstract}
 							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_s/mime" {abstract}
-							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_any" {abstract}
-							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_ipsec user" {abstract}
-							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_ocsp signing" {abstract}
 							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_microsoft sgc" {abstract}
-							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_timestamping" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_netscape sgc" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_crl sign" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_ocsp signing" {abstract}
 							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_ipsec tunnel" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_client auth" {abstract}
+							String "io_k8s_api_certificates_v1_CertificateSigningRequestSpec_usages_key agreement" {abstract}
 					String io_k8s_api_certificates_v1_CertificateSigningRequestSpec_username {abstract}
 			Boolean io_k8s_api_certificates_v1_CertificateSigningRequestStatus
 				optional
@@ -3740,7 +3748,7 @@ features
 							String io_k8s_api_core_v1_LoadBalancerIngress_ports_error {abstract}
 							Integer io_k8s_api_core_v1_LoadBalancerIngress_ports_port {abstract}
 							String io_k8s_api_core_v1_LoadBalancerIngress_ports_protocol
-								optional
+								alternative
 									String io_k8s_api_core_v1_LoadBalancerIngress_ports_protocol_SCTP {abstract}
 									String io_k8s_api_core_v1_LoadBalancerIngress_ports_protocol_UDP {abstract}
 									String io_k8s_api_core_v1_LoadBalancerIngress_ports_protocol_TCP {abstract}
@@ -4215,7 +4223,7 @@ features
 						optional
 							String io_k8s_api_core_v1_PersistentVolumeClaimStatus_accessModes_items {abstract}
 					Boolean io_k8s_api_core_v1_PersistentVolumeClaimStatus_allocatedResourceStatuses
-						optional
+						alternative
 							String io_k8s_api_core_v1_PersistentVolumeClaimStatus_allocatedResourceStatuses_storage {abstract}
 					Boolean io_k8s_api_core_v1_PersistentVolumeClaimStatus_allocatedResources {abstract}
 					Boolean io_k8s_api_core_v1_PersistentVolumeClaimStatus_capacity {abstract}
@@ -4430,7 +4438,7 @@ features
 					Boolean io_k8s_api_core_v1_PodSecurityContext_appArmorProfile {abstract}
 					Integer io_k8s_api_core_v1_PodSecurityContext_fsGroup {abstract}
 					String io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy
-						optional
+						alternative
 							String io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy_OnRootMismatch {abstract}
 							String io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy_Always {abstract}
 					Integer io_k8s_api_core_v1_PodSecurityContext_runAsGroup {abstract}
@@ -4452,10 +4460,10 @@ features
 					Boolean io_k8s_api_core_v1_PodSpec_automountServiceAccountToken {abstract}
 					Boolean io_k8s_api_core_v1_PodSpec_dnsConfig {abstract}
 					String io_k8s_api_core_v1_PodSpec_dnsPolicy
-						optional
+						alternative
+							String io_k8s_api_core_v1_PodSpec_dnsPolicy_ClusterFirst {abstract}
 							String io_k8s_api_core_v1_PodSpec_dnsPolicy_Default {abstract}
 							String io_k8s_api_core_v1_PodSpec_dnsPolicy_None {abstract}
-							String io_k8s_api_core_v1_PodSpec_dnsPolicy_ClusterFirst {abstract}
 					Boolean io_k8s_api_core_v1_PodSpec_enableServiceLinks {abstract}
 					Boolean io_k8s_api_core_v1_PodSpec_ephemeralContainers {abstract}
 					Boolean io_k8s_api_core_v1_PodSpec_hostAliases {abstract}
@@ -4533,7 +4541,7 @@ features
 				mandatory
 					Integer io_k8s_api_core_v1_PortStatus_port {abstract}
 					String io_k8s_api_core_v1_PortStatus_protocol
-						optional
+						alternative
 							String io_k8s_api_core_v1_PortStatus_protocol_SCTP {abstract}
 							String io_k8s_api_core_v1_PortStatus_protocol_UDP {abstract}
 							String io_k8s_api_core_v1_PortStatus_protocol_TCP {abstract}
@@ -4844,11 +4852,12 @@ features
 						optional
 							Boolean io_k8s_api_core_v1_Service_spec_allocateLoadBalancerNodePorts {abstract}
 							String io_k8s_api_core_v1_Service_spec_clusterIP
-								optional
+								alternative
 									String io_k8s_api_core_v1_Service_spec_clusterIP_None {abstract}
 							Boolean io_k8s_api_core_v1_Service_spec_clusterIPs
 								optional
 									String io_k8s_api_core_v1_Service_spec_clusterIPs_items {abstract}
+								alternative
 									String io_k8s_api_core_v1_Service_spec_clusterIPs_None {abstract}
 							Boolean io_k8s_api_core_v1_Service_spec_externalIPs
 								optional
@@ -4860,9 +4869,10 @@ features
 							Boolean io_k8s_api_core_v1_Service_spec_ipFamilies
 								optional
 									String io_k8s_api_core_v1_Service_spec_ipFamilies_items {abstract}
-									String io_k8s_api_core_v1_Service_spec_ipFamilies_IPv6 {abstract}
-									String io_k8s_api_core_v1_Service_spec_ipFamilies_headless {abstract}
+								alternative
 									String io_k8s_api_core_v1_Service_spec_ipFamilies_IPv4 {abstract}
+									String io_k8s_api_core_v1_Service_spec_ipFamilies_headless {abstract}
+									String io_k8s_api_core_v1_Service_spec_ipFamilies_IPv6 {abstract}
 							String io_k8s_api_core_v1_Service_spec_ipFamilyPolicy {abstract}
 							String io_k8s_api_core_v1_Service_spec_loadBalancerClass {abstract}
 							String io_k8s_api_core_v1_Service_spec_loadBalancerIP {abstract}
@@ -4947,11 +4957,12 @@ features
 				optional
 					Boolean io_k8s_api_core_v1_ServiceSpec_allocateLoadBalancerNodePorts {abstract}
 					String io_k8s_api_core_v1_ServiceSpec_clusterIP
-						optional
+						alternative
 							String io_k8s_api_core_v1_ServiceSpec_clusterIP_None {abstract}
 					Boolean io_k8s_api_core_v1_ServiceSpec_clusterIPs
 						optional
 							String io_k8s_api_core_v1_ServiceSpec_clusterIPs_items {abstract}
+						alternative
 							String io_k8s_api_core_v1_ServiceSpec_clusterIPs_None {abstract}
 					Boolean io_k8s_api_core_v1_ServiceSpec_externalIPs
 						optional
@@ -4963,9 +4974,10 @@ features
 					Boolean io_k8s_api_core_v1_ServiceSpec_ipFamilies
 						optional
 							String io_k8s_api_core_v1_ServiceSpec_ipFamilies_items {abstract}
-							String io_k8s_api_core_v1_ServiceSpec_ipFamilies_IPv6 {abstract}
-							String io_k8s_api_core_v1_ServiceSpec_ipFamilies_headless {abstract}
+						alternative
 							String io_k8s_api_core_v1_ServiceSpec_ipFamilies_IPv4 {abstract}
+							String io_k8s_api_core_v1_ServiceSpec_ipFamilies_headless {abstract}
+							String io_k8s_api_core_v1_ServiceSpec_ipFamilies_IPv6 {abstract}
 					String io_k8s_api_core_v1_ServiceSpec_ipFamilyPolicy {abstract}
 					String io_k8s_api_core_v1_ServiceSpec_loadBalancerClass {abstract}
 					String io_k8s_api_core_v1_ServiceSpec_loadBalancerIP {abstract}
@@ -5044,7 +5056,7 @@ features
 				mandatory
 					Integer io_k8s_api_core_v1_TopologySpreadConstraint_maxSkew {abstract}
 					String io_k8s_api_core_v1_TopologySpreadConstraint_topologyKey
-						optional
+						alternative
 							String io_k8s_api_core_v1_TopologySpreadConstraint_topologyKey_bucket {abstract}
 					String io_k8s_api_core_v1_TopologySpreadConstraint_whenUnsatisfiable {abstract}
 				optional
@@ -5053,7 +5065,7 @@ features
 						optional
 							String io_k8s_api_core_v1_TopologySpreadConstraint_matchLabelKeys_items {abstract}
 					Integer io_k8s_api_core_v1_TopologySpreadConstraint_minDomains
-						optional
+						alternative
 							String "io_k8s_api_core_v1_TopologySpreadConstraint_minDomains_global minimum" {abstract}
 					String io_k8s_api_core_v1_TopologySpreadConstraint_nodeAffinityPolicy {abstract}
 					String io_k8s_api_core_v1_TopologySpreadConstraint_nodeTaintsPolicy {abstract}
@@ -5808,7 +5820,7 @@ features
 													String io_k8s_api_networking_v1_Ingress_status_loadBalancer_ingress_ports_error {abstract}
 													Integer io_k8s_api_networking_v1_Ingress_status_loadBalancer_ingress_ports_port {abstract}
 													String io_k8s_api_networking_v1_Ingress_status_loadBalancer_ingress_ports_protocol
-														optional
+														alternative
 															String io_k8s_api_networking_v1_Ingress_status_loadBalancer_ingress_ports_protocol_SCTP {abstract}
 															String io_k8s_api_networking_v1_Ingress_status_loadBalancer_ingress_ports_protocol_UDP {abstract}
 															String io_k8s_api_networking_v1_Ingress_status_loadBalancer_ingress_ports_protocol_TCP {abstract}
@@ -5881,7 +5893,7 @@ features
 				mandatory
 					Integer io_k8s_api_networking_v1_IngressPortStatus_port {abstract}
 					String io_k8s_api_networking_v1_IngressPortStatus_protocol
-						optional
+						alternative
 							String io_k8s_api_networking_v1_IngressPortStatus_protocol_SCTP {abstract}
 							String io_k8s_api_networking_v1_IngressPortStatus_protocol_UDP {abstract}
 							String io_k8s_api_networking_v1_IngressPortStatus_protocol_TCP {abstract}
@@ -6064,7 +6076,7 @@ features
 			Boolean io_k8s_api_node_v1_RuntimeClass
 				mandatory
 					String io_k8s_api_node_v1_RuntimeClass_handler
-						optional
+						alternative
 							String io_k8s_api_node_v1_RuntimeClass_handler_runc {abstract}
 				optional
 					String io_k8s_api_node_v1_RuntimeClass_apiVersion {abstract}
@@ -6083,7 +6095,7 @@ features
 						optional
 							String io_k8s_api_node_v1_RuntimeClassList_items_apiVersion {abstract}
 							String io_k8s_api_node_v1_RuntimeClassList_items_handler
-								optional
+								alternative
 									String io_k8s_api_node_v1_RuntimeClassList_items_handler_runc {abstract}
 							String io_k8s_api_node_v1_RuntimeClassList_items_kind {abstract}
 							Boolean io_k8s_api_node_v1_RuntimeClassList_items_metadata {abstract}
@@ -6114,10 +6126,10 @@ features
 									String io_k8s_api_policy_v1_Eviction_deleteOptions_preconditions_resourceVersion {abstract}
 									String io_k8s_api_policy_v1_Eviction_deleteOptions_preconditions_uid {abstract}
 							String io_k8s_api_policy_v1_Eviction_deleteOptions_propagationPolicy
-								optional
-									String io_k8s_api_policy_v1_Eviction_deleteOptions_propagationPolicy_Background {abstract}
+								alternative
 									String io_k8s_api_policy_v1_Eviction_deleteOptions_propagationPolicy_Foreground {abstract}
 									String io_k8s_api_policy_v1_Eviction_deleteOptions_propagationPolicy_Orphan {abstract}
+									String io_k8s_api_policy_v1_Eviction_deleteOptions_propagationPolicy_Background {abstract}
 					String io_k8s_api_policy_v1_Eviction_kind {abstract}
 					Boolean io_k8s_api_policy_v1_Eviction_metadata {abstract}
 			Boolean io_k8s_api_policy_v1_PodDisruptionBudget
@@ -6938,7 +6950,7 @@ features
 					String io_k8s_api_storage_v1alpha1_VolumeAttributesClass_kind {abstract}
 					Boolean io_k8s_api_storage_v1alpha1_VolumeAttributesClass_metadata {abstract}
 					Boolean io_k8s_api_storage_v1alpha1_VolumeAttributesClass_parameters
-						optional
+						alternative
 							String io_k8s_api_storage_v1alpha1_VolumeAttributesClass_parameters_Infeasible {abstract}
 			Boolean io_k8s_api_storage_v1alpha1_VolumeAttributesClassList
 				mandatory
@@ -6949,7 +6961,7 @@ features
 							String io_k8s_api_storage_v1alpha1_VolumeAttributesClassList_items_kind {abstract}
 							Boolean io_k8s_api_storage_v1alpha1_VolumeAttributesClassList_items_metadata {abstract}
 							Boolean io_k8s_api_storage_v1alpha1_VolumeAttributesClassList_items_parameters
-								optional
+								alternative
 									String io_k8s_api_storage_v1alpha1_VolumeAttributesClassList_items_parameters_Infeasible {abstract}
 				optional
 					String io_k8s_api_storage_v1alpha1_VolumeAttributesClassList_apiVersion {abstract}
@@ -7026,9 +7038,9 @@ features
 			Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceConversion
 				mandatory
 					String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceConversion_strategy
-						optional
-							String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceConversion_strategy_None {abstract}
+						alternative
 							String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceConversion_strategy_Webhook {abstract}
+							String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceConversion_strategy_None {abstract}
 				optional
 					Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceConversion_webhook
 						mandatory
@@ -7167,9 +7179,9 @@ features
 							Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_conversion
 								mandatory
 									String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_conversion_strategy
-										optional
-											String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_conversion_strategy_None {abstract}
+										alternative
 											String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_conversion_strategy_Webhook {abstract}
+											String io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_conversion_strategy_None {abstract}
 								optional
 									Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_conversion_webhook {abstract}
 							Boolean io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_preserveUnknownFields {abstract}
@@ -7450,10 +7462,10 @@ features
 					Boolean io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_orphanDependents {abstract}
 					Boolean io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_preconditions {abstract}
 					String io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_propagationPolicy
-						optional
-							String io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_propagationPolicy_Background {abstract}
+						alternative
 							String io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_propagationPolicy_Foreground {abstract}
 							String io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_propagationPolicy_Orphan {abstract}
+							String io_k8s_apimachinery_pkg_apis_meta_v1_DeleteOptions_propagationPolicy_Background {abstract}
 			Boolean io_k8s_apimachinery_pkg_apis_meta_v1_GroupVersionForDiscovery
 				mandatory
 					String io_k8s_apimachinery_pkg_apis_meta_v1_GroupVersionForDiscovery_groupVersion {abstract}

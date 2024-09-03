@@ -223,14 +223,13 @@ class SchemaProcessor:
 
                         feature['sub_features'].append({
                             'name': f'"{full_name}_{value}"' if add_quotes else f"{full_name}_{value}", #f"{full_name}_{self.sanitize_name(combined_feature)}"
-                            'type': 'optional',  # Los valores individuales se tratan como opcionales ** Pendiente añadir alternative, Or ...
+                            'type': 'alternative',  # Los valores obtenidos se tratan como alternativos
                             'description': f"Specific value: {value}",
                             'sub_features': [],
-                            'type_data': "String"
+                            'type_data': "String" # Definir si obtener el tipo de dato o por defecto String
                         })
                         #numValores += 1
                 #print(f"Valores obtenidos: {numValores}")
-
 
                 # Process nested properties
                 if 'properties' in details:
@@ -282,6 +281,7 @@ def properties_to_uvl(feature_list, indent=1):
             # Separar características obligatorias y opcionales
             sub_mandatory = [f for f in feature['sub_features'] if f['type'] == 'mandatory']
             sub_optional = [f for f in feature['sub_features'] if f['type'] == 'optional']
+            sub_alternative = [f for f in feature['sub_features'] if f['type'] == 'alternative']
 
             if sub_mandatory:
                 uvl_output += f"{indent_str}\tmandatory\n"
@@ -289,6 +289,9 @@ def properties_to_uvl(feature_list, indent=1):
             if sub_optional:
                 uvl_output += f"{indent_str}\toptional\n"
                 uvl_output += properties_to_uvl(sub_optional, indent + 2)
+            if sub_alternative:
+                uvl_output += f"{indent_str}\talternative\n"
+                uvl_output += properties_to_uvl(sub_alternative, indent + 2)
         else:
             uvl_output += f"{indent_str}{type_str}{feature['name']} {{abstract}}\n"  # {type_str} opcional si se necesita
     return uvl_output
