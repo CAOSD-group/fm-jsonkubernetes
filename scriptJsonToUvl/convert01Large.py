@@ -2,25 +2,36 @@ import json
 import re
 from collections import deque
 
-numValores = 0
 
 class SchemaProcessor:
     def __init__(self, definitions):
-        self.definitions = definitions
+        """
+        Inicializa la clase `SchemaProcessor` para procesar y extraer información de las definiciones de un esquema JSON.
+        descripciones, patrones y restricciones.
+
+        Este constructor configura la clase con las definiciones del esquema JSON y establece varias variables internas
+        que se utilizan para manejar referencias, descripciones, patrones y restricciones.
+        
+        definitions (dict): Un diccionario que contiene las definiciones del esquema JSON.
+
+        
+        """
+        self.definitions = definitions # Un diccionario que organiza las descripciones en tres categorías:
         self.resolved_references = {}
         self.seen_references = set()
         self.processed_features = set()
         self.constraints = []  # Lista para almacenar las dependencias como constraints
         
-        # Inicializamos un diccionario para almacenar descripciones por grupo
+        # Se inicializa un diccionario para almacenar descripciones por grupo
         self.descriptions = {
-            'values': [],
+            'values': [], 
             'restrictions': [],
             'dependencies': []
+
         }
         self.seen_descriptions = set()
 
-        # Patrones para clasificar descripciones
+        # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
         self.patterns = {
             'values': re.compile(r'(valid|values are|supported|acceptable|can be)', re.IGNORECASE),
             'restrictions': re.compile(r'(allowed|conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed)', re.IGNORECASE),
@@ -28,11 +39,11 @@ class SchemaProcessor:
         }
 
     def sanitize_name(self, name):
-        """Replace non-alphanumeric characters with underscores and ensure uniqueness."""
+        """Reemplaza caracteres no permitidos en el nombre con guiones bajos y asegura que solo haya uno con ese nombre"""
         return name.replace("-", "_").replace(".", "_").replace("$", "")
 
     def resolve_reference(self, ref):
-        """Resolve a reference to its actual schema."""
+        """Resuelve una referencia a su esquema real dentro de las definiciones."""
         if ref in self.resolved_references:
             return self.resolved_references[ref]
 
@@ -41,14 +52,14 @@ class SchemaProcessor:
         for part in parts:
             schema = schema.get(part, {})
             if not schema:
-                print(f"Warning: No se pudo resolver la siguiente referencia: {ref}")
+                print(f"Warning: No se pudo resolver la siguiente referencia: {ref}") # Se puede usar para comprobar si hay alguna referencia que se pierde y no se procesa
                 return None
 
         self.resolved_references[ref] = schema
         return schema
 
     def is_valid_description(self, description):
-        """Chequeamos si una descripción es válida (No muy corta y sin repeticiones)"""
+        """Verifica si una descripción es válida (No muy corta y sin repeticiones) para analizarla después en busca de restricciones"""
         if len(description) < 10:
             return False
         if description in self.seen_descriptions:
@@ -57,12 +68,11 @@ class SchemaProcessor:
         return True
 
     def is_required_based_on_description(self, description):
-        """Determina si una propiedad es obligatoria basándose en si aparece Required en su descripción"""
-        # Verificamos si "Required." aparece al final de la descripción
+        """Determina si una propiedad es obligatoria basándose en si aparece Required al final de su descripción"""
         return description.strip().endswith("Required.")
 
     def extract_values(self, description):
-        """Extract values enclosed in quotes or other delimiters, only if keywords are present."""
+        """Extrae valores que están entre comillas u otros delimitadores, solo si se encuentran ciertas palabras clave"""
         if not any(keyword in description.lower() for keyword in ['values are', 'possible values are']):
             return None
         
@@ -95,14 +105,15 @@ class SchemaProcessor:
 
 
     def categorize_description(self, description, feature_name, type_data):
-        """Categorize the description according to the patterns."""
+        """Categoriza la descripción según los patrones predefinidos."""
+        
         if not self.is_valid_description(description):
             return False
-        # Adicion de type_data en una estructura para tratar de mejorar la precisión de las reglas
+        # Entrada de descripción con datos del tipo para mejorar la precisión de las reglas
         description_entry = {
         "feature_name": feature_name,
         "description": description,
-        "type_data": type_data
+        "type_data": type_data # Adición tipo para tener el tipo de dato para las restricciones
     }
 
         for category, pattern in self.patterns.items():
@@ -114,6 +125,21 @@ class SchemaProcessor:
         return False
 
     def parse_properties(self, properties, required, parent_name="", depth=0):
+        """
+        Analiza las propiedades del esquema JSON y las clasifica en características obligatorias y opcionales.
+
+        Este método recorre las propiedades de un esquema JSON, identifica si son obligatorias 
+        u opcionales, y maneja las referencias y subpropiedades de manera recursiva.
+
+        Args:
+            properties (dict): Un diccionario que contiene las propiedades del esquema JSON.
+            required (list): Una lista de nombres de propiedades que son obligatorias.
+            parent_name (str): El nombre de la propiedad padre, usado para construir nombres completos.
+            depth (int): El nivel de profundidad actual en el esquema, usado para la recursión.
+
+        Returns:
+            mandatory_features, optional_features: Dos listas de los grupos principales, la primera contiene características obligatorias y la segunda características opcionales.
+        """
         mandatory_features = []
         optional_features = []
         queue = deque([(properties, required, parent_name, depth)])
@@ -152,7 +178,7 @@ class SchemaProcessor:
                     'type_data': feature_type_data
                 }
 
-                # Process references
+                # Procesar referencias
                 if '$ref' in details:
                     ref = details['$ref']
                     if ref not in self.seen_references:
@@ -184,7 +210,7 @@ class SchemaProcessor:
                         #else:
                             #print(f"Warning: Could not process reference: {ref}")
                 
-                # Process items in arrays
+                # Procesar ítems en arreglos
                 elif feature['type_data'] == 'Boolean' and 'items' in details:
                     items = details['items']
                     if '$ref' in items:
@@ -236,7 +262,7 @@ class SchemaProcessor:
                         #numValores += 1
                 #print(f"Valores obtenidos: {numValores}")
 
-                # Process nested properties
+                # Procesar propiedades anidadas
                 if 'properties' in details:
                     sub_properties = details['properties']
                     sub_required = details.get('required', [])
@@ -252,29 +278,68 @@ class SchemaProcessor:
 
         return mandatory_features, optional_features
         
-    def save_descriptions(self, file_path):
-        """Save the collected descriptions to a JSON file."""
-        print(f"Saving descriptions to {file_path}...")
-        with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(self.descriptions, f, indent=4, ensure_ascii=False)
-        print("Descriptions saved successfully.")
-        
-    def save_constraints(self, file_path):
-        """Save the collected constraints to a UVL file."""
-        print(f"Saving constraints to {file_path}...")
-        with open(file_path, 'a', encoding='utf-8') as f:
-            f.write("\nconstraints\n" + "//Restricciones obtenidas de las referencias:\n")
-            for constraint in self.constraints:
-                f.write(f"\t{constraint}\n")
-        print("Constraints saved successfully.")
+def save_descriptions(self, file_path):
+    """
+    Guarda las descripciones recopiladas en un archivo JSON.
+
+    Este método escribe las descripciones almacenadas en `self.descriptions` a un archivo JSON 
+    especificado por `file_path`.
+
+    Args:
+        file_path (str): La ruta del archivo JSON donde se guardarán las descripciones.
+    """
+    print(f"Saving descriptions to {file_path}...")
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(self.descriptions, f, indent=4, ensure_ascii=False)
+    print("Descriptions saved successfully.")
+
+def save_constraints(self, file_path):
+    """
+    Guarda las restricciones recopiladas en un archivo UVL.
+
+    Este método escribe las restricciones almacenadas en `self.constraints` a un archivo UVL 
+    especificado por `file_path`.
+
+    Args:
+        file_path (str): La ruta del archivo UVL donde se guardarán las restricciones.
+    """
+    print(f"Saving constraints to {file_path}...")
+    with open(file_path, 'a', encoding='utf-8') as f:
+        f.write("\nconstraints\n" + "//Restricciones obtenidas de las referencias:\n")
+        for constraint in self.constraints:
+            f.write(f"\t{constraint}\n")
+    print("Constraints saved successfully.")
 
 def load_json_file(file_path):
-    """Load JSON file."""
+    """
+    Carga un archivo JSON.
+
+    Este método lee el contenido de un archivo JSON especificado por `file_path` y lo devuelve 
+    como un objeto de Python.
+
+    Args:
+        file_path (str): La ruta del archivo JSON que se cargará.
+
+    Returns:
+        dict: El contenido del archivo JSON como un diccionario de Python.
+    """
     with open(file_path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
 def properties_to_uvl(feature_list, indent=1):
-    """Convert feature list to UVL format."""
+    """
+    Convierte una lista de características a formato UVL.
+
+    Este método recorre cada característica en la lista proporcionada y la convierte en una línea
+    de texto UVL, gestionando adecuadamente la indentación y la jerarquía de subcaracterísticas.
+
+    Args:
+        feature_list (list): Lista de características a convertir.
+        indent (int): El nivel de indentación actual para la conversión.
+
+    Returns:
+        str: La salida en formato UVL como una cadena de texto.
+    """
     uvl_output = ""
     indent_str = '\t' * indent
     for feature in feature_list:
@@ -302,18 +367,35 @@ def properties_to_uvl(feature_list, indent=1):
     return uvl_output
 
 def generate_uvl_from_definitions(definitions_file, output_file, descriptions_file):
-    """Generate UVL from definitions and save descriptions."""
-    definitions = load_json_file(definitions_file)
-    processor = SchemaProcessor(definitions)
-    uvl_output = "namespace KubernetesTest1\n\nfeatures\n\tKubernetes\n\t\toptional\n"
+    """
+    Genera un archivo UVL a partir de las definiciones de un esquema JSON y guarda las descripciones y restricciones.
 
+    Este método carga un archivo de definiciones JSON, procesa las propiedades del esquema y genera un archivo UVL (Universal 
+    Variability Language). El archivo UVL contiene una representación jerárquica de las características definidas en el esquema JSON.
+    Además, guarda las descripciones de las características y las restricciones extraídas del esquema en archivos separados.
+
+    Args:
+        definitions_file (str): La ruta al archivo JSON que contiene las definiciones del esquema.
+        output_file (str): La ruta donde se guardará el archivo UVL generado.
+        descriptions_file (str): La ruta donde se guardarán las descripciones extraídas en formato JSON.
+
+        El resultado es un archivo UVL que representa las características del esquema JSON, junto con archivos adicionales que documentan 
+        las descripciones y las restricciones encontradas.
+    
+    """
+    definitions = load_json_file(definitions_file) # Cargar el archivo de definiciones JSON
+    processor = SchemaProcessor(definitions) # Inicializar el procesador de esquemas con las definiciones cargadas
+    uvl_output = "namespace KubernetesTest1\n\nfeatures\n\tKubernetes\n\t\toptional\n" # Iniciar la estructura base del archivo UVL
+
+    # Procesar cada definición en el archivo JSON
     for schema_name, schema in definitions.get('definitions', {}).items():
         root_schema = schema.get('properties', {})
         required = schema.get('required', [])
         type_str_feature = 'Boolean' ## Por defecto al no tener definido un tipo los features principales se les pone como Boolean
         #print(f"Processing schema: {schema_name}")
-        mandatory_features, optional_features = processor.parse_properties(root_schema, required, processor.sanitize_name(schema_name))
-
+        mandatory_features, optional_features = processor.parse_properties(root_schema, required, processor.sanitize_name(schema_name)) # Obtener características obligatorias y opcionales
+        
+        # Agregar las características obligatorias y opcionales al archivo UVL
         if mandatory_features:
             uvl_output += f"\t\t\t{type_str_feature+' '}{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '}
             uvl_output += f"\t\t\t\tmandatory\n"
@@ -327,17 +409,19 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
             uvl_output += f"\t\t\t\toptional\n"
             uvl_output += properties_to_uvl(optional_features, indent=5)
 
+    # Guardar el archivo UVL generado
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(uvl_output)
     print(f"UVL output saved to {output_file}")
 
-    # Save descriptions
+    # Guardar las descripciones extraídas
     processor.save_descriptions(descriptions_file)
     
-    # Save constraints
+    # Guardar las restricciones en el archivo UVL
     processor.save_constraints(output_file)
 
 # Rutas de archivo
+#definitions_file = 'C:/projects/investigacion/kubernetes-json-schema/v1.30.4/_definitions.json'
 definitions_file = 'C:/projects/investigacion/kubernetes-json-v1.30.2/v1.30.2/_definitions.json'
 output_file = 'C:/projects/investigacion/scriptJsonToUvl/kubernetes_combined_01.uvl'
 descriptions_file = 'C:/projects/investigacion/scriptJsonToUvl/descriptions_01.json'
