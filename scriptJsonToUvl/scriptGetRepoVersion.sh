@@ -1,6 +1,6 @@
 # Inicializar un nuevo repositorio vacío
-git init kubernetes-json-schema
-cd kubernetes-json-schema
+git init kubernetes-json-v1.30.2
+cd kubernetes-json-v1.30.2
 
 # Configurar sparse-checkout para obtener solo la carpeta deseada
 git remote add origin https://github.com/yannh/kubernetes-json-schema.git

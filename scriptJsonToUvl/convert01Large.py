@@ -278,37 +278,37 @@ class SchemaProcessor:
 
         return mandatory_features, optional_features
         
-def save_descriptions(self, file_path):
-    """
-    Guarda las descripciones recopiladas en un archivo JSON.
+    def save_descriptions(self, file_path):
+        """
+        Guarda las descripciones recopiladas en un archivo JSON.
 
-    Este método escribe las descripciones almacenadas en `self.descriptions` a un archivo JSON 
-    especificado por `file_path`.
+        Este método escribe las descripciones almacenadas en `self.descriptions` a un archivo JSON 
+        especificado por `file_path`.
 
-    Args:
-        file_path (str): La ruta del archivo JSON donde se guardarán las descripciones.
-    """
-    print(f"Saving descriptions to {file_path}...")
-    with open(file_path, 'w', encoding='utf-8') as f:
-        json.dump(self.descriptions, f, indent=4, ensure_ascii=False)
-    print("Descriptions saved successfully.")
+        Args:
+            file_path (str): La ruta del archivo JSON donde se guardarán las descripciones.
+        """
+        print(f"Saving descriptions to {file_path}...")
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(self.descriptions, f, indent=4, ensure_ascii=False)
+        print("Descriptions saved successfully.")
 
-def save_constraints(self, file_path):
-    """
-    Guarda las restricciones recopiladas en un archivo UVL.
+    def save_constraints(self, file_path):
+        """
+        Guarda las restricciones recopiladas en un archivo UVL.
 
-    Este método escribe las restricciones almacenadas en `self.constraints` a un archivo UVL 
-    especificado por `file_path`.
+        Este método escribe las restricciones almacenadas en `self.constraints` a un archivo UVL 
+        especificado por `file_path`.
 
-    Args:
-        file_path (str): La ruta del archivo UVL donde se guardarán las restricciones.
-    """
-    print(f"Saving constraints to {file_path}...")
-    with open(file_path, 'a', encoding='utf-8') as f:
-        f.write("\nconstraints\n" + "//Restricciones obtenidas de las referencias:\n")
-        for constraint in self.constraints:
-            f.write(f"\t{constraint}\n")
-    print("Constraints saved successfully.")
+        Args:
+            file_path (str): La ruta del archivo UVL donde se guardarán las restricciones.
+        """
+        print(f"Saving constraints to {file_path}...")
+        with open(file_path, 'a', encoding='utf-8') as f:
+            f.write("\nconstraints\n" + "//Restricciones obtenidas de las referencias:\n")
+            for constraint in self.constraints:
+                f.write(f"\t{constraint}\n")
+        print("Constraints saved successfully.")
 
 def load_json_file(file_path):
     """
@@ -420,11 +420,11 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
     # Guardar las restricciones en el archivo UVL
     processor.save_constraints(output_file)
 
-# Rutas de archivo
-#definitions_file = 'C:/projects/investigacion/kubernetes-json-schema/v1.30.4/_definitions.json'
-definitions_file = 'C:/projects/investigacion/kubernetes-json-v1.30.2/v1.30.2/_definitions.json'
-output_file = 'C:/projects/investigacion/scriptJsonToUvl/kubernetes_combined_01.uvl'
-descriptions_file = 'C:/projects/investigacion/scriptJsonToUvl/descriptions_01.json'
+# Rutas de archivo relativas
+#definitions_file = '../kubernetes-json-schema/v1.30.4/_definitions.json'
+definitions_file = '../kubernetes-json-v1.30.2/v1.30.2/_definitions.json'
+output_file = './kubernetes_combined_01.uvl'
+descriptions_file = './descriptions_01.json'
 
 # Generar archivo UVL y guardar descripciones
 generate_uvl_from_definitions(definitions_file, output_file, descriptions_file)
