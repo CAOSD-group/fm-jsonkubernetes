@@ -20,7 +20,7 @@ En la carpeta scriptJsonToUvl se encuentran los siguientes archivos:
 
 En la carpeta v.30.2 se encuentran los siguientes archivos:
 
-- El archivo _definitions.json_: es el archivo principal de los esquemas de Kubernetes donde se concentran todos los esquemas repartidos en los miles de archivos individuales de cada versión de Kubernetes. Se usa este archivo como base para construir el modelo uvl y corresponde a la versión V.30.2.
+- _definitions.json_: es el archivo principal de los esquemas de Kubernetes donde se concentran todos los esquemas repartidos en los miles de archivos individuales de cada versión de Kubernetes. Se usa este archivo como base para construir el modelo uvl y corresponde a la versión V.30.2.
 
 
 # ¿Cómo usar el programa?
