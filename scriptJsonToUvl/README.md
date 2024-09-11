@@ -1,6 +1,6 @@
-Relación entre los archivos de esta carpeta:
+## Relación entre los archivos de esta carpeta:
 
-convert0Large.py genera 2 archivos: el feature model uvl en kubernetes_combined_constraints.uvl y un conjunto de descripciones en descriptions_01.json. Este último es el que se usa en los análisis para agrupar las descripciones.
+convert0Large.py genera 2 archivos: el feature model uvl en __kubernetes_combined_constraints.uvl__ y un conjunto de descripciones en __descriptions_01.json__. Este último es el que se usa en los análisis para agrupar las descripciones.
 
 
 # AGRUPACIONES DE LAS CONSTRAINTS EN LOS ARCHIVOS
@@ -9,8 +9,9 @@ convert0Large.py genera 2 archivos: el feature model uvl en kubernetes_combined_
 ### Constraints de las referencias
 La primera agrupación de constraints generadas automaticamente son las referencias o _$ref_ que tienen algunos esquemas. Es decir, de cada feature que se analiza y procesa en el script convert01Large.py se comprueba si en los detalles contienen referencias tipo "$ref" o inhibidas en propiedades como "items". Si hay referencias en los detalles de los esquemas, mediante la siguiente línea: *self.constraints.append(f"{full_name} => {ref_name}")* se añaden las constraints de las referencias a una lista que se muestra al final del modelo como _Constraints:_. Esto se decidió porque se puede observar de forma directa la relación que hay entre un feature y otro con las referencias hacia otros esquemas en el propio esquema. Algunas de las constraints obtenidas son las siguientes:
 
-(constraints
+constraints
 //Restricciones obtenidas de las referencias:
+
 	io_k8s_api_admissionregistration_v1_MatchResources_excludeResourceRules => io_k8s_api_admissionregistration_v1_NamedRuleWithOperations
 	io_k8s_api_admissionregistration_v1_MatchResources_namespaceSelector => io_k8s_apimachinery_pkg_apis_meta_v1_LabelSelector
 	io_k8s_api_admissionregistration_v1_MatchResources_namespaceSelector_matchExpressions => io_k8s_apimachinery_pkg_apis_meta_v1_LabelSelectorRequirement
@@ -23,15 +24,14 @@ La primera agrupación de constraints generadas automaticamente son las referenc
 	io_k8s_kube_aggregator_pkg_apis_apiregistration_v1_APIService_status => io_k8s_kube_aggregator_pkg_apis_apiregistration_v1_APIServiceStatus
 	io_k8s_kube_aggregator_pkg_apis_apiregistration_v1_APIService_status_conditions => io_k8s_kube_aggregator_pkg_apis_apiregistration_v1_APIServiceCondition
 	io_k8s_kube_aggregator_pkg_apis_apiregistration_v1_APIServiceList_items => io_k8s_kube_aggregator_pkg_apis_apiregistration_v1_APIService
-)
 
-Tras ver, por el momento, las constraints obtenidas desde el propio script que genera el modelo, se trato de obtener las demas inhibidas en las descripciones con un script externo y que procese los features filtrados en [descriptions_01.json](https://github.com/CAOSD-group/fm-json-kubernetes/blob/main/scriptJsonToUvl/descriptions_01.json). Este es un archivo que se obtiene al ejecutar el script principal y se filtran las descripciones de los features en 3 grupos diferentes:
+Tras ver las constraints obtenidas desde el propio script que genera el modelo, se trato de obtener las demas inhibidas en las descripciones con un script externo y que procese los features filtrados en [descriptions_01.json](https://github.com/CAOSD-group/fm-json-kubernetes/blob/main/scriptJsonToUvl/descriptions_01.json). Este es un archivo que se obtiene al ejecutar el script principal y se filtran las descripciones de los features en 3 grupos diferentes:
 
 - values: Agrupación de valores como extensiones del feature, valores concretos... se concentraban cualquier descripcion que contenga las palabras clave _(valid|values are|supported|acceptable|can be)_
 - restrictions: cualquier descripcion que contenga las palabras clave _((allowed|conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed))_
 - dependencies: ** Sin examinar **
 
-Tras examinar las descripciones del fichero se definieron las siguientes reglas que generaron las siguientes constraints:
+Después examinar las descripciones del fichero se definieron las siguientes reglas que generaron las siguientes constraints:
 
 ### Agrupación de restricciones por items:
 
@@ -60,6 +60,12 @@ Ejemplos:
 	!io_k8s_api_resource_v1alpha2_ResourceClaimParameters_driverRequests
 	!io_k8s_api_storage_v1_CSIDriver_spec_volumeLifecycleModes
 	[...]
+
+### Agrupación de restricciones individuales o manuales* (Insertadas una a una con una definición específica)
+
+Este grupo lo forman el resto de constraints que son insertadas por una definición individualizada, es decir, se define para una regla por una única descripción.
+Ejemplos:
+	io_k8s_api_admissionregistration_v1_MutatingWebhook_timeoutSeconds > 0 & io_k8s_api_admissionregistration_v1_MutatingWebhook_timeoutSeconds < 31
 
 ### Agrupación de restricciones valores que tienen limites maximos y minimos:
 
