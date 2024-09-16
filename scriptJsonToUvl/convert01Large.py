@@ -345,7 +345,7 @@ def properties_to_uvl(feature_list, indent=1):
     for feature in feature_list:
         type_str = f"{feature['type_data'].capitalize()} " if feature['type_data'] else "Boolean "
         if feature['sub_features']:
-            uvl_output += f"{indent_str}{type_str}{feature['name']}\n"  # {type_str} opcional si se necesita
+            uvl_output += f"{indent_str}{type_str}{feature['name']}\n"  # {type_str} opcional si se necesita 
             # uvl_output += f"{indent_str}\t{feature['type']}\n" opcional si se necesita
 
             # Separar características obligatorias y opcionales
@@ -363,7 +363,7 @@ def properties_to_uvl(feature_list, indent=1):
                 uvl_output += f"{indent_str}\talternative\n"
                 uvl_output += properties_to_uvl(sub_alternative, indent + 2)
         else:
-            uvl_output += f"{indent_str}{type_str}{feature['name']} {{abstract}}\n"  # {type_str} opcional si se necesita
+            uvl_output += f"{indent_str}{type_str}{feature['name']} {{abstract}}\n"  # {type_str} opcional si se necesita 
     return uvl_output
 
 def generate_uvl_from_definitions(definitions_file, output_file, descriptions_file):
@@ -385,7 +385,7 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
     """
     definitions = load_json_file(definitions_file) # Cargar el archivo de definiciones JSON
     processor = SchemaProcessor(definitions) # Inicializar el procesador de esquemas con las definiciones cargadas
-    uvl_output = "namespace KubernetesTest1\n\nfeatures\n\tKubernetes\n\t\toptional\n" # Iniciar la estructura base del archivo UVL
+    uvl_output = "namespace KubernetesTest1\nfeatures\n\tKubernetes\n\t\toptional\n" # Iniciar la estructura base del archivo UVL
 
     # Procesar cada definición en el archivo JSON
     for schema_name, schema in definitions.get('definitions', {}).items():
@@ -397,7 +397,7 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
         
         # Agregar las características obligatorias y opcionales al archivo UVL
         if mandatory_features:
-            uvl_output += f"\t\t\t{type_str_feature+' '}{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '}
+            uvl_output += f"\t\t\t{type_str_feature+' '}{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '} 
             uvl_output += f"\t\t\t\tmandatory\n"
             uvl_output += properties_to_uvl(mandatory_features, indent=5)
 
@@ -405,7 +405,7 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
                 uvl_output += f"\t\t\t\toptional\n"
                 uvl_output += properties_to_uvl(optional_features, indent=5)
         elif optional_features:
-            uvl_output += f"\t\t\t{type_str_feature+' '}{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '}
+            uvl_output += f"\t\t\t{type_str_feature+' '}{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '} 
             uvl_output += f"\t\t\t\toptional\n"
             uvl_output += properties_to_uvl(optional_features, indent=5)
 
@@ -423,7 +423,7 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
 # Rutas de archivo relativas
 #definitions_file = '../kubernetes-json-schema/v1.30.4/_definitions.json'
 definitions_file = '../kubernetes-json-v1.30.2/v1.30.2/_definitions.json'
-output_file = './kubernetes_combined_01.uvl'
+output_file = './kubernetes_combined_01_sinTipoDatos.uvl'
 descriptions_file = './descriptions_01.json'
 
 # Generar archivo UVL y guardar descripciones
