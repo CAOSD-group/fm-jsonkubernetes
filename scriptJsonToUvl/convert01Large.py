@@ -1,3 +1,4 @@
+¡Nuevo! Combinaciones de teclas … Las combinaciones de teclas de Drive se han actualizado para que puedas navegar escribiendo las primeras letras
 import json
 import re
 from collections import deque
@@ -19,9 +20,11 @@ class SchemaProcessor:
         self.definitions = definitions # Un diccionario que organiza las descripciones en tres categorías:
         self.resolved_references = {}
         self.seen_references = set()
+        self.seen_features = set() ## Añadir condicion a las refs vistas para no omitir refs ya vistas
         self.processed_features = set()
         self.constraints = []  # Lista para almacenar las dependencias como constraints
-        
+        #Prueba pila para las referencias ciclicas
+        self.stact_refs = []
         # Se inicializa un diccionario para almacenar descripciones por grupo
         self.descriptions = {
             'values': [], 
@@ -44,19 +47,24 @@ class SchemaProcessor:
 
     def resolve_reference(self, ref):
         """Resuelve una referencia a su esquema real dentro de las definiciones."""
-        if ref in self.resolved_references:
+        if ref in self.resolved_references: # Se comprueba si la referencia ya ha sido resuelta
             return self.resolved_references[ref]
 
-        parts = ref.strip('#/').split('/')
+        parts = ref.strip('#/').split('/') # Se divide la referencia en partes
         schema = self.definitions
-        for part in parts:
-            schema = schema.get(part, {})
-            if not schema:
-                print(f"Warning: No se pudo resolver la siguiente referencia: {ref}") # Se puede usar para comprobar si hay alguna referencia que se pierde y no se procesa
-                return None
 
-        self.resolved_references[ref] = schema
-        return schema
+        try: # Se añade el try para tratar de tener más control sobre la posible omisión de referencias
+            for part in parts: # Se recorren las partes de la referencia para encontrar el esquema
+                schema = schema.get(part, {})
+                if not schema:
+                    print(f"Warning: No se pudo resolver la siguiente referencia: {ref}") # Se usa para comprobar si hay alguna referencia que se pierde y no se procesa
+                    return None
+
+            self.resolved_references[ref] = schema
+            return schema
+        except Exception as e:
+            print("Error al resolver la referencia: {ref}: {e}")
+            return None
 
     def is_valid_description(self, description):
         """Verifica si una descripción es válida (No muy corta y sin repeticiones) para analizarla después en busca de restricciones"""
@@ -181,13 +189,37 @@ class SchemaProcessor:
                 # Procesar referencias
                 if '$ref' in details:
                     ref = details['$ref']
-                    if ref not in self.seen_references:
+                    """
+                    if ref not in self.seen_references and full_name not in self.seen_features:
                         self.seen_references.add(ref)
+                        self.seen_features.add(full_name)
+                        #print(f"Warning: Could not process reference: {self.seen_references}")
                         ref_schema = self.resolve_reference(ref)
-                        if ref_schema:
+                        #ref_schema = self.resolve_reference(ref) and full_name not in self.seen_features
+                        print("REF SHEMAS:"+ref_schema)
+                    """
+
+                    if ref not in self.seen_references: #and full_name not in self.seen_features:  # Solo comprobar si el feature ya ha sido expandido
+                        #self.seen_features.add(full_name)
+                        self.seen_references.add(ref)
+                        #print(full_name)
+                        local_stack_refs = []
+                        if ref in local_stack_refs:
+                            count += 1
+                            #self.stact_refs.append(ref)
+                            limit_recursion_refs = 4
+                            if limit_recursion_refs > count:
+                                print(f"*****Posibles referncias ciclicas****{self.sanitize_name(ref)}")
+                                continue
+                            print(f"{full_name} + {ref}")
+
+                        # Si la referencia ya fue resuelta, no necesitas resolverla nuevamente
+                        ref_schema = self.resolve_reference(ref)
+                        
+                        if ref_schema: # Si la referencia se resolvio correctamente se continua
                             ref_name = self.sanitize_name(ref.split('/')[-1])
-                            # Generar constraint
-                            self.constraints.append(f"{full_name} => {ref_name}")
+                            self.constraints.append(f"{full_name} => {ref_name}") # Generar constraint de las referencias
+
                             if 'properties' in ref_schema:
                                 sub_properties = ref_schema['properties']
                                 sub_required = ref_schema.get('required', [])
@@ -197,27 +229,37 @@ class SchemaProcessor:
                                 # Si no hay 'properties', procesarlo como un tipo simple
                                 # Determinar si la referencia es 'mandatory' u 'optional'
                                 feature_type = 'mandatory' if prop in current_required else 'optional'
-                                
+                                sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
+                                #print(sanitized_ref)
                                 # Agregar la referencia procesada como un tipo simple
                                 feature['sub_features'].append({
-                                    'name': ref_name,
+                                    'name': f"{full_name}_{sanitized_ref}", ## Error, si es una ref de un feature, tratar como subfeature (full_name + ref_name) // RefName Aparte {full_name}_{ref_name}
                                     'type': feature_type,
                                     'description': ref_schema.get('description', ''),
                                     'sub_features': [],
                                     'type_data': 'Boolean' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature
                                 })
-                                #print(f"Warning: Could not process reference: {ref}") # Descomentando la linea se pueden ver las estructuras simples que no tienen 'properties'
-                        #else:
-                            #print(f"Warning: Could not process reference: {ref}")
+                                #print(f"Referencias simples detectadas: {ref}")
+                                #self.stact_refs.append(ref) ## Buscando añadir la refs ciclicas de JSONSchemaPropsOrArray
+                                local_stack_refs.append(ref)
+
+                        else:
+                            print(f"Warning: Could not process reference: {self.seen_references}")
                 
                 # Procesar ítems en arreglos
                 elif feature['type_data'] == 'Boolean' and 'items' in details:
                     items = details['items']
                     if '$ref' in items:
                         ref = items['$ref']
+                        """
                         if ref not in self.seen_references:
                             self.seen_references.add(ref)
                             ref_schema = self.resolve_reference(ref)
+                        """
+                        if ref not in self.seen_references:  # Solo comprobar si el feature ya ha sido expandido
+                            self.seen_references.add(ref)
+                            ref_schema = self.resolve_reference(ref)
+            
                             if ref_schema:
                                 ref_name = self.sanitize_name(ref.split('/')[-1])
                                 # Generar constraint
@@ -225,6 +267,8 @@ class SchemaProcessor:
                                 if ref_schema and 'properties' in ref_schema:
                                     item_mandatory, item_optional = self.parse_properties(ref_schema['properties'], [], full_name, current_depth + 1)
                                     feature['sub_features'].extend(item_mandatory + item_optional)
+                    """
+                    # Se generan para poder implementar las constraints de las reglas por items
                     else:
                         item_required = items.get('required', [])
                         item_type = 'mandatory' if full_name in item_required else 'optional'
@@ -242,15 +286,15 @@ class SchemaProcessor:
                             'sub_features': [],
                             'type_data': items_type_data
                         })
+                        """
                 # Extraer y añadir valores como subfeatures
                 extracted_values = self.extract_values(description)
 
-                if extracted_values:
+                if extracted_values: ## **PENDIENTE** Quitar comillas y por consiguiente, los espacios que quedan
                     values, add_quotes = extracted_values
                     for value in values:
-                        print("Los valores del feature son:"+value)
+                        #print("Los valores del feature son:"+value)
                         #combined_feature = f'"{full_name}_{value}"' if add_quotes else f"{full_name}_{value}"
-                        #print(f"Los nombres del feature son:{combined_feature}")
 
                         feature['sub_features'].append({
                             'name': f'"{full_name}_{value}"' if add_quotes else f"{full_name}_{value}", #f"{full_name}_{self.sanitize_name(combined_feature)}"
@@ -305,7 +349,7 @@ class SchemaProcessor:
         """
         print(f"Saving constraints to {file_path}...")
         with open(file_path, 'a', encoding='utf-8') as f:
-            f.write("\nconstraints\n" + "//Restricciones obtenidas de las referencias:\n")
+            f.write("constraints\n" + "//Restricciones obtenidas de las referencias:\n") # Quitar para las pruebas con flamapy
             for constraint in self.constraints:
                 f.write(f"\t{constraint}\n")
         print("Constraints saved successfully.")
@@ -345,7 +389,7 @@ def properties_to_uvl(feature_list, indent=1):
     for feature in feature_list:
         type_str = f"{feature['type_data'].capitalize()} " if feature['type_data'] else "Boolean "
         if feature['sub_features']:
-            uvl_output += f"{indent_str}{type_str}{feature['name']}\n"  # {type_str} opcional si se necesita 
+            uvl_output += f"{indent_str}{type_str}{feature['name']}\n"  # {type_str} opcional si se necesita
             # uvl_output += f"{indent_str}\t{feature['type']}\n" opcional si se necesita
 
             # Separar características obligatorias y opcionales
@@ -363,7 +407,7 @@ def properties_to_uvl(feature_list, indent=1):
                 uvl_output += f"{indent_str}\talternative\n"
                 uvl_output += properties_to_uvl(sub_alternative, indent + 2)
         else:
-            uvl_output += f"{indent_str}{type_str}{feature['name']} {{abstract}}\n"  # {type_str} opcional si se necesita 
+            uvl_output += f"{indent_str}{type_str}{feature['name']}\n"  # {type_str} opcional si se necesita {{abstract}} 
     return uvl_output
 
 def generate_uvl_from_definitions(definitions_file, output_file, descriptions_file):
@@ -386,7 +430,6 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
     definitions = load_json_file(definitions_file) # Cargar el archivo de definiciones JSON
     processor = SchemaProcessor(definitions) # Inicializar el procesador de esquemas con las definiciones cargadas
     uvl_output = "namespace KubernetesTest1\nfeatures\n\tKubernetes\n\t\toptional\n" # Iniciar la estructura base del archivo UVL
-
     # Procesar cada definición en el archivo JSON
     for schema_name, schema in definitions.get('definitions', {}).items():
         root_schema = schema.get('properties', {})
@@ -408,6 +451,11 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
             uvl_output += f"\t\t\t{type_str_feature+' '}{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '} 
             uvl_output += f"\t\t\t\toptional\n"
             uvl_output += properties_to_uvl(optional_features, indent=5)
+        # Ajuste adicion esquemas simples
+        if not root_schema: ## Para tener en cuenta los esquemas que no tienen propiedades: como los RawExtension, JSONSchemaPropsOrBool, JSONSchemaPropsOrArray que solo tienen descripcion 
+            uvl_output += f"\t\t\t{type_str_feature+' '}{processor.sanitize_name(schema_name)}\n"
+            #print(schema_name)
+            #print(count2)
 
     # Guardar el archivo UVL generado
     with open(output_file, 'w', encoding='utf-8') as f:
@@ -423,7 +471,7 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
 # Rutas de archivo relativas
 #definitions_file = '../kubernetes-json-schema/v1.30.4/_definitions.json'
 definitions_file = '../kubernetes-json-v1.30.2/v1.30.2/_definitions.json'
-output_file = './kubernetes_combined_01_sinTipoDatos.uvl'
+output_file = './kubernetes_combined_01.uvl'
 descriptions_file = './descriptions_01.json'
 
 # Generar archivo UVL y guardar descripciones
