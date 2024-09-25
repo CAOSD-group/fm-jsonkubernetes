@@ -1,4 +1,3 @@
-¡Nuevo! Combinaciones de teclas … Las combinaciones de teclas de Drive se han actualizado para que puedas navegar escribiendo las primeras letras
 import json
 import re
 from collections import deque
@@ -151,6 +150,8 @@ class SchemaProcessor:
         mandatory_features = []
         optional_features = []
         queue = deque([(properties, required, parent_name, depth)])
+        local_stack_refs = []
+
         #numValores = 0
         while queue:
             current_properties, current_required, current_parent, current_depth = queue.popleft()
@@ -185,7 +186,8 @@ class SchemaProcessor:
                     'sub_features': [],
                     'type_data': feature_type_data
                 }
-
+                
+                ciclico = True
                 # Procesar referencias
                 if '$ref' in details:
                     ref = details['$ref']
@@ -199,20 +201,29 @@ class SchemaProcessor:
                         print("REF SHEMAS:"+ref_schema)
                     """
 
-                    if ref not in self.seen_references: #and full_name not in self.seen_features:  # Solo comprobar si el feature ya ha sido expandido
-                        #self.seen_features.add(full_name)
-                        self.seen_references.add(ref)
+                    count =0
+                    if full_name not in self.seen_features:  # Solo comprobar si el feature ya ha sido expandido ref not in self.seen_references: #and 
+                        self.seen_features.add(full_name)
+                        #self.seen_references.add(ref)
                         #print(full_name)
-                        local_stack_refs = []
-                        if ref in local_stack_refs:
-                            count += 1
-                            #self.stact_refs.append(ref)
-                            limit_recursion_refs = 4
-                            if limit_recursion_refs > count:
-                                print(f"*****Posibles referncias ciclicas****{self.sanitize_name(ref)}")
-                                continue
-                            print(f"{full_name} + {ref}")
+                        #self.stact_refs.append(ref)
+                        ref_name01 = self.sanitize_name(ref.split('/')[-1])
 
+                        print(local_stack_refs)
+                            
+                        for ref_name01 in local_stack_refs:
+                            count +=1
+                            print (count)
+                            if count > 7:
+                                print(f"*****Posibles referencias ciclicas****{self.sanitize_name(ref)}")
+                                print(count)
+                                print(local_stack_refs)
+                                ciclico = False
+                            
+                        if not ciclico:
+                            return (mandatory_features, optional_features)
+
+                        local_stack_refs.append(ref_name01)
                         # Si la referencia ya fue resuelta, no necesitas resolverla nuevamente
                         ref_schema = self.resolve_reference(ref)
                         
@@ -256,10 +267,28 @@ class SchemaProcessor:
                             self.seen_references.add(ref)
                             ref_schema = self.resolve_reference(ref)
                         """
-                        if ref not in self.seen_references:  # Solo comprobar si el feature ya ha sido expandido
-                            self.seen_references.add(ref)
+                        count =0
+                        if full_name not in self.seen_features:  # Solo comprobar si el feature ya ha sido expandido
+                            self.seen_features.add(full_name)
+
+                            ref_name01 = self.sanitize_name(ref.split('/')[-1])
+                            print(local_stack_refs)
+                                
+                            for ref_name01 in local_stack_refs:
+                                count +=1
+                                print (count)
+                                if count > 1:
+                                    print(f"*****Posibles referncias cicli, PARTE ITEMS****{self.sanitize_name(ref)}")
+                                    print(count)
+                                    print(local_stack_refs)
+                                    ciclico = False
+                                    print("NO SE EJECUTA?")
+
+                            if not ciclico:
+                                return (mandatory_features, optional_features)
+                            local_stack_refs.append(ref_name01)
+                            
                             ref_schema = self.resolve_reference(ref)
-            
                             if ref_schema:
                                 ref_name = self.sanitize_name(ref.split('/')[-1])
                                 # Generar constraint
