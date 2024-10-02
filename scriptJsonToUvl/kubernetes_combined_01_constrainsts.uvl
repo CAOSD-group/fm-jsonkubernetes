@@ -1,4 +1,4 @@
-namespace KubernetesTest01
+namespace KubernetesTest02
 
 features
 	Kubernetes
