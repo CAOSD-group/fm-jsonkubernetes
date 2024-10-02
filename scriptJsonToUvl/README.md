@@ -5,6 +5,7 @@ convert0Large.py genera 2 archivos: el feature model uvl en __kubernetes_combine
 
 # AGRUPACIONES DE LAS CONSTRAINTS EN LOS ARCHIVOS
 
+### Archivo en Agrupaciones.md
 
 ### Constraints de las referencias
 La primera agrupación de constraints generadas automaticamente son las referencias o _$ref_ que tienen algunos esquemas. Es decir, de cada feature que se analiza y procesa en el script convert01Large.py se comprueba si en los detalles contienen referencias tipo "$ref" o inhibidas en propiedades como "items". Si hay referencias en los detalles de los esquemas, mediante la siguiente línea: *self.constraints.append(f"{full_name} => {ref_name}")* se añaden las constraints de las referencias a una lista que se muestra al final del modelo como _Constraints:_. Esto se decidió porque se puede observar de forma directa la relación que hay entre un feature y otro con las referencias hacia otros esquemas en el propio esquema. Algunas de las constraints obtenidas son las siguientes:
