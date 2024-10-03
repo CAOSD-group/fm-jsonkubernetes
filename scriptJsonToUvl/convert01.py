@@ -20,7 +20,10 @@ class SchemaProcessor:
 
         }
         self.seen_descriptions = set()
-
+        self.oneOf_refs = {'io_k8s_apimachinery_pkg_api_resource_Quantity',
+                           'io_k8s_apimachinery_pkg_util_intstr_IntOrString'}
+        # #/definitions/io.k8s.apimachinery.pkg.util.intstr.IntOrString
+        # #/definitions/io.k8s.apimachinery.pkg.api.resource.Quantity
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
         self.patterns = {
             'values': re.compile(r'(valid|values are|supported|acceptable|can be)', re.IGNORECASE),
@@ -35,7 +38,7 @@ class SchemaProcessor:
     def sanitize_type_data(self, type_data):
         if type_data in ['array', 'object']:
             return 'Boolean'
-        elif type_data == 'number':
+        elif type_data in ['number', 'Number']:
             return 'Integer'
         return type_data
 
@@ -75,14 +78,23 @@ class SchemaProcessor:
 
     def extract_values(self, description):
         """Extrae valores que están entre comillas u otros delimitadores, solo si se encuentran ciertas palabras clave"""
-        if not any(keyword in description.lower() for keyword in ['values are', 'possible values are']):
+        if not any(keyword in description.lower() for keyword in ['values are', 'possible values are', 'following states']):
             return None
         
         value_patterns = [
+            # Captura valores precedidos por un guion, permitiendo múltiples espacios y saltos de línea antes y después
+            re.compile(r'-\s*([\w]+(?:Resize\w+)):'),
+            
+            # Captura valores entre comillas escapadas o no escapadas
+            re.compile(r'\\?["\'](.*?)\\?["\']'),
+            #re.compile(r'\\?["\'](.*?)\\?["\']'),  # Captura valores entre comillas simples o dobles, escapadas o no
+            
             re.compile(r'(?<=Valid values are:)[\s\S]*?(?=\.)'),
             re.compile(r'(?<=Possible values are:)[\s\S]*?(?=\.)'),
-            re.compile(r'["\'](.*?)["\']'),  # Captura valores entre comillas simples o dobles
-            re.compile(r'-\s(\w+):')  # Version editada para tratar nuevos posibles valores
+            re.compile(r'(?<=Allowed values are)[\s\S]*?(?=\.)'),
+            #re.compile(r'(?<=-\s)(\w+)'),   # Captura valores precedidos por un guion y espacio
+            #re.compile(r'(?:\\?["\'])(.*?)(?:\\?["\'])'),  # Captura valores entre comillas escapadas o no
+
             # [()[\]{}] []()[{}]
         ]
 
@@ -130,6 +142,43 @@ class SchemaProcessor:
                 return True
         
         return False
+    
+    """ Tratamiendo de tipos de propiedades, oneOf y enum"""
+    def process_enum():
+        return
+    
+    def process_oneOf(self, oneOf, full_name, type_feature):
+        """
+        Procesa la estructura 'oneOf' y genera subcaracterísticas basadas en los tipos.
+        """
+
+        feature = {
+            'name': full_name,
+            'type': type_feature,  # Lo ponemos como 'optional' ya que puede ser uno de varios tipos 'optional'
+            'description': f"Feature based on oneOf in {full_name}",
+            'sub_features': [],
+            'type_data': 'Boolean'  # Aquí definimos el tipo (por ejemplo: String, Number)
+        }
+        # Procesar cada opción dentro de 'oneOf'
+        for option in oneOf:
+            if 'type' in option: # 'type' in option:
+                option_type_data = option['type'].capitalize()  # Captura el tipo (por ejemplo: string, number, integer)
+                sanitized_name = self.sanitize_name(full_name)  # Limpiar el nombre completo
+
+                # Crear subfeature con el nombre adecuado
+                sub_feature = {
+                    'name': f"{sanitized_name}_as{option_type_data}",
+                    'type': 'alternative',  # Por defecto, lo ponemos como 'optional'option_type
+                    'description': f"Sub-feature of type {option_type_data}",
+                    'sub_features': [],
+                    'type_data': self.sanitize_type_data(option_type_data)
+                }
+
+                # Añadir la subfeature a la lista de sub_features del feature principal
+                feature['sub_features'].append(sub_feature)
+
+        return feature
+
 
     def parse_properties(self, properties, required, parent_name="", depth=0, local_stack_refs=None):
         if local_stack_refs is None:
@@ -169,10 +218,10 @@ class SchemaProcessor:
                     'sub_features': [],
                     'type_data': feature_type_data
                 }
-
                 # Procesar referencias
                 if '$ref' in details:
                     ref = details['$ref']
+                    boolonOf = False
 
                     # Verificar si ya está en la pila local de la rama actual (es decir, un ciclo)
                     if ref in local_stack_refs:
@@ -185,46 +234,52 @@ class SchemaProcessor:
                     ref_schema = self.resolve_reference(ref)
 
                     if ref_schema:
+                        ## Lineas no necesarias en esta implementacion: se usarian en omision de las refs (V_1.0)
                         ref_name = self.sanitize_name(ref.split('/')[-1])
-                        self.constraints.append(f"{full_name} => {ref_name}")
-
+                        #self.constraints.append(f"{full_name} => {ref_name}")
+                        #feature_type = 'mandatory' ## feature_type principal del feature
+                                                        
                         if 'properties' in ref_schema:
                             sub_properties = ref_schema['properties']
                             sub_required = ref_schema.get('required', [])
-
+                            #feature_type = 'mandatory'
                             # Llamada recursiva con la pila local específica de esta rama
                             sub_mandatory, sub_optional = self.parse_properties(sub_properties, sub_required, full_name, current_depth + 1, local_stack_refs)
-
                             # Añadir subfeatures
                             feature['sub_features'].extend(sub_mandatory + sub_optional)
+
+                        elif 'oneOf' in ref_schema:
+                            feature_type = 'mandatory' if prop in current_required or is_required_by_description else 'optional'
+                            oneOf_feature = self.process_oneOf(ref_schema['oneOf'], self.sanitize_name(f"{full_name}"), feature_type) #_{ref_oneOf}
+                            feature_sub = oneOf_feature['sub_features']
+                            # Agregar la referencia que contiene la caracteristica oneOf
+                            feature['sub_features'].extend(feature_sub)
+
                         else:
                             # Si no hay 'properties', procesarlo como un tipo simple
                             # Determinar si la referencia es 'mandatory' u 'optional'
-                            feature_type = 'mandatory' if prop in current_required else 'optional'
+                            #feature_type = 'mandatory' if prop in current_required else 'optional'
                             sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
                             #ref_name = self.sanitize_name(ref.split('/')[-1])
 
                             # Agregar la referencia procesada como un tipo simple
                             feature['sub_features'].append({
                                 'name': f"{full_name}_{sanitized_ref}", ## Error, si es una ref de un feature, tratar como subfeature (full_name + ref_name) // RefName Aparte {full_name}_{ref_name}
-                                'type': feature_type,
+                                'type': 'mandatory', #mandatory no hay declaradas como optional
                                 'description': ref_schema.get('description', ''),
                                 'sub_features': [],
                                 'type_data': 'Boolean' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature
                             })
-                            print(f"Referencias simples detectadas: {ref}")
+                            #print(f"Referencias simples detectadas: {ref}")
 
                     # Eliminar la referencia de la pila local al salir de esta rama
                     local_stack_refs.pop()
 
-                # Procesar ítems en arreglos
                 # Procesar ítems en arreglos o propiedades adicionales
-                # Procesar ítems en arreglos
                 elif 'items' in details:
                     items = details['items']
                     if '$ref' in items:
                         ref = items['$ref']
-                        
                         # Verificar si ya está en la pila local de la rama actual (es decir, un ciclo)
                         if ref in local_stack_refs:
                             print(f"*****Referencia cíclica detectada en items: {ref}. Saltando esta propiedad****")
@@ -235,14 +290,15 @@ class SchemaProcessor:
                         ref_schema = self.resolve_reference(ref)
 
                         if ref_schema:
+                            ## Linea no necesaria en esta implementacion: se usarian en omision de las refs (V_1.0)
                             ref_name = self.sanitize_name(ref.split('/')[-1])
-                            self.constraints.append(f"{full_name} => {ref_name}")
+                            #self.constraints.append(f"{full_name} => {ref_name}")
+                            #feature_type = 'mandatory'
 
                             if 'properties' in ref_schema:
                                 #sub_item_properties = ref_schema['properties']
                                 #sub_item_required = ref_schema.get('required', [])
-                                # Llamada recursiva con la pila local específica de esta rama
-                                #sub_mandatory, sub_optional = self.parse_properties(sub_properties, sub_required, full_name, current_depth + 1, local_stack_refs)
+                                #sub_mandatory, sub_optional = self.parse_properties(sub_properties, sub_required, full_name, current_depth + 1, local_stack_refs) ## Otra manera de hacerlo
                                 item_mandatory, item_optional = self.parse_properties(ref_schema['properties'], ref_schema.get('required', []), full_name, current_depth + 1, local_stack_refs)
                                 feature['sub_features'].extend(item_mandatory + item_optional)
                             else:
@@ -269,7 +325,7 @@ class SchemaProcessor:
                         
                         # Verificar si ya está en la pila local de la rama actual (es decir, un ciclo)
                         if ref in local_stack_refs:
-                            print(f"*****Referencia cíclica detectada en additionalProperties: {ref}. Saltando esta propiedad****")
+                            #print(f"*****Referencia cíclica detectada en additionalProperties: {ref}. Saltando esta propiedad****")
                             continue
 
                         # Añadir la referencia a la pila local
@@ -277,13 +333,21 @@ class SchemaProcessor:
                         ref_schema = self.resolve_reference(ref)
 
                         if ref_schema:
-                            ref_name = self.sanitize_name(ref.split('/')[-1])
-                            self.constraints.append(f"{full_name} => {ref_name}")
+                            ## Linea no necesaria en esta implementacion: se usarian en omision de las refs (V_1.0)
+                            ref_name = self.sanitize_name(ref.split('/')[-1]) 
+                            #self.constraints.append(f"{full_name} => {ref_name}")
+                            #feature_type = 'mandatory'
 
                             if 'properties' in ref_schema:
                                 item_mandatory, item_optional = self.parse_properties(ref_schema['properties'], [], full_name, current_depth + 1, local_stack_refs)
                                 # ref_schema.get('required', []) se añade solo 1 linea mas al modelo ==> 1 mandatory unicamente
                                 feature['sub_features'].extend(item_mandatory + item_optional)
+                            elif 'oneOf' in ref_schema:
+                                #feature_type = 'mandatory' if prop in current_required or is_required_by_description else 'optional'
+                                oneOf_feature = self.process_oneOf(ref_schema['oneOf'], self.sanitize_name(f"{full_name}"), feature_type) #_{ref_oneOf}
+                                feature_sub = oneOf_feature['sub_features']
+                                # Agregar la referencia que contiene la caracteristica oneOf
+                                feature['sub_features'].extend(feature_sub)
                             else:
                                 # Si no hay 'properties', procesarlo como un tipo simple
                                 feature_type = 'mandatory' if prop in current_required else 'optional' # Determinar si la referencia es 'mandatory' u 'optional'                                sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
@@ -292,7 +356,7 @@ class SchemaProcessor:
                                 # Agregar la referencia procesada como un tipo simple
                                 feature['sub_features'].append({
                                     'name': f"{full_name}_{sanitized_ref}", ## Error, si es una ref de un feature, tratar como subfeature (full_name + ref_name) // RefName Aparte {full_name}_{ref_name}
-                                    'type': feature_type,
+                                    'type': 'feature_type',
                                     'description': ref_schema.get('description', ''),
                                     'sub_features': [],
                                     'type_data': 'Boolean' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature
@@ -300,7 +364,6 @@ class SchemaProcessor:
 
                         # Eliminar la referencia de la pila local al salir de esta rama
                         local_stack_refs.pop()
-
 
                 # Extraer y añadir valores como subfeatures
                 extracted_values = self.extract_values(description)
@@ -321,6 +384,12 @@ class SchemaProcessor:
                     sub_required = details.get('required', [])
                     sub_mandatory, sub_optional = self.parse_properties(sub_properties, sub_required, full_name, current_depth + 1, local_stack_refs)
                     feature['sub_features'].extend(sub_mandatory + sub_optional)
+                """
+                else: ##Parte para definir las propiedades anidadas que son simples* Probar
+                    sub_required = details.get('required', [])
+                    sub_mandatory, sub_optional = self.parse_properties([], sub_required, full_name, current_depth + 1, local_stack_refs)
+                    feature['sub_features'].extend(sub_mandatory + sub_optional)
+                """    
 
                 if feature_type == 'mandatory':
                     mandatory_features.append(feature)
@@ -330,7 +399,6 @@ class SchemaProcessor:
                 self.processed_features.add(full_name)
 
         return mandatory_features, optional_features
-
             
     def save_descriptions(self, file_path):
 
@@ -408,8 +476,27 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
             uvl_output += f"\t\t\t\toptional\n"
             uvl_output += properties_to_uvl(optional_features, indent=5)
         # Ajuste adicion esquemas simples
-        if not root_schema: ## Para tener en cuenta los esquemas que no tienen propiedades: como los RawExtension, JSONSchemaPropsOrBool, JSONSchemaPropsOrArray que solo tienen descripcion 
-            uvl_output += f"\t\t\t{type_str_feature+' '}{processor.sanitize_name(schema_name)}\n"
+        if not root_schema: ## Para tener en cuenta los esquemas que no tienen propiedades: como los RawExtension, JSONSchemaPropsOrBool, JSONSchemaPropsOrArray que solo tienen descripcion
+            if 'oneOf' in schema:
+                #print(f"Procesando oneOf en {schema_name}")
+                oneOf_feature = processor.process_oneOf(schema['oneOf'], processor.sanitize_name(schema_name), type_feature='optional')
+                if oneOf_feature:
+                    #uvl_output += f"\t\t\t{type_str_feature} {processor.sanitize_name(schema_name)}\n"
+                    #uvl_output += f"\t\t\t\toptional\n"
+                    #nameSubfeatures = oneOf_feature['sub_features']
+                    uvl_output += properties_to_uvl([oneOf_feature], indent=3) ## Quizas cambiar la estructura general para las referencias a oneOf
+                """
+                    for nameSubfeature in nameSubfeatures:
+                        names = nameSubfeature['name']
+                        type_data = nameSubfeature['type_data']
+                        if type_data == 'Number':
+                            type_data = 'Integer'
+                        uvl_output += f"\t\t\t\t\t{type_data} {names}\n"
+                        print(names)
+                """
+            else:
+                uvl_output += f"\t\t\t{type_str_feature+' '}{processor.sanitize_name(schema_name)}\n"
+                #print("Schemas sin propiedades:",schema_name)
             #print(schema_name)
             #print(count2)
 
@@ -427,7 +514,7 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
 # Rutas de archivo relativas
 #definitions_file = '../kubernetes-json-schema/v1.30.4/_definitions.json'
 definitions_file = '../kubernetes-json-v1.30.2/v1.30.2/_definitions.json'
-output_file = './kubernetes_combined_01.uvl'
+output_file = './kubernetes_combined_02.uvl'
 descriptions_file = './descriptions_01.json'
 
 # Generar archivo UVL y guardar descripciones
