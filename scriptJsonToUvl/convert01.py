@@ -1,3 +1,4 @@
+#### Versión del script mas avanzado del mapeo de esquemas de kubernetes json-uvl. **Sin comentarios** #####
 import json
 import re
 from collections import deque
@@ -20,10 +21,7 @@ class SchemaProcessor:
 
         }
         self.seen_descriptions = set()
-        self.oneOf_refs = {'io_k8s_apimachinery_pkg_api_resource_Quantity',
-                           'io_k8s_apimachinery_pkg_util_intstr_IntOrString'}
-        # #/definitions/io.k8s.apimachinery.pkg.util.intstr.IntOrString
-        # #/definitions/io.k8s.apimachinery.pkg.api.resource.Quantity
+
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
         self.patterns = {
             'values': re.compile(r'(valid|values are|supported|acceptable|can be)', re.IGNORECASE),
@@ -143,19 +141,17 @@ class SchemaProcessor:
         
         return False
     
+
     """ Tratamiendo de tipos de propiedades, oneOf y enum"""
-    def process_enum():
-        return
-    
     def process_oneOf(self, oneOf, full_name, type_feature):
         """
-        Procesa la estructura 'oneOf' y genera subcaracterísticas basadas en los tipos.
+        Procesa la estructura 'oneOf' y genera subcaracterísticas basadas en los tipos de datos posibles que tiene para seleccionar una de los 2.
         """
 
         feature = {
             'name': full_name,
             'type': type_feature,  # Lo ponemos como 'optional' ya que puede ser uno de varios tipos 'optional'
-            'description': f"Feature based on oneOf in {full_name}",
+            'description': f"Feature based on oneOf in {full_name}",    
             'sub_features': [],
             'type_data': 'Boolean'  # Aquí definimos el tipo (por ejemplo: String, Number)
         }
@@ -178,8 +174,21 @@ class SchemaProcessor:
                 feature['sub_features'].append(sub_feature)
 
         return feature
+    
+    def process_enum(self, property, full_name):
+        """ Agrega en el nombre del feature el valor por defecto que tiene. Comprueba si el feature tiene la caracteristica enum y añade el contenido de este al valor por defecto"""
 
+        if 'enum' in property and property['enum']:
+            #default_name = property.get('enum',[])
+            #default_full = default_name[0]
+            default_value = property['enum'][0]
+            default_full_name = f"{full_name} {{default '{default_value}'}}"
+            print("VALOR EN EL METODO",default_full_name)
+            #property['name'] = default_full_name # Opcion de pasar el parametro modificado del property
+            return default_full_name
 
+        return full_name
+    
     def parse_properties(self, properties, required, parent_name="", depth=0, local_stack_refs=None):
         if local_stack_refs is None:
             local_stack_refs = []  # Crear una nueva lista para esta rama
@@ -205,6 +214,8 @@ class SchemaProcessor:
                 # Parseo de los tipos de datos y de los no válidos
                 feature_type_data = details.get('type', 'Boolean')
                 feature_type_data = self.sanitize_type_data (feature_type_data) 
+                # *** Aquí llamamos a process_enum para modificar el nombre si tiene un enum ***
+                full_name = self.process_enum(details, full_name)
 
                 description = details.get('description', '')
                 if description:
@@ -221,7 +232,7 @@ class SchemaProcessor:
                 # Procesar referencias
                 if '$ref' in details:
                     ref = details['$ref']
-                    boolonOf = False
+                    # boolonOf = False # Prueba omision de refs con oneOf
 
                     # Verificar si ya está en la pila local de la rama actual (es decir, un ciclo)
                     if ref in local_stack_refs:
@@ -238,11 +249,10 @@ class SchemaProcessor:
                         ref_name = self.sanitize_name(ref.split('/')[-1])
                         #self.constraints.append(f"{full_name} => {ref_name}")
                         #feature_type = 'mandatory' ## feature_type principal del feature
-                                                        
+          
                         if 'properties' in ref_schema:
                             sub_properties = ref_schema['properties']
                             sub_required = ref_schema.get('required', [])
-                            #feature_type = 'mandatory'
                             # Llamada recursiva con la pila local específica de esta rama
                             sub_mandatory, sub_optional = self.parse_properties(sub_properties, sub_required, full_name, current_depth + 1, local_stack_refs)
                             # Añadir subfeatures
@@ -263,8 +273,8 @@ class SchemaProcessor:
                             #ref_name = self.sanitize_name(ref.split('/')[-1])
 
                             # Agregar la referencia procesada como un tipo simple
-                            feature['sub_features'].append({
-                                'name': f"{full_name}_{sanitized_ref}", ## Error, si es una ref de un feature, tratar como subfeature (full_name + ref_name) // RefName Aparte {full_name}_{ref_name}
+                            feature['sub_features'].append({ ## Seguramente habra que quitar el name... ya con el primer kind creo que es suficiente **
+                                'name': f"{full_name}_{sanitized_ref}" , ## Error, si es una ref de un feature, tratar como subfeature (full_name + ref_name) // RefName Aparte {full_name}_{ref_name}
                                 'type': 'mandatory', #mandatory no hay declaradas como optional
                                 'description': ref_schema.get('description', ''),
                                 'sub_features': [],
@@ -308,7 +318,7 @@ class SchemaProcessor:
 
                                 # Agregar la referencia procesada como un tipo simple
                                 feature['sub_features'].append({
-                                    'name': f"{full_name}_{sanitized_ref}", ## Error, si es una ref de un feature, tratar como subfeature (full_name + ref_name) // RefName Aparte {full_name}_{ref_name}
+                                    'name': f"{full_name}_{sanitized_ref}", ## RefName Aparte {full_name}_{ref_name}
                                     'type': feature_type,
                                     'description': ref_schema.get('description', ''),
                                     'sub_features': [],
