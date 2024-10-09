@@ -1,4 +1,5 @@
-#### Versión del script mas avanzado del mapeo de esquemas de kubernetes json-uvl. **Sin comentarios** #####
+#### Versión del script de desarrollo sin comentarios del mapeo de esquemas de kubernetes json a uvl. #####
+### @author: bfl699 @group: caosd
 import json
 import re
 from collections import deque
@@ -76,41 +77,68 @@ class SchemaProcessor:
 
     def extract_values(self, description):
         """Extrae valores que están entre comillas u otros delimitadores, solo si se encuentran ciertas palabras clave"""
-        if not any(keyword in description.lower() for keyword in ['values are', 'possible values are', 'following states']):
+        if not any(keyword in description.lower() for keyword in ['values are', 'possible values are', 'following states', '. must be', 'implicitly inferred to be']): # , '. Must be' , 'allowed valures are'
             return None
         
         value_patterns = [
             # Captura valores precedidos por un guion, permitiendo múltiples espacios y saltos de línea antes y después
-            re.compile(r'-\s*([\w]+(?:Resize\w+)):'),
+            re.compile(r'-\s*([\w]+(?:Resize\w+)):'), ## Patron para los guiones y doble punto al final.
             
             # Captura valores entre comillas escapadas o no escapadas
-            re.compile(r'\\?["\'](.*?)\\?["\']'),
+            re.compile(r'\\?["\'](.*?)\\?["\']'),   
             #re.compile(r'\\?["\'](.*?)\\?["\']'),  # Captura valores entre comillas simples o dobles, escapadas o no
             
             re.compile(r'(?<=Valid values are:)[\s\S]*?(?=\.)'),
             re.compile(r'(?<=Possible values are:)[\s\S]*?(?=\.)'),
-            re.compile(r'(?<=Allowed values are)[\s\S]*?(?=\.)'),
+            re.compile(r'(?<=Allowed values are)[\s\S]*?(?=\.)', re.IGNORECASE),
+
+            #re.compile(r'(?<=Must be\s)(?:\s*TCP\s*,?\s*|\s*UDP\s*,?\s*|\s*SCTP\s*)(?=\.|,|\s)')  ## Se deja provisional, *no coge SCTP para añadirlo a los valores...
+            #re.compile(r'(?<=Must be\s)(TCP|UDP)(?:\s*,?\s*or\s*,?\s*(SCTP))?(?=\.|,|\s)', re.IGNORECASE)
+
+            ####re.compile(r'(?<=Must be\s)(TCP|UDP|\sSCTP)(?=\.|,|\s)'),  ### Pruebas sin resultados favorables a añadir el SCTP
+            re.compile(r'\b(UDP.*?SCTP)\b')
+
+            #re.compile(r'(?<=Must be\s)(TCP|UDP|SCTP|or\sSCTP)(?=\.|,)', re.IGNORECASE),
+            #re.compile(r'(?<=Must be\s)([A-Z]{2,10})(?:\s+or\s+([A-Z]{2,10}))?(?=\.|,)', re.IGNORECASE),
+            #re.compile(r'Must be\s*([^\.]+)', re.IGNORECASE)
+
             #re.compile(r'(?<=-\s)(\w+)'),   # Captura valores precedidos por un guion y espacio
             #re.compile(r'(?:\\?["\'])(.*?)(?:\\?["\'])'),  # Captura valores entre comillas escapadas o no
-
             # [()[\]{}] []()[{}]
         ]
 
         values = []
         #add_quotes = False  # Variable para verificar si se necesita añadir comillas
+        default_value = self.patterns_process_enum(description)
+
         for pattern in value_patterns:
             matches = pattern.findall(description)
+            #if matches:
+            #    print(f"LOS PRIMEROS MATCHES ENTEROS {matches}")
+
             for match in matches:
-                split_values = re.split(r',\s*|\n', match)
+                print(f"VALORES EXPLORADOS / OBTENIDOS: {match}")  # Debug: Ver los valores separados
+                #split_values = re.split(r',\s*|\n', match)
+                split_values = re.split(r',\s*|\s+or\s+|\sor|or\s|\s+and\s+', match)  # Asegurarse de que "or" esté rodeado de espacios ### or\s: soluciona quitar el or en STCP.
+                print(f"Split Values: {split_values}")  # Debug: Ver los valores separados
                 for v in split_values:
                     v = v.strip()
+                    #v = v.replace(r'\sor\s', '').strip()
                     # Reemplazar '*' por "estrella"
                     v = v.replace('*', 'estrella')
+                    v = v.replace('"', '').replace("'", '').replace('`','')  # Elimina comillas dobles, simples y cerradas
+                    #print("VALOR ANTES",v)
+                    
                     v = v.replace(' ', '_').replace('/', '_')
+                    #print("VALOR DESPUES", v)
                     #v = v.replace('/', '_')
 
                     # Filtrar valores que contienen puntos, corchetes, llaves o que son demasiado largos
                     if v and len(v) <= 15 and not any(char in v for char in {'.', '{', '}', '[', ']', ':'}): # añadido / por problemas con la sintaxis
+                        if v == default_value: ## if default_value and v.lower() == default_value.lower():
+                            v = f"{v} {{default}}"
+                            print(f"Valores que coinciden {v} COINCIDE CON  {default_value}")
+                            #values.append(v)
                         values.append(v)
                         #if ' ' in v:  # Si un valor contiene un espacio, Era para añadir comillas dobles "", => sintaxis
                         #    add_quotes = True
@@ -120,6 +148,43 @@ class SchemaProcessor:
             return None
         return values #, add_quotes  # Devuelve los valores y el nombre del feature => Quitado sensor espacio
 
+    def patterns_process_enum(self, description):
+
+        patterns_default_values = ['Defaults to', 'defaults to', '. implicitly inferred to be']
+        if not any(keyword in description.lower() for keyword in patterns_default_values):
+            return None
+         
+        value_patterns = [  
+            #re.compile(r'(?<=Defaults to\s)(["\']?[\w\s\.\-"\']+["\']?)'),  # Captura con "Defaults to"
+            re.compile(r'(?<=defaults to\s)(["\']?[\w\s\.\-"\']+["\']?)', re.IGNORECASE), ## No tiene en cuenta si es mayus o minis
+
+            #re.compile(r'(?<=Implicitly inferred to be\s)(["\']?[\w\s\.\-"\']+["\']?)', re.IGNORECASE),
+            #re.compile(r'(?<=Implicitly inferred to be\s)["\'](.*?)\\?["\']', re.IGNORECASE), ##### PROBAR TODAVIA EL "\ext4\"
+            re.compile(r'Implicitly inferred to be\s["\'](.*?)["\']', re.IGNORECASE)
+
+            #Implicitly inferred to be
+        ]
+        default_value = ""
+        
+        for pattern in value_patterns:
+            matches = pattern.findall(description)
+            for match in matches:
+                #print("PALABRAS COGIDAS: ", match)
+                v = match.strip().replace('"', '').replace("'", '').replace('.', '').strip()
+                #print("PALABRAS YA PROCESADAS: ", v)
+
+                # Aplicar restricciones: longitud y tipo de valor
+                if v and len(v) <= 50 : #and (v.isalpha() or v.isdigit() or v in {"true", "false", "null", "0", "1"})
+                    #default_value.append(v)
+                    default_value = v
+                    #print("VALOR AÑADIDO: ",default_value)
+
+        if not default_value:
+            print(default_value)
+            return None
+        print("Estos son los valores:: ",default_value)
+    # Si no se encuentra ningún valor válido, devolver el nombre sin cambios
+        return default_value
 
     def categorize_description(self, description, feature_name, type_data):
         """Categoriza la descripción según los patrones predefinidos."""
@@ -183,7 +248,7 @@ class SchemaProcessor:
             #default_full = default_name[0]
             default_value = property['enum'][0]
             default_full_name = f"{full_name} {{default '{default_value}'}}"
-            print("VALOR EN EL METODO",default_full_name)
+            #print("VALOR EN EL METODO",default_full_name)
             #property['name'] = default_full_name # Opcion de pasar el parametro modificado del property
             return default_full_name
 
@@ -216,6 +281,7 @@ class SchemaProcessor:
                 feature_type_data = self.sanitize_type_data (feature_type_data) 
                 # *** Aquí llamamos a process_enum para modificar el nombre si tiene un enum ***
                 full_name = self.process_enum(details, full_name)
+                #full_name = self.patterns_process_enum(description, full_name) ##PROBANDO
 
                 description = details.get('description', '')
                 if description:
@@ -236,7 +302,7 @@ class SchemaProcessor:
 
                     # Verificar si ya está en la pila local de la rama actual (es decir, un ciclo)
                     if ref in local_stack_refs:
-                        print(f"*****Referencia cíclica detectada: {ref}. Saltando esta propiedad****")
+                        #print(f"*****Referencia cíclica detectada: {ref}. Saltando esta propiedad****")
                         # Si es un ciclo, saltamos esta propiedad pero seguimos procesando otras
                         continue
 
@@ -292,7 +358,7 @@ class SchemaProcessor:
                         ref = items['$ref']
                         # Verificar si ya está en la pila local de la rama actual (es decir, un ciclo)
                         if ref in local_stack_refs:
-                            print(f"*****Referencia cíclica detectada en items: {ref}. Saltando esta propiedad****")
+                            #print(f"*****Referencia cíclica detectada en items: {ref}. Saltando esta propiedad****")
                             continue
 
                         # Añadir la referencia a la pila local

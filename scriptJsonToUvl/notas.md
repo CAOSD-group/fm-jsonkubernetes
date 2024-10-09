@@ -1,4 +1,3 @@
-¡Nuevo! Combinaciones de teclas … Las combinaciones de teclas de Drive se han actualizado para que puedas navegar escribiendo las primeras letras
 Resultados tras el análsisi con la herramienta https://fmfactlabel.adabyron.uma.es/
 
 
@@ -28,5 +27,27 @@ Posibles errores en el alterative => genero los features de items simples cuando
 Aunque al quitar los features de items simples sigue manteniendose el error.
 items simples añadidos por las constraints, para la "Agrupación de restricciones por item", en algunos puntos son necesarios pero quizas no siempre sea necesario generar ese feature.
 
-Solucionado: Quitando comillas etc
-### Probar ajuste generando solo los items necesarios que salgan en las reglas
+Solucionado: Quitando comillas y espacios entre los valoresetc
+
+
+Se añadio el default en los esquemas de manera directa con el metodo process. Si tienen el enum
+
+En las referencias tambien, decidir si usar alternative u optional con restricciones
+
+### Patrones añadidos para obtener valores de las descripciones.
+
+- En primer lugar se pudo añadir un gran numero de reglas con las refs directas. Pero al final se omitieron. Despues 
+
+Mas patrones para buscar valores:
+
+Se añadio en la captura general must be, defaults, Implicitly inferred to be , defaults to be
+- Por un lado se añadieron los valores del ". Must be" y por otro los del inferred to be. Se ajusto para que cogiesen solo los obtejivos aunque una se quedo afuera.
+- must be, . Must be, Ex., must be in the range, 
+
+Implicitly inferred to be -- valor por defecto
+
+Patrones:
+re.compile(r'(?<=Implicitly inferred to be\s)?["\'](.*?)\\?["\']', re.IGNORECASE),
+Se añade para añadir mas valores por defecto que toma un feature que se repite mucho en una gran variedad de esquemas
+
+Separadores: 'or' y 'and' entre los valores
