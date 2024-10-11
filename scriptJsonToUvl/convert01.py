@@ -25,9 +25,9 @@ class SchemaProcessor:
 
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
         self.patterns = {
-            'values': re.compile(r'(valid|values are|supported|acceptable|can be)', re.IGNORECASE),
-            'restrictions': re.compile(r'(allowed|conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed)', re.IGNORECASE),
-            'dependencies': re.compile(r'(depends on|requires|if[\s\S]*?only if|relies on|contingent upon|related to)', re.IGNORECASE)
+            'values': re.compile(r'^\b$', re.IGNORECASE), # values are|valid|supported|acceptable|can be
+            'restrictions': re.compile(r'(valid port number|must be in the range)', re.IGNORECASE), ## allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
+            'dependencies': re.compile(r'^\b$', re.IGNORECASE) ## (requires|if[\s\S]*?only if|only if) # depends on ningun caso especial, quitar relies on: no hay casos, contingent upon: igual = related to
         }
 
     def sanitize_name(self, name):
@@ -62,13 +62,15 @@ class SchemaProcessor:
             print("Error al resolver la referencia: {ref}: {e}")
             return None
 
-    def is_valid_description(self, description):
+    def is_valid_description(self, feature_name, description):
         """Verifica si una descripción es válida (No muy corta y sin repeticiones) para analizarla después en busca de restricciones"""
         if len(description) < 10:
             return False
-        if description in self.seen_descriptions:
+        # Crear una clave única combinando el nombre del feature y la descripción
+        description_key = f"{feature_name}:{description}"
+        if description_key in self.seen_descriptions:
             return False
-        self.seen_descriptions.add(description)
+        self.seen_descriptions.add(description_key)
         return True
 
     def is_required_based_on_description(self, description):
@@ -117,10 +119,10 @@ class SchemaProcessor:
             #    print(f"LOS PRIMEROS MATCHES ENTEROS {matches}")
 
             for match in matches:
-                print(f"VALORES EXPLORADOS / OBTENIDOS: {match}")  # Debug: Ver los valores separados
+                #print(f"VALORES EXPLORADOS / OBTENIDOS: {match}")  # Debug: Ver los valores separados
                 #split_values = re.split(r',\s*|\n', match)
                 split_values = re.split(r',\s*|\s+or\s+|\sor|or\s|\s+and\s+', match)  # Asegurarse de que "or" esté rodeado de espacios ### or\s: soluciona quitar el or en STCP.
-                print(f"Split Values: {split_values}")  # Debug: Ver los valores separados
+                #print(f"Split Values: {split_values}")  # Debug: Ver los valores separados
                 for v in split_values:
                     v = v.strip()
                     #v = v.replace(r'\sor\s', '').strip()
@@ -137,7 +139,7 @@ class SchemaProcessor:
                     if v and len(v) <= 15 and not any(char in v for char in {'.', '{', '}', '[', ']', ':'}): # añadido / por problemas con la sintaxis
                         if v == default_value: ## if default_value and v.lower() == default_value.lower():
                             v = f"{v} {{default}}"
-                            print(f"Valores que coinciden {v} COINCIDE CON  {default_value}")
+                            #print(f"Valores que coinciden {v} COINCIDE CON  {default_value}") ### log para comprobar los valores añadidos y el valor por defecto conseguido
                             #values.append(v)
                         values.append(v)
                         #if ' ' in v:  # Si un valor contiene un espacio, Era para añadir comillas dobles "", => sintaxis
@@ -149,14 +151,17 @@ class SchemaProcessor:
         return values #, add_quotes  # Devuelve los valores y el nombre del feature => Quitado sensor espacio
 
     def patterns_process_enum(self, description):
-
-        patterns_default_values = ['Defaults to', 'defaults to', '. implicitly inferred to be']
+ 
+        patterns_default_values = ['defaults to', '. implicitly inferred to be'] # 'Defaults to', al comprobar luego con minus en mayuscula no cuenta
         if not any(keyword in description.lower() for keyword in patterns_default_values):
             return None
          
         value_patterns = [  
             #re.compile(r'(?<=Defaults to\s)(["\']?[\w\s\.\-"\']+["\']?)'),  # Captura con "Defaults to"
-            re.compile(r'(?<=defaults to\s)(["\']?[\w\s\.\-"\']+["\']?)', re.IGNORECASE), ## No tiene en cuenta si es mayus o minis
+            #re.compile(r'(?<=defaults to\s)(["\']?[\w\s\.\-"\']+["\']?)', re.IGNORECASE), ## No tiene en cuenta si es mayus o minis
+            re.compile(r'(?<=defaults to\s)(["\']?[\w\s\.\-"\']+?)(?=\.)', re.IGNORECASE),  # Detener captura en el punto literal 
+            re.compile(r'(?<=Defaults to\s)(["\']?[\w\s\.\-"\']+["\']?)'), 
+
 
             #re.compile(r'(?<=Implicitly inferred to be\s)(["\']?[\w\s\.\-"\']+["\']?)', re.IGNORECASE),
             #re.compile(r'(?<=Implicitly inferred to be\s)["\'](.*?)\\?["\']', re.IGNORECASE), ##### PROBAR TODAVIA EL "\ext4\"
@@ -169,9 +174,17 @@ class SchemaProcessor:
         for pattern in value_patterns:
             matches = pattern.findall(description)
             for match in matches:
-                #print("PALABRAS COGIDAS: ", match)
-                v = match.strip().replace('"', '').replace("'", '').replace('.', '').strip()
-                #print("PALABRAS YA PROCESADAS: ", v)
+
+                #if len(match) > 30:
+                #    split_value = match.split('.')[0]
+                    #value = split_value[0]
+                if not 'ext4' in match:
+                    print("PALABRAS COGIDAS: ", match)
+                first_part = match.split('.')[0]  # Solo tomamos lo que está antes del primer punto
+
+                v = first_part.strip().replace('"', '').replace("'", '').replace('.', '').strip()
+                if not 'ext4' in v:
+                    print("PALABRAS YA PROCESADAS: ", v)
 
                 # Aplicar restricciones: longitud y tipo de valor
                 if v and len(v) <= 50 : #and (v.isalpha() or v.isdigit() or v in {"true", "false", "null", "0", "1"})
@@ -180,16 +193,16 @@ class SchemaProcessor:
                     #print("VALOR AÑADIDO: ",default_value)
 
         if not default_value:
-            print(default_value)
+            print("Valores que no son por defecto ",default_value)
             return None
-        print("Estos son los valores:: ",default_value)
+        #print("Estos son los valores:: ",default_value)
     # Si no se encuentra ningún valor válido, devolver el nombre sin cambios
         return default_value
 
     def categorize_description(self, description, feature_name, type_data):
         """Categoriza la descripción según los patrones predefinidos."""
         
-        if not self.is_valid_description(description):
+        if not self.is_valid_description(description, feature_name):
             return False
         # Entrada de descripción con datos del tipo para mejorar la precisión de las reglas
         description_entry = {

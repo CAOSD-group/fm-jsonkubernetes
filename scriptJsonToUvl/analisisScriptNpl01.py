@@ -1,5 +1,6 @@
 import json
 import spacy
+import re
 
 # Cargar el modelo de NLP
 nlp = spacy.load("en_core_web_sm")
@@ -21,40 +22,49 @@ def extract_bounds(description):
     doc = nlp(description)
     min_bound = None
     max_bound = None
+    is_port_number = False
 
-    for i, token in enumerate(doc):
-        # Intentar convertir el token a un número válido (solo "zero" y "one")
-        number = None
-        if token.like_num:
-            try:
-                number = float(token.text)  # Intentar convertir el número a flotante
-            except ValueError:
-                pass  # Ignorar si no se puede convertir directamente
-        elif token.text.lower() in word_to_num:  # Solo procesar "zero" y "one"
-            number = word_to_num[token.text.lower()]
+    # Expresiones para detectar intervalos de la forma "0 < x < 65536", "1-65535 inclusive", y "Number must be in the range 1 to 65535"
+    range_pattern = re.compile(r'(\d+)\s*<\s*\w+\s*<\s*(\d+)')
+    inclusive_range_pattern = re.compile(r'(\d+)\s*-\s*(\d+)\s*\(inclusive\)')
+    range_text_pattern = re.compile(r'Number\s+must\s+be\s+in\s+the\s+range\s+(\d+)\s+to\s+(\d+)', re.IGNORECASE)
+    range_text_pattern = re.compile(r'(?<=Number must be in the range)\s*(\d+)\s*to\s*(\d+)(?=\.)', re.IGNORECASE)
 
-        # Si logramos obtener un número, analizar su contexto
-        if number is not None:
-            if i > 0:
-                prev_token = doc[i - 1]
-                
-                # Reglas para detectar límites mínimos
-                if prev_token.text in ["at", "least", "greater", "above", "more", "over", "minimum"]:
-                    if min_bound is None or number > min_bound:
-                        min_bound = number
-                elif prev_token.text in ["than"] and doc[i - 2].text in ["greater", "more", "larger"]:
-                    if min_bound is None or number > min_bound:
-                        min_bound = number
-                
-                # Reglas para detectar límites máximos
-                if prev_token.text in ["at", "most", "less", "below", "under", "fewer", "maximum", "equal"]:
-                    if max_bound is None or number < max_bound:
-                        max_bound = number
-                #elif prev_token.text in ["than"] and doc[i - 2].text in ["less", "fewer", "smaller"]:
-                #    if max_bound is None or number < max_bound:
-                #        max_bound = number
+    # Detectar si la descripción menciona puertos válidos
+    if "valid port number" in description.lower():
+        is_port_number = True
 
-    return min_bound, max_bound
+    # Detectar rangos con "< x <" (ej. 0 < x < 65536)
+    range_match = range_pattern.search(description)
+    if range_match:
+        min_bound = int(range_match.group(1))
+        max_bound = int(range_match.group(2))
+        return min_bound, max_bound, is_port_number
+
+    # Detectar rangos con "1-65535 inclusive"
+    inclusive_match = inclusive_range_pattern.search(description)
+    if inclusive_match:
+        min_bound = int(inclusive_match.group(1))
+        max_bound = int(inclusive_match.group(2))
+        return min_bound, max_bound, is_port_number
+
+    # Detectar rangos de la forma "Number must be in the range 1 to 65535"
+    range_text_match = range_text_pattern.search(description)
+    if range_text_match:
+        min_bound = int(range_text_match.group(1))
+        max_bound = int(range_text_match.group(2))
+        return min_bound, max_bound, is_port_number
+
+    # Si no se detecta un rango explícito, intentar extraer cualquier número aislado
+    numbers = [int(n) for n in re.findall(r'\d+', description)]
+
+    # Reglas para límites mínimos y máximos basados en expresiones comunes
+    if "greater than" in description or "above" in description:
+        min_bound = max(numbers) if numbers else None
+    elif "less than" in description or "below" in description:
+        max_bound = min(numbers) if numbers else None
+
+    return min_bound, max_bound, is_port_number
 
 # Función para convertir descripciones en reglas UVL usando NLP
 def convert_to_uvl_with_nlp(feature_key, description, type_data):
@@ -75,43 +85,33 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
     uvl_rule = None  # Inicializar como None para descripciones sin reglas válidas
     
     # Extraer límites si están presentes
-    min_bound, max_bound = extract_bounds(description)
+    min_bound, max_bound, is_port_number = extract_bounds(description)
 
     # Ajustar los patrones para generar sintaxis UVL válida según el tipo de datos
     if type_data == "Boolean" or type_data == "boolean":
-        if any(tok.lemma_ == "slice" and tok.text in description for tok in doc): 
-            uvl_rule = f"{feature_key}_items == '*' => {feature_key}"
-        elif "empty" in description: # El feature (listas) no debe estar vacío, y si lo esta hay reglas que no se puede representar
+        if any(tok.lemma_ == "slice" and tok.text in description for tok in doc):
+            print("")
+        elif "empty" in description: 
             uvl_rule = f"!{feature_key}"
-        #elif any(tok.lemma_ == "array" and tok.text in description for tok in doc) and "empty" in description: ## non-empty
-        #    uvl_rule = f"!{feature_key} " # Bool Posible referenciar al anterior feature: {feature_key -1} => {feature_key}
-        #elif "required" in description:
-        #    uvl_rule = f"{feature_key}"
-        # Otros patrones booleanos...
-    
+
     elif type_data == "Integer" or type_data == "integer":
-        if "TimeoutSeconds" in description:
-            uvl_rule = f"{feature_key} > 0 & {feature_key} < 31"
-        elif "sequence number" in description or "positive" in description or "non-negative" in description or "greater than 0" in description or "greater than zero" in description: #greater than 0 / greater than zero
-            uvl_rule = f"{feature_key} > 0" 
-        #elif "seconds" in description:
-        if min_bound is not None and max_bound is not None:
-                uvl_rule = f"{feature_key} > {min_bound - 1} & {feature_key} < {max_bound + 1}"
+        if is_port_number:
+            # Si es un número de puerto, asegurarse de usar los límites de puerto
+            min_bound = 1 if min_bound is None else min_bound
+            max_bound = 65535 if max_bound is None else max_bound
+            uvl_rule = f"{feature_key} > {min_bound} & {feature_key} < {max_bound}"
+        elif min_bound is not None and max_bound is not None:
+            uvl_rule = f"{feature_key} > {min_bound} & {feature_key} < {max_bound}"
         elif min_bound is not None:
-                uvl_rule = f"{feature_key} > {min_bound}"
+            uvl_rule = f"{feature_key} > {min_bound}"
         elif max_bound is not None:
-                uvl_rule = f"{feature_key} < {max_bound}"
-        #    else:
-        #        uvl_rule = f"{feature_key} > 0"
-        # Otros patrones enteros...
+            uvl_rule = f"{feature_key} < {max_bound}"
 
     elif type_data == "String":
         if "APIVersion" in description:
             uvl_rule = f"{feature_key} == 'v1' | {feature_key} == 'v1beta1' | {feature_key} == 'v2' | {feature_key} == 'v1alpha1'"
         elif "RFC 3339" in description:
             uvl_rule = f"!{feature_key}"
-        #elif "URL" in description and "https" in description:
-        #    uvl_rule = f"{feature_key}.startsWith('https://')"
 
     # Si no hay coincidencia, incrementamos el contador de reglas no válidas
     if uvl_rule is None:
@@ -120,8 +120,8 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
     return uvl_rule
 
 # Ruta del archivo JSON
-json_file_path = 'descriptions_01.json'
-output_file_path = 'C:/projects/investigacion/scriptJsonToUvl/restrictions02.txt'
+json_file_path = './descriptions_01.json'
+output_file_path = './restrictions02.txt'
 
 # Cargar datos
 features = load_json_features(json_file_path)
