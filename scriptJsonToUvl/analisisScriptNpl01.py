@@ -93,7 +93,9 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
             print("")
         elif "empty" in description: 
             uvl_rule = f"!{feature_key}"
-
+        elif "Number must be in the range" in description:
+            uvl_rule = f"{feature_key} => ({feature_key}_asInteger > 1 & {feature_key}_asInteger < 65535) | ({feature_key}_asString == 'IANA_SVC_NAME')" ## Ver como añadir ese formato
+            
     elif type_data == "Integer" or type_data == "integer":
         if is_port_number:
             # Si es un número de puerto, asegurarse de usar los límites de puerto
