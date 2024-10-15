@@ -26,7 +26,7 @@ class SchemaProcessor:
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
         self.patterns = {
             'values': re.compile(r'^\b$', re.IGNORECASE), # values are|valid|supported|acceptable|can be
-            'restrictions': re.compile(r'(valid port number|must be in the range)', re.IGNORECASE), ## allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
+            'restrictions': re.compile(r'valid port number|must be in the range|must be greater than', re.IGNORECASE),###   ## allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
             'dependencies': re.compile(r'^\b$', re.IGNORECASE) ## (requires|if[\s\S]*?only if|only if) # depends on ningun caso especial, quitar relies on: no hay casos, contingent upon: igual = related to
         }
 
@@ -79,30 +79,30 @@ class SchemaProcessor:
 
     def extract_values(self, description):
         """Extrae valores que están entre comillas u otros delimitadores, solo si se encuentran ciertas palabras clave"""
-        if not any(keyword in description.lower() for keyword in ['values are', 'possible values are', 'following states', '. must be', 'implicitly inferred to be']): # , '. Must be' , 'allowed valures are'
+        palabras_patrones_minus = ['values are', 'possible values are', 'following states', '. must be', 'implicitly inferred to be', 'the currently supported reasons are', '. can be', 'it can be in any of following states']
+        palabras_patrones_may = ['Supports']
+        if not any(keyword in description.lower() for keyword in palabras_patrones_minus) and not any(keyword in description for keyword in palabras_patrones_may): # , '. Must be' , 'allowed valures are'
             return None
+        #if not any (keyword in description for keyword in palabras_patrones_may):
+        #    return None
         
         value_patterns = [
-            # Captura valores precedidos por un guion, permitiendo múltiples espacios y saltos de línea antes y después
-            re.compile(r'-\s*([\w]+(?:Resize\w+)):'), ## Patron para los guiones y doble punto al final.
-            
+
             # Captura valores entre comillas escapadas o no escapadas
-            re.compile(r'\\?["\'](.*?)\\?["\']'),   
+            re.compile(r'\\?["\'](.*?)\\?["\']'),
+
+            #re.compile(r'-\s*([\w]+(?:Resize\w+)):'), ## Patron para los guiones y doble punto al final.
             #re.compile(r'\\?["\'](.*?)\\?["\']'),  # Captura valores entre comillas simples o dobles, escapadas o no
+            
+            # re.compile(r'-\s*[\'"]?([\w\s]+)[\'"]?\s*:'),  # Captura valores precedidos por guion y comillas opcionales ### Antiguo patron usado pero cogia valores numericos y raros como https, 6335
+            re.compile(r'-\s*[\'"]?([a-zA-Z/.\s]+[a-zA-Z])[\'"]?\s*:', re.IGNORECASE),  
             
             re.compile(r'(?<=Valid values are:)[\s\S]*?(?=\.)'),
             re.compile(r'(?<=Possible values are:)[\s\S]*?(?=\.)'),
             re.compile(r'(?<=Allowed values are)[\s\S]*?(?=\.)', re.IGNORECASE),
-
-            #re.compile(r'(?<=Must be\s)(?:\s*TCP\s*,?\s*|\s*UDP\s*,?\s*|\s*SCTP\s*)(?=\.|,|\s)')  ## Se deja provisional, *no coge SCTP para añadirlo a los valores...
-            #re.compile(r'(?<=Must be\s)(TCP|UDP)(?:\s*,?\s*or\s*,?\s*(SCTP))?(?=\.|,|\s)', re.IGNORECASE)
-
-            ####re.compile(r'(?<=Must be\s)(TCP|UDP|\sSCTP)(?=\.|,|\s)'),  ### Pruebas sin resultados favorables a añadir el SCTP
-            re.compile(r'\b(UDP.*?SCTP)\b')
-
-            #re.compile(r'(?<=Must be\s)(TCP|UDP|SCTP|or\sSCTP)(?=\.|,)', re.IGNORECASE),
-            #re.compile(r'(?<=Must be\s)([A-Z]{2,10})(?:\s+or\s+([A-Z]{2,10}))?(?=\.|,)', re.IGNORECASE),
-            #re.compile(r'Must be\s*([^\.]+)', re.IGNORECASE)
+            re.compile(r'\b(UDP.*?SCTP)\b'),
+            re.compile(r'\n\s*-\s+(\w+)\s*\n', re.IGNORECASE) ## caso suelto Infeasible, Pending...
+            #re.compile(r'-\s+(\w+)', re.IGNORECASE) ## caso mas general para agregar cualquier texto(palabra de una o mas silabas) precedido por un guion y un espacio o saltos de linea
 
             #re.compile(r'(?<=-\s)(\w+)'),   # Captura valores precedidos por un guion y espacio
             #re.compile(r'(?:\\?["\'])(.*?)(?:\\?["\'])'),  # Captura valores entre comillas escapadas o no
@@ -121,13 +121,12 @@ class SchemaProcessor:
             for match in matches:
                 #print(f"VALORES EXPLORADOS / OBTENIDOS: {match}")  # Debug: Ver los valores separados
                 #split_values = re.split(r',\s*|\n', match)
-                split_values = re.split(r',\s*|\s+or\s+|\sor|or\s|\s+and\s+', match)  # Asegurarse de que "or" esté rodeado de espacios ### or\s: soluciona quitar el or en STCP.
+                split_values = re.split(r',\s*|\s+or\s+|\sor|or\s|\s+and\s+|and\s', match)  # Asegurarse de que "or" esté rodeado de espacios ### or\s: soluciona quitar el or en STCP.
                 #print(f"Split Values: {split_values}")  # Debug: Ver los valores separados
                 for v in split_values:
                     v = v.strip()
                     #v = v.replace(r'\sor\s', '').strip()
-                    # Reemplazar '*' por "estrella"
-                    v = v.replace('*', 'estrella')
+                    v = v.replace('*', 'estrella') # Reemplazar '*' por "estrella"
                     v = v.replace('"', '').replace("'", '').replace('`','')  # Elimina comillas dobles, simples y cerradas
                     #print("VALOR ANTES",v)
                     
@@ -136,7 +135,7 @@ class SchemaProcessor:
                     #v = v.replace('/', '_')
 
                     # Filtrar valores que contienen puntos, corchetes, llaves o que son demasiado largos
-                    if v and len(v) <= 15 and not any(char in v for char in {'.', '{', '}', '[', ']', ':'}): # añadido / por problemas con la sintaxis
+                    if v and len(v) <= 20 and not any(char in v for char in {'.', '{', '}', '[', ']',';', ':'}): # añadido / por problemas con la sintaxis 'yet',
                         if v == default_value: ## if default_value and v.lower() == default_value.lower():
                             v = f"{v} {{default}}"
                             #print(f"Valores que coinciden {v} COINCIDE CON  {default_value}") ### log para comprobar los valores añadidos y el valor por defecto conseguido
@@ -148,11 +147,14 @@ class SchemaProcessor:
         values = set(values)  # Eliminar duplicados
         if not values:
             return None
+        elif len(values) == 1:
+            print(f"LOS VALORES DE TAMAÑO 1 SON: {values}")
+            return None
         return values #, add_quotes  # Devuelve los valores y el nombre del feature => Quitado sensor espacio
 
     def patterns_process_enum(self, description):
  
-        patterns_default_values = ['defaults to', '. implicitly inferred to be'] # 'Defaults to', al comprobar luego con minus en mayuscula no cuenta
+        patterns_default_values = ['defaults to', '. implicitly inferred to be', 'the currently supported reasons are', '. default is'] # 'Defaults to', al comprobar luego con minus en mayuscula no cuenta
         if not any(keyword in description.lower() for keyword in patterns_default_values):
             return None
          
@@ -161,12 +163,12 @@ class SchemaProcessor:
             #re.compile(r'(?<=defaults to\s)(["\']?[\w\s\.\-"\']+["\']?)', re.IGNORECASE), ## No tiene en cuenta si es mayus o minis
             re.compile(r'(?<=defaults to\s)(["\']?[\w\s\.\-"\']+?)(?=\.)', re.IGNORECASE),  # Detener captura en el punto literal 
             re.compile(r'(?<=Defaults to\s)(["\']?[\w\s\.\-"\']+["\']?)'), 
-
-
             #re.compile(r'(?<=Implicitly inferred to be\s)(["\']?[\w\s\.\-"\']+["\']?)', re.IGNORECASE),
-            #re.compile(r'(?<=Implicitly inferred to be\s)["\'](.*?)\\?["\']', re.IGNORECASE), ##### PROBAR TODAVIA EL "\ext4\"
-            re.compile(r'Implicitly inferred to be\s["\'](.*?)["\']', re.IGNORECASE)
-
+            #re.compile(r'(?<=Implicitly inferred to be\s)["\'](.*?)\\?["\']', re.IGNORECASE), 
+            re.compile(r'Implicitly inferred to be\s["\'](.*?)["\']', re.IGNORECASE),
+            re.compile(r'default to use\s["\'](.*?)["\'](?=\.)', re.IGNORECASE), #
+            re.compile(r'\. Default is\s["\']?(.*?)["\']?(?=\.)', re.IGNORECASE)
+            #default to use
             #Implicitly inferred to be
         ]
         default_value = ""
@@ -178,14 +180,15 @@ class SchemaProcessor:
                 #if len(match) > 30:
                 #    split_value = match.split('.')[0]
                     #value = split_value[0]
-                if not 'ext4' in match:
-                    print("PALABRAS COGIDAS: ", match)
+                #if not 'ext4' in match:
+                #    print("PALABRAS COGIDAS: ", match)
                 first_part = match.split('.')[0]  # Solo tomamos lo que está antes del primer punto
 
                 v = first_part.strip().replace('"', '').replace("'", '').replace('.', '').strip()
-                if not 'ext4' in v:
-                    print("PALABRAS YA PROCESADAS: ", v)
-
+                #if not 'ext4' in v:
+                #    print("PALABRAS YA PROCESADAS: ", v)
+                if v == '*': ## caso en el que el valor por defecto es "*" y no se puede representar ese caracter: se cambia por "estrella"
+                    v = 'estrella'
                 # Aplicar restricciones: longitud y tipo de valor
                 if v and len(v) <= 50 : #and (v.isalpha() or v.isdigit() or v in {"true", "false", "null", "0", "1"})
                     #default_value.append(v)
@@ -193,7 +196,7 @@ class SchemaProcessor:
                     #print("VALOR AÑADIDO: ",default_value)
 
         if not default_value:
-            print("Valores que no son por defecto ",default_value)
+        #    print("Valores que no son por defecto ",default_value)
             return None
         #print("Estos son los valores:: ",default_value)
     # Si no se encuentra ningún valor válido, devolver el nombre sin cambios

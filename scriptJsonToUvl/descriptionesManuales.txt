@@ -364,7 +364,6 @@ This is an alpha field
 
 "description": "ResourceClaim describes which resources are needed by a resource consumer. Its status tracks whether the resource has been allocated and what the resulting attributes are.\n\nThis is an alpha type and requires enabling the DynamicResourceAllocation feature gate.",
 
-
 hay varias asi: si se automatiza el encontrar a donde apunta se puede poner un !require (to be false) y un require (to be set)
         "default": y mas...
 
@@ -386,7 +385,7 @@ number is the numerical port number (e.g. 80)
 
 If not set
 
- --5 constraint de puertos con los numeros validos **intervalos integer: - Probando
+ --5 constraint de puertos con los numeros validos **intervalos integer: ---Hecho
 should be a valid port number (1-65535, inclusive)."
 This must be a valid port number, 0 < x < 65536."
 If specified, this must be a valid port number, 0 < x < 65536. If HostNetwork
@@ -394,39 +393,44 @@ Otro: must be in the range [**]
 
 "port": {  ## En estas descripciones al poder ser integer (número del puerto) o string (nombre del puerto) solo se deberia poder usar la limitacion de los rangos mediante una condicion
   "$ref": "#/definitions/io.k8s.apimachinery.pkg.util.intstr.IntOrString",
-  {feature_asInteger} => feature > 0 & feature < 65536 
+  {feature_asInteger} => feature > 1 & feature < 65535
   feature_asString => feature = 'IANA_SVC_NAME'
 port name (IANA_SVC_NAME): An alphanumeric (a-z, and 0-9) string, with a maximum length of 15 characters, with the '-' character allowed anywhere except the first or the last character 
 or adjacent to another '-' character, it must contain at least a (a-z) character.
   "description": "Number or name of the port to access on the container. Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME."
   }
+--- Hecho
 
 
-
-
-
-
-The currently supported reasons are: (4 pero similares, comillas y barras laterales)
+The currently supported reasons are: (4 pero similares, comillas y barras laterales) --- Hecho
 to the client. The currently supported reasons are: \"Unauthorized\", \"Forbidden\", \"Invalid\", \"RequestEntityTooLarge\". If not set, StatusReasonInvalid is used in the response to the client.",
+--- Hecho
 
-
+--- Hecho: Implementacion en el mismo metodo diseñado antes, modificacion del original (con patrones directamente), se pudo agregar las cond directamente
 must be greater than, 4
 . It must be greater than zero",
 PeriodSeconds must be greater than zero and less than or equal to 1800 (30 min).",
 down. StabilizationWindowSeconds must be greater than or equal to zero and less than or equal to 3600 (one hour). If not set, use the default values: 
 - For scale up: 0 (i.e. no stabilization is done). - For scale down: 300 (i.e. the stabilization window is 300 seconds long).",
 "VersionPriority controls the ordering of this API version inside of its group.  Must be greater than zero. The primary
+--- Hecho
 
 ## Probando combinaciones ya 'buscadas': only if
 
-Default value is [Integer]: Para numeros enteros (revisar) (4
+Default value is [Integer]: Para numeros enteros (revisar) (4 - PREGUNTAR
 )
 p. This cannot be 0 if MaxSurge is 0 Default value is 1.
 Can be:
 "description": "Type of daemon set update. Can be \"RollingUpdate\" or \"OnDelete\". Default is RollingUpdate.",
 
-Posible constraint entre las 2 propiedades del tipo rollingUpdate y type ** Present only if
+Posible constraint entre las 2 propiedades del tipo rollingUpdate y type ** Present only if **
 "description": "Rolling update config params. Present only if type = \"RollingUpdate\"."
+
+si el tipo es igual a Rolling update config params "rollingUpdate" esta presente sino no...
+
+feature_type == 'RollingUpdate' => feature_rollingUpdate
+feature_type == 'OnDelete' => !feature_rollingUpdate
+
 
 This list may be empty, but only if `clusterScope` is true." -- constraint (2)
 
@@ -437,7 +441,7 @@ posible constraint: if name == '' => generateName
 GenerateName is an optional prefix, used by the server, to generate a unique name ONLY IF the Name field has not been provided.
 n\nSi se especifica este campo y el nombre generado existe, el servidor devolverá un 409.\n\nSólo se aplica si no se especifica Nombre. se tendria que comprobar si el nombre ya existe en el servidor
 
-terminationGracePeriodSeconds:
+terminationGracePeriodSeconds:  ## Complicado para implementar, posibles opciones etc..
 Minimum value is 1  rule > 1
 Minimum value is (5) para constraints
 
@@ -446,3 +450,23 @@ Minimum value is (5) para constraints
 "description": "timeoutSeconds specifies the seconds of ClientIP type session sticky time. The value must be >0 && <=86400(for 1 day) if ServiceAffinity == \"ClientIP\". Default value is 10800(for 3 hours).",
 
 Must be set if and only if type is \"Localhost\".", -- Valor por defecto(?)
+
+
+"fields-to-discriminateBy" ### mirar, podria ser interesante, val x defecto
+
+---Hecho
+"description": "localhostProfile indicates a profile defined in a file on the node should be used. The profile must be preconfigured on the node to work. Must be a descending path, relative to the kubelet's configured seccomp profile location. Must be set if type is \"Localhost\". Must NOT be set for any other type.",
+# Quitar los alternative con 1 solo valoro tratar de omitir su representacion..
+io_k8s_api_apps_v1_StatefulSet_spec_template_spec_topologySpreadConstraints_topologyKey
+io_k8s_api_apps_v1_StatefulSet_spec_template_spec_topologySpreadConstraints_minDomains
+--- Hecho y comprobando cuales se omiten para detectar si en alguna descripcion hay mas de 1 valor
+---Hecho
+values:
+"description": "status is the status of the ControllerModifyVolume operation. It can be in any of following states:\n - Pending\n   Pending indicates that the PersistentVolumeClaim cannot be modified due to unmet requirements, such as\n   the specified VolumeAttributesClass not existing.\n - InProgress\n   InProgress indicates that the volume is being modified.\n - Infeasible\n  Infeasible indicates that the request has been rejected as invalid by the CSI driver. To\n\t  resolve the error, a valid VolumeAttributesClass needs to be specified.\nNote: New statuses can be added in the future. Consumers should check for unknown statuses and fail appropriately.",
+io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_modifyVolumeStatus : mas de un valor
+---Hecho
+Valid options are: (2)
+Valid options are (5)
+"description": "type determines how the Service is exposed. Defaults to ClusterIP. Valid options are ExternalName, ClusterIP, NodePort, and LoadBalancer. \"ClusterIP\" allocates a cluster-internal IP address for load-balancing to endpoints. Endpoints are determined by the selector or if that is not specified, by manual construction of an Endpoints object or EndpointSlice objects. If clusterIP is \"None\", no virtual IP is allocated and the endpoints are published as a set of endpoints rather than a virtual IP. \"NodePort\" builds on ClusterIP and allocates a port on every node which routes to the same endpoints as the clusterIP. \"LoadBalancer\" builds on NodePort and creates an external load-balancer (if supported in the current cloud) which routes to the same endpoints as the clusterIP. \"ExternalName\" aliases this service to the specified externalName. Several other fields do not apply to ExternalName services. More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types",
+
+Supports:: añadido

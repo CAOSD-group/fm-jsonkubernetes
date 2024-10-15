@@ -16,6 +16,17 @@ word_to_num = {
 def load_json_features(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         return json.load(file)
+## Funcion para extraer valores de minimos en texto o sueltos
+
+# Función para convertir texto numérico a número entero
+def convert_word_to_num(word):
+    return word_to_num.get(word.lower(), None)
+
+## Función para convertir constraints strings y requires 
+
+def extract_constraints(description):
+    print("")
+    
 
 # Función para extraer límites si están presentes en la descripción
 def extract_bounds(description):
@@ -23,49 +34,64 @@ def extract_bounds(description):
     min_bound = None
     max_bound = None
     is_port_number = False
+    is_other_number = False
 
     # Expresiones para detectar intervalos de la forma "0 < x < 65536", "1-65535 inclusive", y "Number must be in the range 1 to 65535"
     range_pattern = re.compile(r'(\d+)\s*<\s*\w+\s*<\s*(\d+)')
     inclusive_range_pattern = re.compile(r'(\d+)\s*-\s*(\d+)\s*\(inclusive\)')
     range_text_pattern = re.compile(r'Number\s+must\s+be\s+in\s+the\s+range\s+(\d+)\s+to\s+(\d+)', re.IGNORECASE)
-    range_text_pattern = re.compile(r'(?<=Number must be in the range)\s*(\d+)\s*to\s*(\d+)(?=\.)', re.IGNORECASE)
+    #range_text_pattern = re.compile(r'(?<=Number must be in the range)\s*(\d+)\s*to\s*(\d+)(?=\.)', re.IGNORECASE)
+    must_be = re.compile(r'must be greater than(?: or equal to)? (\w+)',re.IGNORECASE) ## Caso especial en el que puede ser igual a cero (?: or equal to)?
+    less_than_pattern = re.compile(r'less than or equal to (\d+)', re.IGNORECASE)
+    #must_be_range = re.compile(r'must be greater than or equal to (\d+)\sand\sless than or equal to(\d+)')
 
     # Detectar si la descripción menciona puertos válidos
     if "valid port number" in description.lower():
         is_port_number = True
+    
+    # Traducir palabras numéricas a números enteros dentro de la descripción
+    description = description.lower()
+    for word, num in word_to_num.items():
+        description = description.replace(word, str(num))  # Reemplazar palabras por sus equivalentes numéricos
 
     # Detectar rangos con "< x <" (ej. 0 < x < 65536)
     range_match = range_pattern.search(description)
     if range_match:
         min_bound = int(range_match.group(1))
         max_bound = int(range_match.group(2))
-        return min_bound, max_bound, is_port_number
+        return min_bound, max_bound, is_port_number, is_other_number
 
     # Detectar rangos con "1-65535 inclusive"
     inclusive_match = inclusive_range_pattern.search(description)
     if inclusive_match:
         min_bound = int(inclusive_match.group(1))
         max_bound = int(inclusive_match.group(2))
-        return min_bound, max_bound, is_port_number
+        return min_bound, max_bound, is_port_number, is_other_number
 
     # Detectar rangos de la forma "Number must be in the range 1 to 65535"
     range_text_match = range_text_pattern.search(description)
     if range_text_match:
         min_bound = int(range_text_match.group(1))
         max_bound = int(range_text_match.group(2))
-        return min_bound, max_bound, is_port_number
+        return min_bound, max_bound, is_port_number, is_other_number
 
-    # Si no se detecta un rango explícito, intentar extraer cualquier número aislado
-    numbers = [int(n) for n in re.findall(r'\d+', description)]
+    # Detectar expresiones simples de "greater than" o "less than"
+    greater_than_match = must_be.search(description)
+    less_than_match = less_than_pattern.search(description)
 
-    # Reglas para límites mínimos y máximos basados en expresiones comunes
-    if "greater than" in description or "above" in description:
-        min_bound = max(numbers) if numbers else None
-    elif "less than" in description or "below" in description:
-        max_bound = min(numbers) if numbers else None
+    if greater_than_match:
+        # Convertir si es una palabra numérica
+        min_bound = int(greater_than_match.group(1)) if greater_than_match.group(1).isdigit() else convert_word_to_num(greater_than_match.group(1))
+        is_other_number = True
 
-    return min_bound, max_bound, is_port_number
+    if less_than_match:
+        # Convertir si es una palabra numérica
+        max_bound = int(less_than_match.group(1)) if less_than_match.group(1).isdigit() else convert_word_to_num(less_than_match.group(1))
+        max_bound = max_bound + 1 ## Para tener en cuenta el equal to 
+        is_other_number = True
 
+    return min_bound, max_bound, is_port_number, is_other_number
+    
 # Función para convertir descripciones en reglas UVL usando NLP
 def convert_to_uvl_with_nlp(feature_key, description, type_data):
     global count
@@ -85,8 +111,8 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
     uvl_rule = None  # Inicializar como None para descripciones sin reglas válidas
     
     # Extraer límites si están presentes
-    min_bound, max_bound, is_port_number = extract_bounds(description)
-
+    min_bound, max_bound, is_port_number, is_other_number = extract_bounds(description)
+    #min_bound01, is_other_number = extract_min_max(description)
     # Ajustar los patrones para generar sintaxis UVL válida según el tipo de datos
     if type_data == "Boolean" or type_data == "boolean":
         if any(tok.lemma_ == "slice" and tok.text in description for tok in doc):
@@ -108,7 +134,11 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
             uvl_rule = f"{feature_key} > {min_bound}"
         elif max_bound is not None:
             uvl_rule = f"{feature_key} < {max_bound}"
-
+        #if is_other_number:  ## posible uso para diferenciar casos especificos mas adelante
+        #    # Si es un número de puerto, asegurarse de usar los límites de puerto
+        #    min_bound = 0 if min_bound is None else min_bound
+        #    max_bound = 1800 if max_bound is None else max_bound
+ 
     elif type_data == "String":
         if "APIVersion" in description:
             uvl_rule = f"{feature_key} == 'v1' | {feature_key} == 'v1beta1' | {feature_key} == 'v2' | {feature_key} == 'v1alpha1'"
