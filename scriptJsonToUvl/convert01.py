@@ -26,9 +26,10 @@ class SchemaProcessor:
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
         self.patterns = {
             'values': re.compile(r'^\b$', re.IGNORECASE), # values are|valid|supported|acceptable|can be
-            'restrictions': re.compile(r'valid port number|must be in the range|must be greater than', re.IGNORECASE),###   ## allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
+            'restrictions': re.compile(r'only if type', re.IGNORECASE),### valid port number|must be in the range|must be greater than|  ## allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
             'dependencies': re.compile(r'^\b$', re.IGNORECASE) ## (requires|if[\s\S]*?only if|only if) # depends on ningun caso especial, quitar relies on: no hay casos, contingent upon: igual = related to
         }
+        self.boolean_keywords = ['AppArmorProfile_localhostProfile', 'appArmorProfile_localhostProfile']  # Lista para modificar otros posibles tipos de los features ##
 
     def sanitize_name(self, name):
         """Reemplaza caracteres no permitidos en el nombre con guiones bajos y asegura que solo haya uno con ese nombre"""
@@ -79,7 +80,8 @@ class SchemaProcessor:
 
     def extract_values(self, description):
         """Extrae valores que están entre comillas u otros delimitadores, solo si se encuentran ciertas palabras clave"""
-        palabras_patrones_minus = ['values are', 'possible values are', 'following states', '. must be', 'implicitly inferred to be', 'the currently supported reasons are', '. can be', 'it can be in any of following states']
+        palabras_patrones_minus = ['values are', 'possible values are', 'following states', '. must be', 'implicitly inferred to be', 'the currently supported reasons are', '. can be', 'it can be in any of following states',
+                                   'valid options are']
         palabras_patrones_may = ['Supports']
         if not any(keyword in description.lower() for keyword in palabras_patrones_minus) and not any(keyword in description for keyword in palabras_patrones_may): # , '. Must be' , 'allowed valures are'
             return None
@@ -101,8 +103,14 @@ class SchemaProcessor:
             re.compile(r'(?<=Possible values are:)[\s\S]*?(?=\.)'),
             re.compile(r'(?<=Allowed values are)[\s\S]*?(?=\.)', re.IGNORECASE),
             re.compile(r'\b(UDP.*?SCTP)\b'),
-            re.compile(r'\n\s*-\s+(\w+)\s*\n', re.IGNORECASE) ## caso suelto Infeasible, Pending...
-            #re.compile(r'-\s+(\w+)', re.IGNORECASE) ## caso mas general para agregar cualquier texto(palabra de una o mas silabas) precedido por un guion y un espacio o saltos de linea
+            re.compile(r'\n\s*-\s+(\w+)\s*\n', re.IGNORECASE), ## caso suelto Infeasible, Pending...
+            #re.compile(r'-\s+(\w+)', re.IGNORECASE) ## caso mas general para agregar cualquier texto(palabra de una o mas silabas) precedido por un guion y un espacio o saltos de linea 
+            #re.compile(r'\n\s*([a-zA-Z]+)\s*-\s'), ## Anterior expresion usada pero no agrega todos los valores de valid options are...
+            #re.compile(r'(\b[a-zA-Z]+\b)\s*-\s'), ## Prueba para añadir los valores que hay en valid options are...
+            re.compile(r'Valid options are:[\s\S]*?([a-zA-Z]+)\s*-\s'),
+
+            #re.compile(r'(?<=Valid options are\s(\w+)*?\,\s(\w+)\,?<=and\s(\w+))*?)')            
+            re.compile(r'\b(Retain|Delete|Recycle)\b', re.IGNORECASE), ## Prueba añadir valores persistentVolumeReclaimPolicy, quizas general pero no afecta ahora mismo a otros valores con descripciones
 
             #re.compile(r'(?<=-\s)(\w+)'),   # Captura valores precedidos por un guion y espacio
             #re.compile(r'(?:\\?["\'])(.*?)(?:\\?["\'])'),  # Captura valores entre comillas escapadas o no
@@ -135,7 +143,9 @@ class SchemaProcessor:
                     #v = v.replace('/', '_')
 
                     # Filtrar valores que contienen puntos, corchetes, llaves o que son demasiado largos
-                    if v and len(v) <= 20 and not any(char in v for char in {'.', '{', '}', '[', ']',';', ':'}): # añadido / por problemas con la sintaxis 'yet',
+                    if v and len(v) <= 21 and not any(char in v for char in {'.', '{', '}', '[', ']',';', ':'}): # añadido / por problemas con la sintaxis 'yet', ## Con size == 22 hay mas valores que no se agregan #COMPROBARLOS
+                        if len(v) >= 20:
+                            print("VALORES QUE SUPERAN EL TAMAÑO MINIMO", v)
                         if v == default_value: ## if default_value and v.lower() == default_value.lower():
                             v = f"{v} {{default}}"
                             #print(f"Valores que coinciden {v} COINCIDE CON  {default_value}") ### log para comprobar los valores añadidos y el valor por defecto conseguido
@@ -143,14 +153,19 @@ class SchemaProcessor:
                         values.append(v)
                         #if ' ' in v:  # Si un valor contiene un espacio, Era para añadir comillas dobles "", => sintaxis
                         #    add_quotes = True
-
+        case_not_none = ['NodePort', f"ClusterIP {{default}}", 'None', 'LoadBalancer', 'ExternalName'] ## Lista donde se agregaba None y no formaba parte del conjunto posible de valores
+        case_not_none = set(case_not_none) # Obtener lista sin tener en cuenta el orden, concretamente se busca omitir "_type_None" en el modelo
         values = set(values)  # Eliminar duplicados
+
         if not values:
             return None
         elif len(values) == 1:
-            print(f"LOS VALORES DE TAMAÑO 1 SON: {values}")
+            #print(f"LOS VALORES DE TAMAÑO 1 SON: {values}")
             return None
-        return values #, add_quotes  # Devuelve los valores y el nombre del feature => Quitado sensor espacio
+        elif case_not_none == values:
+            values.remove('None')
+
+        return values #, add_quotes  # Devuelve los valores y el nombre del feature
 
     def patterns_process_enum(self, description):
  
@@ -158,7 +173,7 @@ class SchemaProcessor:
         if not any(keyword in description.lower() for keyword in patterns_default_values):
             return None
          
-        value_patterns = [  
+        default_patterns = [  
             #re.compile(r'(?<=Defaults to\s)(["\']?[\w\s\.\-"\']+["\']?)'),  # Captura con "Defaults to"
             #re.compile(r'(?<=defaults to\s)(["\']?[\w\s\.\-"\']+["\']?)', re.IGNORECASE), ## No tiene en cuenta si es mayus o minis
             re.compile(r'(?<=defaults to\s)(["\']?[\w\s\.\-"\']+?)(?=\.)', re.IGNORECASE),  # Detener captura en el punto literal 
@@ -173,7 +188,7 @@ class SchemaProcessor:
         ]
         default_value = ""
         
-        for pattern in value_patterns:
+        for pattern in default_patterns:
             matches = pattern.findall(description)
             for match in matches:
 
@@ -213,7 +228,6 @@ class SchemaProcessor:
         "description": description,
         "type_data": type_data # Adición tipo para tener el tipo de dato para las restricciones
     }
-
         for category, pattern in self.patterns.items():
             if pattern.search(description):
                 #self.descriptions[category].append((feature_name, description))
@@ -222,7 +236,6 @@ class SchemaProcessor:
         
         return False
     
-
     """ Tratamiendo de tipos de propiedades, oneOf y enum"""
     def process_oneOf(self, oneOf, full_name, type_feature):
         """
@@ -269,13 +282,20 @@ class SchemaProcessor:
             return default_full_name
 
         return full_name
-    
+
+    def update_type_data(self, full_name, feature_type_data): ## sino probar con full_name
+    # Cambia el tipo de dato a 'Boolean' si el nombre del feature o sub_feature contiene algún fragmento en boolean_keywords
+        if any(keyword in full_name for keyword in self.boolean_keywords):
+            return 'Boolean'
+        return feature_type_data
+                
+
     def parse_properties(self, properties, required, parent_name="", depth=0, local_stack_refs=None):
         if local_stack_refs is None:
             local_stack_refs = []  # Crear una nueva lista para esta rama
 
-        mandatory_features = []
-        optional_features = []
+        mandatory_features = [] # Grupo de propiedades obligatorias
+        optional_features = [] # Grupo de propiedades opcionales
         queue = deque([(properties, required, parent_name, depth)])
 
         while queue:
@@ -301,7 +321,7 @@ class SchemaProcessor:
 
                 description = details.get('description', '')
                 if description:
-                    # Categorizar la descripción
+                    feature_type_data = self.update_type_data(full_name, feature_type_data) ### Modificion para que en descriptions_01.json se cambie de String a Boolean si coincide con el nombre
                     self.categorize_description(description, full_name, feature_type_data)
 
                 feature = {
@@ -309,8 +329,9 @@ class SchemaProcessor:
                     'type': feature_type,
                     'description': description,
                     'sub_features': [],
-                    'type_data': feature_type_data
+                    'type_data': feature_type_data ## String ##
                 }
+
                 # Procesar referencias
                 if '$ref' in details:
                     ref = details['$ref']
@@ -395,7 +416,7 @@ class SchemaProcessor:
                                 feature['sub_features'].extend(item_mandatory + item_optional)
                             else:
                                 # Si no hay 'properties', procesarlo como un tipo simple
-                                feature_type = 'mandatory' if prop in current_required else 'optional' # Determinar si la referencia es 'mandatory' u 'optional'                                sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
+                                feature_type = 'mandatory' if prop in current_required else 'optional' # Determinar si la referencia es 'mandatory' u 'optional'  #sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
                                 sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
 
                                 # Agregar la referencia procesada como un tipo simple
@@ -459,15 +480,19 @@ class SchemaProcessor:
 
                 # Extraer y añadir valores como subfeatures
                 extracted_values = self.extract_values(description)
+                ## Todos los valores que se extraen son "String", para facilitar la representacion de los valores prestablecidos se cambia el tipo a Boolean
+                if extracted_values: 
+                    ## details['type_data'] = 'Boolean' ## Esto es para acceder al tipo del ESQUEMA
+                    feature['type_data'] = 'Boolean' ## Se accede al tipo de dato del FEATURE actual 
 
-                if extracted_values:
+                    #print(f"PORQUE NO SE REPRESENTAN TODOS LOS ESQUEMAS? - Tipo: {details['type_data']}, - Nombre: {full_name}")
                     for value in extracted_values:
                         feature['sub_features'].append({
                             'name': f"{full_name}_{value}",
-                            'type': 'alternative',
+                            'type': 'alternative', # Todos los valores suelen ser alternatives (Elección de solo uno)
                             'description': f"Specific value: {value}",
                             'sub_features': [],
-                            'type_data': "String"  # Definir si obtener el tipo de dato o por defecto String
+                            'type_data': "Boolean"  # Boolean por defecto
                         })
 
                 # Procesar propiedades anidadas
@@ -517,12 +542,21 @@ def properties_to_uvl(feature_list, indent=1):
 
     uvl_output = ""
     indent_str = '\t' * indent
+    boolean_keywords = ['AppArmorProfile_localhostProfile', 'appArmorProfile_localhostProfile']
     for feature in feature_list:
         type_str = f"{feature['type_data'].capitalize()} " if feature['type_data'] else "Boolean "
-        if feature['sub_features']:
-            uvl_output += f"{indent_str}{type_str}{feature['name']}\n"  # {type_str} opcional si se necesita
-            # uvl_output += f"{indent_str}\t{feature['type']}\n" opcional si se necesita
+        
+        if any(keyword in feature['name'] for keyword in boolean_keywords): #### Caso especifico 002-localhostProfile String a Boolean
+            print("EL CASO NO COINCIDE o es que no se cambia?")
+            print("Feature donde coincide: ",feature['name'])
+            #feature['type_data'] = 'Boolean'
+            type_str = 'Boolean '
 
+        if feature['sub_features']:
+            #if feature['sub_features']['type'] == 'alternative':
+            #    type_str = 'Boolean '
+            uvl_output += f"{indent_str}{type_str}{feature['name']}\n"  # {type_str} opcional si se necesita ## 
+            # uvl_output += f"{indent_str}\t{feature['type']}\n" opcional si se necesita
             # Separar características obligatorias y opcionales
             sub_mandatory = [f for f in feature['sub_features'] if f['type'] == 'mandatory']
             sub_optional = [f for f in feature['sub_features'] if f['type'] == 'optional']
@@ -535,7 +569,7 @@ def properties_to_uvl(feature_list, indent=1):
                 uvl_output += f"{indent_str}\toptional\n"
                 uvl_output += properties_to_uvl(sub_optional, indent + 2)
             if sub_alternative:
-                uvl_output += f"{indent_str}\talternative\n"
+                uvl_output += f"{indent_str}\talternative\n" ## 
                 uvl_output += properties_to_uvl(sub_alternative, indent + 2)
         else:
             uvl_output += f"{indent_str}{type_str}{feature['name']}\n"  # {type_str} opcional si se necesita {{abstract}} 
