@@ -24,9 +24,23 @@ def convert_word_to_num(word):
 
 ## Función para convertir constraints strings y requires 
 
-def extract_constraints(description):
-    print("")
-    
+def extract_constraints(description, feature_key):
+
+    only_if_pattern = re.compile(r'\\?["\'](.*?)\\?["\']')
+
+
+    uvl_rule =""   
+    match = only_if_pattern.search(description)
+    if match:
+        value_obtained = match.group(1) ## Obtener el valor del patron obtenido
+        feature_without_lastProperty = feature_key.rsplit('_', 1)[0]
+        #print("PRUEBA rsplit", feature_without_lastProperty)
+        #feature_without_lastProperty = only_if_pattern.split("_").remove[-1]
+        uvl_rule = f"({feature_without_lastProperty}_type_{value_obtained} => {feature_key}) | (!{feature_without_lastProperty}_type_{value_obtained} => !{feature_key})" ## No se si haria falta los 2
+
+        ## objetivo: io_k8s_api_apps_v1_DaemonSetUpdateStrategy_type_RollingUpdate => io_k8s_api_apps_v1_DaemonSetUpdateStrategy_rollingUpdate
+        return uvl_rule
+    return None
 
 # Función para extraer límites si están presentes en la descripción
 def extract_bounds(description):
@@ -49,6 +63,7 @@ def extract_bounds(description):
     if "valid port number" in description.lower():
         is_port_number = True
     
+
     # Traducir palabras numéricas a números enteros dentro de la descripción
     description = description.lower()
     for word, num in word_to_num.items():
@@ -109,7 +124,7 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
 
     doc = nlp(description)
     uvl_rule = None  # Inicializar como None para descripciones sin reglas válidas
-    
+    first_constraint = extract_constraints(description, feature_key)
     # Extraer límites si están presentes
     min_bound, max_bound, is_port_number, is_other_number = extract_bounds(description)
     #min_bound01, is_other_number = extract_min_max(description)
@@ -121,7 +136,9 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
             uvl_rule = f"!{feature_key}"
         elif "Number must be in the range" in description:
             uvl_rule = f"{feature_key} => ({feature_key}_asInteger > 1 & {feature_key}_asInteger < 65535) | ({feature_key}_asString == 'IANA_SVC_NAME')" ## Ver como añadir ese formato
-            
+        elif first_constraint:
+            uvl_rule = first_constraint
+                        
     elif type_data == "Integer" or type_data == "integer":
         if is_port_number:
             # Si es un número de puerto, asegurarse de usar los límites de puerto
