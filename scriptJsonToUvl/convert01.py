@@ -26,7 +26,7 @@ class SchemaProcessor:
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
         self.patterns = {
             'values': re.compile(r'^\b$', re.IGNORECASE), # values are|valid|supported|acceptable|can be
-            'restrictions': re.compile(r'only if type', re.IGNORECASE),### valid port number|must be in the range|must be greater than|  ## allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
+            'restrictions': re.compile(r'Required when'),###|only if type| valid port number|must be in the range|must be greater than|  ## allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
             'dependencies': re.compile(r'^\b$', re.IGNORECASE) ## (requires|if[\s\S]*?only if|only if) # depends on ningun caso especial, quitar relies on: no hay casos, contingent upon: igual = related to
         }
         self.boolean_keywords = ['AppArmorProfile_localhostProfile', 'appArmorProfile_localhostProfile']  # Lista para modificar otros posibles tipos de los features ##
@@ -82,7 +82,7 @@ class SchemaProcessor:
         """Extrae valores que están entre comillas u otros delimitadores, solo si se encuentran ciertas palabras clave"""
         palabras_patrones_minus = ['values are', 'possible values are', 'following states', '. must be', 'implicitly inferred to be', 'the currently supported reasons are', '. can be', 'it can be in any of following states',
                                    'valid options are']
-        palabras_patrones_may = ['Supports']
+        palabras_patrones_may = ['Supports'] ## 'values are', 
         if not any(keyword in description.lower() for keyword in palabras_patrones_minus) and not any(keyword in description for keyword in palabras_patrones_may): # , '. Must be' , 'allowed valures are'
             return None
         #if not any (keyword in description for keyword in palabras_patrones_may):
@@ -96,25 +96,22 @@ class SchemaProcessor:
             #re.compile(r'-\s*([\w]+(?:Resize\w+)):'), ## Patron para los guiones y doble punto al final.
             #re.compile(r'\\?["\'](.*?)\\?["\']'),  # Captura valores entre comillas simples o dobles, escapadas o no
             
-            # re.compile(r'-\s*[\'"]?([\w\s]+)[\'"]?\s*:'),  # Captura valores precedidos por guion y comillas opcionales ### Antiguo patron usado pero cogia valores numericos y raros como https, 6335
-            re.compile(r'-\s*[\'"]?([a-zA-Z/.\s]+[a-zA-Z])[\'"]?\s*:', re.IGNORECASE),  
+            #re.compile(r'-\s*[\'"]?([\w\s]+)[\'"]?\s*:'),  ### Antiguo patron usado pero cogia valores numericos y raros como https, 6335 ** No usado
+            re.compile(r'-\s*[\'"]?([a-zA-Z/.\s]+[a-zA-Z])[\'"]?\s*:', re.IGNORECASE), #### Expresion que tiene que se modifica en un futuro para evitar capturar "prefixed_keys"
             
             re.compile(r'(?<=Valid values are:)[\s\S]*?(?=\.)'),
             re.compile(r'(?<=Possible values are:)[\s\S]*?(?=\.)'),
             re.compile(r'(?<=Allowed values are)[\s\S]*?(?=\.)', re.IGNORECASE),
             re.compile(r'\b(UDP.*?SCTP)\b'),
             re.compile(r'\n\s*-\s+(\w+)\s*\n', re.IGNORECASE), ## caso suelto Infeasible, Pending...
-            #re.compile(r'-\s+(\w+)', re.IGNORECASE) ## caso mas general para agregar cualquier texto(palabra de una o mas silabas) precedido por un guion y un espacio o saltos de linea 
-            #re.compile(r'\n\s*([a-zA-Z]+)\s*-\s'), ## Anterior expresion usada pero no agrega todos los valores de valid options are...
-            #re.compile(r'(\b[a-zA-Z]+\b)\s*-\s'), ## Prueba para añadir los valores que hay en valid options are...
-            re.compile(r'Valid options are:[\s\S]*?([a-zA-Z]+)\s*-\s'),
+            #re.compile(r'\n\s*-\s+([A-Za-z]+)\s*\n', re.IGNORECASE), ## caso suelto Infeasible, Pending...
 
+            #re.compile(r'\n\s*([a-zA-Z]+)\s*-\s'), ## Anterior expresion usada pero no agrega todos los valores de valid options are...
+            re.compile(r'(\b[a-zA-Z]+\b)\s*-\s'), ## Prueba para añadir los valores que hay en valid options are...
+            #re.compile(r'Valid options are:\s*(?:\n\s*)?([a-zA-Z]+)\s*-\s'),
             #re.compile(r'(?<=Valid options are\s(\w+)*?\,\s(\w+)\,?<=and\s(\w+))*?)')            
             re.compile(r'\b(Retain|Delete|Recycle)\b', re.IGNORECASE), ## Prueba añadir valores persistentVolumeReclaimPolicy, quizas general pero no afecta ahora mismo a otros valores con descripciones
 
-            #re.compile(r'(?<=-\s)(\w+)'),   # Captura valores precedidos por un guion y espacio
-            #re.compile(r'(?:\\?["\'])(.*?)(?:\\?["\'])'),  # Captura valores entre comillas escapadas o no
-            # [()[\]{}] []()[{}]
         ]
 
         values = []
@@ -143,14 +140,25 @@ class SchemaProcessor:
                     #v = v.replace('/', '_')
 
                     # Filtrar valores que contienen puntos, corchetes, llaves o que son demasiado largos
-                    if v and len(v) <= 21 and not any(char in v for char in {'.', '{', '}', '[', ']',';', ':'}): # añadido / por problemas con la sintaxis 'yet', ## Con size == 22 hay mas valores que no se agregan #COMPROBARLOS
-                        if len(v) >= 20:
-                            print("VALORES QUE SUPERAN EL TAMAÑO MINIMO", v)
+                    if v and len(v) <= 24 and not any(char in v for char in {'.', '{', '}', '[', ']',';', ':', 'prefixed_keys'}): # añadido / por problemas con la sintaxis 'yet', ## Agregado prefixed_keys para eliminarlo, no es un valor
+                        if len(v) >= 20 and '_' in v:
+                        # Excluir valores con guion bajo y tamaño >= 20
+                            print(f"Excluyendo valor: {v}")
+                        else:
+                        # Agregar el valor si no tiene guion bajo o si es menor a 20 caracteres
+                            if v == default_value:
+                                v = f"{v} {{default}}"
+                            if len(v) < 20 and '_' in v:
+                        # Excluir valores con guion bajo y tamaño >= 20
+                                print(f"VALORES CON BARRA BAJA** Comprobarlo: {v}")
+                            values.append(v)
+                        """
                         if v == default_value: ## if default_value and v.lower() == default_value.lower():
                             v = f"{v} {{default}}"
                             #print(f"Valores que coinciden {v} COINCIDE CON  {default_value}") ### log para comprobar los valores añadidos y el valor por defecto conseguido
                             #values.append(v)
                         values.append(v)
+                        """
                         #if ' ' in v:  # Si un valor contiene un espacio, Era para añadir comillas dobles "", => sintaxis
                         #    add_quotes = True
         case_not_none = ['NodePort', f"ClusterIP {{default}}", 'None', 'LoadBalancer', 'ExternalName'] ## Lista donde se agregaba None y no formaba parte del conjunto posible de valores
@@ -547,8 +555,8 @@ def properties_to_uvl(feature_list, indent=1):
         type_str = f"{feature['type_data'].capitalize()} " if feature['type_data'] else "Boolean "
         
         if any(keyword in feature['name'] for keyword in boolean_keywords): #### Caso especifico 002-localhostProfile String a Boolean
-            print("EL CASO NO COINCIDE o es que no se cambia?")
-            print("Feature donde coincide: ",feature['name'])
+            #print("EL CASO NO COINCIDE o es que no se cambia?")
+            #print("Feature donde coincide: ",feature['name'])
             #feature['type_data'] = 'Boolean'
             type_str = 'Boolean '
 
