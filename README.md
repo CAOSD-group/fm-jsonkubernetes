@@ -4,23 +4,31 @@ El proyecto tiene como objetivo convertir cualquier versión de los esquemas de 
 
 En la carpeta scriptJsonToUvl se encuentran los siguientes archivos:
 
-- analisisScript.py: es un archivo en desarrollo que busca poder mapear las descripciones filtradas de los features a restricciones o constraints válidas en el modelo.
+- ~~analisisScript.py: es un archivo en desarrollo que busca poder mapear las descripciones filtradas de los features a restricciones o constraints válidas en el modelo.~~ (Deprecated)
 - analisisScriptNpl.py: es una versión del primer script en la que se añade NPL o Tratamiento del Lenguaje Natural para tratar de mejorar la obtención de las restricciones de las descripciones. (En desarrollo)
 - conver0SinDatos.py: es una versión del archivo base de conversión que omite el Tipo de datos de los features (String, Boolean, Integer) para poder analizarlo con flamapy.
-- convert0.py: archivo base de la conversión que mantiene una funcionalidad testeada y robusta. Esta se actualiza cuando los cambios estan probados y validados en convert01Large.py.
-- convert01Large.py: esta es la versión principal de desarrollo que se esta usando para desarrollar el script. Esta versión es la mas avanzada y donde se suelen subir las actualizaciones y cambios, difiere de las demás en que aquí se extienden las referencias, se están añadiendo funciones para manejar constraints y más...
-- convert02Short.py: esta es una versión paralela a la anterior que no extiende tanto las referencias y trata de evitar la repetición de referencias que ya han sido procesadas.
-- descripcionesManuales.txt: es este fichero de texto se están añadiendo manualmente las descripcciones que tienen restricciones, valores o dependencias para luego realizar el mapeo de manera manual.
+- ~~convert0.py: archivo base de la conversión que mantiene una funcionalidad testeada y robusta. Esta se actualiza cuando los cambios estan probados y validados en convert01Large.py.~~
+- ~~convert01Large.py: esta es la versión principal de desarrollo que se esta usando para desarrollar el script. Esta versión es la mas avanzada y donde se suelen subir las actualizaciones y cambios, difiere de las demás en que aquí se extienden las referencias, se están añadiendo funciones para manejar constraints y más...~~
+- ~~convert02Short.py: esta es una versión paralela a la anterior que no extiende tanto las referencias y trata de evitar la repetición de referencias que ya han sido procesadas.~~
+- descripcionesManuales.txt: es este fichero de texto se están añadiendo manualmente las descripcciones que tienen restricciones, valores o dependencias para tener nota de las posibles conversiones a realizar en un futuro.
 - descriptions_01.json: archivo en formato json con las descripciones filtradas del script base, de aquí se extraen las descripciones en los analisis*. están divididas por grupos con el nombre del feature y el tipo de dato que se describe.
 - getNumberFiles.py: fichero de prueba para comprobar cuantos archivos tiene cada carpeta obtenida de la versión de kubernetes-json-schema.
 - kubernetes_combined_01_constraints.uvl: resultado de la conversión de los esquemas json de kubernetes. Este es el feature model actual que sigue en proceso de añadir las constraints restantes (7651 sin contar las restricciones).
 - kubernetes_combined_01_original.uvl: feature model original con la primera versión obtenida (5712 lineas)
-- restrictions.txt: archivo de prueba donde se obtienen restricciones "automaticamente" (En desarrollo)
+- kubernetes_combined_01.uvl: feature model actual y más avanzado, 76.075 líneas. (En desarrollo)
+- restrictions02.txt: archivo de prueba donde se obtienen restricciones "automaticamente" (En desarrollo)
 - scriptGetRepoVersion.sh: script para obtener una versión específica de [kubernetes-json-schema](https://github.com/yannh/kubernetes-json-schema/tree/master) 
 
 En la carpeta v.30.2 se encuentran los siguientes archivos:
 
 - _definitions.json_: es el archivo principal de los esquemas de Kubernetes donde se concentran todos los esquemas repartidos en los miles de archivos individuales de cada versión de Kubernetes. Se usa este archivo como base para construir el modelo uvl y corresponde a la versión V.30.2.
+
+
+# Funcionamiento del programa: 
+
+En la siguiente imagen se puede observar de manera visual como se relacionan los archivos.
+
+![prueba01 drawio](https://github.com/user-attachments/assets/81de09c1-f7b0-46f7-a2b5-829410c31d12)
 
 
 # ¿Cómo usar el programa?
