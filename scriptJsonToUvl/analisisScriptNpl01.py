@@ -22,36 +22,88 @@ def load_json_features(file_path):
 def convert_word_to_num(word):
     return word_to_num.get(word.lower(), None)
 
+
+def extract_constraints_if(description, feature_key):
+    """ Metodo para extraer las restricciones "especificas" de tipo This field MUST be empty if, _Exempt"""
+    print("")
+
 ## Función para convertir constraints strings y requires 
 def extract_constraints_if(description, feature_key):
+    """ Metodo para extraer las restricciones "generales" de only if type, Must be set if type is, This field MUST be empty if: relacionadas con _RollingUpdate, _Localhost, _Limited, _Exempt"""
+    #only_if_pattern = re.compile(r'\"(Limited)\"')
 
-    only_if_pattern = re.compile(r'\\?["\'](.*?)\\?["\']')
+    only_if_pattern = re.compile(r'\"([A-Za-z]+)\"')
+    ##if_exempt_pattern = re.compile(r'\"([A-Za-z]+)\"')
 
-    uvl_rule =""   
+    #(r'\\?["\'](.*?)\\?["\']')
+    #only_if_pattern = re.compile(r'\"([^\"]+)\"')
+
+    uvl_rule =""
     if_match = only_if_pattern.search(description)
-    if if_match:
-        print("PORQUE SE EJECUTA?")
+    feature_without_lastProperty = feature_key.rsplit('_', 1)[0]
+
+    if if_match and 'exempt' not in feature_key:
         value_obtained = if_match.group(1) ## Obtener el valor del patron obtenido
-        feature_without_lastProperty = feature_key.rsplit('_', 1)[0]
-        #print("PRUEBA rsplit", feature_without_lastProperty)
+        #feature_without_lastProperty = feature_key.rsplit('_', 1)[0]
         #feature_without_lastProperty = only_if_pattern.split("_").remove[-1]
-        uvl_rule = f"({feature_without_lastProperty}_type_{value_obtained} => {feature_key}) | (!{feature_without_lastProperty}_type_{value_obtained} => !{feature_key})" ## No se si haria falta los 2
+        uvl_rule = f"({feature_without_lastProperty}_type_{value_obtained} => {feature_key})" ## No se si haria falta los 2 #### PARTE QUIZAS REDUNDANTE(Preguntar): | (!{feature_without_lastProperty}_type_{value_obtained} => !{feature_key})
+        #print("PRUEBA SALIDA", uvl_rule)
 
         ## objetivo: io_k8s_api_apps_v1_DaemonSetUpdateStrategy_type_RollingUpdate => io_k8s_api_apps_v1_DaemonSetUpdateStrategy_rollingUpdate
-        return uvl_rule
+        #return uvl_rule
     
+    elif 'exempt' in feature_key:
+        exempt_match = only_if_pattern.findall(description)
+        #exempt_match = set(exempt_match) 
+        print("Lo que captura el patron", exempt_match)
+        type_property01 = exempt_match[1]
+        type_property02 = exempt_match[2]
+        print(f"{type_property01}, tipo2: {type_property02}")
+        uvl_rule = f"({feature_without_lastProperty}_type_{type_property01} => !{feature_key}) | ({feature_without_lastProperty}_type_{type_property02} => {feature_key})" ### Aqui se especifican los 2 casos
+        
+    if uvl_rule is not None:
+        return uvl_rule
+    else:
+        return "No hay ninguna coincidencia con los patrones y descripciones"
+
+def extract_constraints_unset_required(description, feature_key):
+    # Expresión regular para "Required when X is set to Y"
+    required_when_pattern = re.compile(
+        r'Required when\s+(\w+)\s+is\s+set\s+to\s+"([^"]+)"', re.IGNORECASE
+    )
+    # Expresión regular para "Must be unset when X is set to Y"
+    must_be_unset_pattern = re.compile(
+        r'must be unset when\s+(\w+)\s+is\s+set\s+to\s+"([^"]+)"', re.IGNORECASE
+    )
+    uvl_rule = ""
+    feature_without_lastProperty = feature_key.rsplit('_', 1)[0]
+    # Buscar coincidencias para "Required when"
+    required_match = required_when_pattern.search(description)
+    print(f"MATCH: {required_match}")
+    unset_match = must_be_unset_pattern.search(description)
+    # Inicializar las variables para almacenar los valores de las restricciones
+    required_property, required_value = None, None
+    unset_property, unset_value = None, None
+
+    if required_match and unset_match:
+        # Capturar la propiedad y el valor de "Required when"
+        required_property = required_match.group(1)
+        required_value = required_match.group(2)
+        print(f"COINCIDENCIA REQUERIDA: {required_property} = {required_value}")
+        uvl_rule = f"{feature_without_lastProperty}_{required_property}_{required_value} => {feature_key}"
+        
+        unset_property = unset_match.group(1)
+        unset_value = unset_match.group(2)
+        uvl_rule += f" & !({feature_without_lastProperty}_{unset_property}_{unset_value})"
+        return uvl_rule
+    print("NO SE ENCONTRÓ COINCIDENCIA EN LA DESCRIPCIÓN")
     return None
 
+
 def extract_constraints_required(description, feature_key):
-    # Expresión regular para el patrón "Required when X is set to Y"
-    #required_when_pattern = re.compile(r'required when\s+`(\w+)`\s+is\s+set\s+to\s+["\'](.*?)["\']', re.IGNORECASE)
     required_when_pattern = re.compile(r'Required when\s+`(\w+)`\s+is\s+set\s+to\s+`?\"?([^\"`]+)\"?`?', re.IGNORECASE)
 
-    # Expresión regular para el patrón "must be unset when X is set to Y"
-    #must_be_unset_pattern = re.compile(r'must be unset when\s+(\w+)\s+is\s+set\s+to\s+[\'"`](.*?)[\'"`]', re.IGNORECASE)
-
     uvl_rule = ""
-    
     # Buscar coincidencias para "Required when"
     when_match = required_when_pattern.search(description)
     if when_match:
@@ -59,48 +111,15 @@ def extract_constraints_required(description, feature_key):
         value_property = when_match.group(1)  # Captura la propiedad (strategy o scope)
         value_default = when_match.group(2)  # Captura el valor (Webhook o Namespace)
         print(f"PRIMER VALOR: {value_property} SEGUNDO VALOR: {value_default}")
-        
         # Ajusta el feature_key según tu formato
         feature_without_lastProperty = feature_key.rsplit('_', 1)[0]
         
         # Genera la regla UVL para "Required when"
         uvl_rule = f"{feature_without_lastProperty}_{value_property}_{value_default} => {feature_key}"
-        """
-        # Buscar coincidencias para "must be unset when" (si existe)
-        unset_match = must_be_unset_pattern.search(description)
-        if unset_match:
-            unset_property = unset_match.group(1)
-            unset_value = unset_match.group(2)
-            print(f"COINCIDENCIA UNSET PRIMER VALOR: {unset_property} SEGUNDO VALOR: {unset_value}")
-            
-            # Agregar la condición de "unset" a la regla UVL
-            uvl_rule += f" & !({feature_without_lastProperty}_{unset_property}_{unset_value})"
-        """
+
         return uvl_rule
-    
     print("NO SE ENCONTRÓ COINCIDENCIA EN LA DESCRIPCIÓN")
     return None
-
-"""
-def extract_constraints_required(description, feature_key):
-    #required_when_pattern = re.compile(r'Required when\s+("([^"\\]*)"|\w+).*?("([^"\\]*)")') ## , re.IGNORECASE probando solo 1
-    required_when_pattern = re.compile(r'Required when\s+(\w+)\s+is\s+set\s+to\s+[\'"`](.*?)[\'"`]')
-    #required_when_pattern = re.compile(r'Required when\s+(`?\w+`?)\s+is\s+set\s+to\s+\\?["\'](.*?)\\?["\']')
-
-    uvl_rule =""  
-    when_match = required_when_pattern.search(description)
-    if when_match:
-        print("NO SE EJECUTA?", when_match)
-        value_property = when_match.group(1)
-        value_default = when_match.group(2)
-        print(f"PRIMER VALOR: {value_property} SEGUNDO VALOR: {value_default}")
-        feature_without_lastProperty = feature_key.rsplit('_', 1)[0] ## feature principal
-        
-        uvl_rule = f"{feature_without_lastProperty}_{value_property}_{value_default} => {feature_key}"
-        return uvl_rule
-    
-    return None
-"""
 
 # Función para extraer límites si están presentes en la descripción
 def extract_bounds(description):
@@ -122,7 +141,6 @@ def extract_bounds(description):
     # Detectar si la descripción menciona puertos válidos
     if "valid port number" in description.lower():
         is_port_number = True
-    
 
     # Traducir palabras numéricas a números enteros dentro de la descripción
     description = description.lower()
@@ -184,9 +202,7 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
 
     doc = nlp(description)
     uvl_rule = None  # Inicializar como None para descripciones sin reglas válidas
-    second_constraint = extract_constraints_required(description, feature_key)
-    #first_constraint = extract_constraints_if(description, feature_key)
-
+    count_requireds = 0
     # Extraer límites si están presentes
     min_bound, max_bound, is_port_number, is_other_number = extract_bounds(description)
     #min_bound01, is_other_number = extract_min_max(description)
@@ -194,17 +210,26 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
     if type_data == "Boolean" or type_data == "boolean":
         if any(tok.lemma_ == "slice" and tok.text in description for tok in doc):
             print("")
-        elif "empty" in description: 
-            uvl_rule = f"!{feature_key}"
+        #elif "empty" in description: 
+        #    uvl_rule = f"!{feature_key}"
         elif "Number must be in the range" in description:
             uvl_rule = f"{feature_key} => ({feature_key}_asInteger > 1 & {feature_key}_asInteger < 65535) | ({feature_key}_asString == 'IANA_SVC_NAME')" ## Ver como añadir ese formato
-        #elif first_constraint:
-        #    uvl_rule = first_constraint
-        elif second_constraint:
-            print(f"Second constraint extracted for {feature_key}: {second_constraint}")  # Depuración
 
+        elif "Required when" in description:
+            #print(f"Se ejecuta? {feature_key}")  # Depuración
+            second_constraint = extract_constraints_required(description, feature_key)
+            count_requireds += 1
+            print(f"Second constraint extracted for {feature_key}: {second_constraint}")  # Depuración
+            print(f"Haay {count_requireds} descripciones")
             uvl_rule = second_constraint
-                        
+        elif "required when" in description:
+            const = extract_constraints_unset_required(description, feature_key)
+            uvl_rule = const
+        elif "only if type" in description or "Must be set if type is" in description or "must be non-empty if and only if" in description or "field MUST be empty if" in description: ## 
+            first_constraint = extract_constraints_if(description, feature_key)
+            print("NO SE EJECUTA?",first_constraint)
+            uvl_rule = first_constraint
+                           
     elif type_data == "Integer" or type_data == "integer":
         if is_port_number:
             # Si es un número de puerto, asegurarse de usar los límites de puerto
@@ -227,6 +252,11 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
             uvl_rule = f"{feature_key} == 'v1' | {feature_key} == 'v1beta1' | {feature_key} == 'v2' | {feature_key} == 'v1alpha1'"
         elif "RFC 3339" in description:
             uvl_rule = f"!{feature_key}"
+        #elif "required when" in description.lower():
+            #print(f"Se ejecuta? {feature_key}")  # Depuración
+        #    second_constraint = extract_constraints_required(description, feature_key) ### Sobra en este caso
+            #print(f"Second constraint extracted for {feature_key}: {second_constraint}")  # Depuración
+        #    uvl_rule = second_constraint
 
     # Si no hay coincidencia, incrementamos el contador de reglas no válidas
     if uvl_rule is None:

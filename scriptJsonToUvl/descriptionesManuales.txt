@@ -367,11 +367,16 @@ This is an alpha field
 hay varias asi: si se automatiza el encontrar a donde apunta se puede poner un !require (to be false) y un require (to be set)
         "default": y mas...
 
+---Hecho
 "description": "strategy specifies how custom resources are converted between versions. Allowed values are: - `\"None\"`: The converter only change the apiVersion and would not touch any other field in the custom resource. - `\"Webhook\"`: API Server will call to an external webhook to do the conversion. Additional information\n  is needed for this option. This requires spec.preserveUnknownFields to be false, and spec.conversion.webhook to be set.",
         "webhook": {
           "$ref": "#/definitions/io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1.WebhookConversion",
           "description": "webhook describes how to call the conversion webhook. Required when `strategy` is set to `\"Webhook\"`."
         }
+io_k8s_api_networking_v1_IngressClassSpec_parameters_scope_Namespace => io_k8s_api_networking_v1_IngressClassList_items_spec_parameters_namespace
+io_k8s_api_networking_v1_IngressClassSpec_parameters_scope_Cluster => !io_k8s_api_networking_v1_IngressClassList_items_spec_parameters_namespace
+---Hecho
+
 uvl: feature_strategy_Webhook => feature
 Otra descripcion que requiere algo pero no esta en los esquemas..
 "description": "lastPhaseTransitionTime is the time the phase transitioned from one to another and automatically resets to current time everytime a volume phase transitions. This is a beta field and requires the PersistentVolumeLastPhaseTransitionTime feature to be enabled (enabled by default)."
@@ -424,6 +429,8 @@ down. StabilizationWindowSeconds must be greater than or equal to zero and less 
 Default value is [Integer]: Para numeros enteros (revisar) (4 - PREGUNTAR
 )
 p. This cannot be 0 if MaxSurge is 0 Default value is 1.
+
+---Hecho -> only if type
 Can be:
 "description": "Type of daemon set update. Can be \"RollingUpdate\" or \"OnDelete\". Default is RollingUpdate.",
 
@@ -436,11 +443,26 @@ feature_type == 'RollingUpdate' => feature_rollingUpdate
 feature_type == 'OnDelete' => !feature_rollingUpdate
 constraint: io_k8s_api_apps_v1_DaemonSetUpdateStrategy_type_RollingUpdate => io_k8s_api_apps_v1_DaemonSetUpdateStrategy_rollingUpdate
 !io_k8s_api_apps_v1_DaemonSetUpdateStrategy_type_RollingUpdate | io_k8s_api_apps_v1_DaemonSetUpdateStrategy_type_OnDelete => !io_k8s_api_apps_v1_DaemonSetUpdateStrategy_rollingUpdate
+---Hecho
 
 This list may be empty, but only if `clusterScope` is true." -- constraint (2)
 
+-- Hecho ## añadir valores A value of `
+
 PriorityLevelConfigurationSpec: dependencia entre propiedades, if b == "limited" => a != vacio
 This field must be non-empty if and only if `type` is `\"Limited\"`."
+io_k8s_api_flowcontrol_v1_PriorityLevelConfiguration_spec_type_Limited => io_k8s_api_flowcontrol_v1_PriorityLevelConfiguration_spec_limited
+
+"description": "`limited` specifies how requests are handled for a Limited priority level. This field must be non-empty if and only if `type` is `\"Limited\"`."
+
+ io_k8s_api_flowcontrol_v1_PriorityLevelConfiguration_spec_type_Limited => io_k8s_api_flowcontrol_v1_PriorityLevelConfiguration_spec_limited
+
+"description": "`exempt` specifies how requests are handled for an exempt priority level. This field MUST be empty if `type` is `\"Limited\"`. This field MAY be non-empty if `type` is `\"Exempt\"`. If empty and `type` is `\"Exempt\"` then the default values for `ExemptPriorityLevelConfiguration` apply."
+io_k8s_api_flowcontrol_v1_PriorityLevelConfiguration_spec_type_Limited => !io_k8s_api_flowcontrol_v1_PriorityLevelConfiguration_spec_exempt | io_k8s_api_flowcontrol_v1_PriorityLevelConfiguration_spec_type_Exempt => io_k8s_api_flowcontrol_v1_PriorityLevelConfiguration_spec_exempt 
+
+-- Hecho
+
+fields-to-discriminateBy: caracteristica que indica los features y nombres que "deberian" ser ***
 
 posible constraint: if name == '' => generateName
 GenerateName is an optional prefix, used by the server, to generate a unique name ONLY IF the Name field has not been provided.
@@ -475,6 +497,7 @@ io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_modifyVolumeStat
 Valid options are: (2)
 Valid options are (5)
 "description": "type determines how the Service is exposed. Defaults to ClusterIP. Valid options are ExternalName, ClusterIP, NodePort, and LoadBalancer. \"ClusterIP\" allocates a cluster-internal IP address for load-balancing to endpoints. Endpoints are determined by the selector or if that is not specified, by manual construction of an Endpoints object or EndpointSlice objects. If clusterIP is \"None\", no virtual IP is allocated and the endpoints are published as a set of endpoints rather than a virtual IP. \"NodePort\" builds on ClusterIP and allocates a port on every node which routes to the same endpoints as the clusterIP. \"LoadBalancer\" builds on NodePort and creates an external load-balancer (if supported in the current cloud) which routes to the same endpoints as the clusterIP. \"ExternalName\" aliases this service to the specified externalName. Several other fields do not apply to ExternalName services. More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types",
+---Hecho
 
 Aqui se podria añadir una regla aparte donde se describa que si hay reglas tipo Ingress o Egress se define el policyTypes tambien. -- SIN TERMINAR ESTA PARTE
 [\"Ingress\"], [\"Egress\"], or [\"Ingress\", \"Egress\"]. => Si no es especificada, depende del contenido en sus propiedades. or [0..2], con complejidad de relacion
@@ -545,3 +568,11 @@ Revisar expresion, enfoque... (patrones en un mismo lugar...): prefixed_keys, ex
 													Boolean io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_allocatedResources_values
 													Boolean io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_allocatedResources_storage
 											Boolean io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_capacity
+
+Expresion que puede significar mandatory: \n\nRequired"
+
+"description": "`parameterNotFoundAction` controls the behavior of the binding when the resource exists, and name or selector is valid, but there are no parameters matched by the binding. If the value is set to `Allow`, then no matched parameters will be treated as successful validation by the binding. If set to `Deny`, then no matched parameters will be subject to the `failurePolicy` of the policy.\n\nAllowed values are `Allow` or `Deny`\n\nRequired",
+
+
+Quizas sirva para abrir 2 restricciones beta
+and requires the

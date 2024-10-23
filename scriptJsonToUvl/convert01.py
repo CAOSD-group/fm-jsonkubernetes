@@ -4,6 +4,9 @@ import json
 import re
 from collections import deque
 
+# Importar el procesador de restricciones
+from restrictions_processor import process_restrictions
+
 class SchemaProcessor:
     def __init__(self, definitions):
         self.definitions = definitions # Un diccionario que organiza las descripciones en tres categorías:
@@ -26,10 +29,11 @@ class SchemaProcessor:
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
         self.patterns = {
             'values': re.compile(r'^\b$', re.IGNORECASE), # values are|valid|supported|acceptable|can be
-            'restrictions': re.compile(r'Required when'),###|only if type| valid port number|must be in the range|must be greater than|  ## allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
+            'restrictions': re.compile(r'Must be set if type is|field MUST be empty if|must be non-empty if and only if', re.IGNORECASE),### Must be set if type is||only if type|valid port number|must be in the range|must be greater than|\. Required when|required when scope  ## allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
             'dependencies': re.compile(r'^\b$', re.IGNORECASE) ## (requires|if[\s\S]*?only if|only if) # depends on ningun caso especial, quitar relies on: no hay casos, contingent upon: igual = related to
         }
-        self.boolean_keywords = ['AppArmorProfile_localhostProfile', 'appArmorProfile_localhostProfile']  # Lista para modificar otros posibles tipos de los features ##
+        self.boolean_keywords = ['AppArmorProfile_localhostProfile', 'appArmorProfile_localhostProfile', 'seccompProfile_localhostProfile', 'SeccompProfile_localhostProfile', 'IngressClassList_items_spec_parameters_namespace',
+                        'IngressClassParametersReference_namespace', 'IngressClassSpec_parameters_namespace',  'IngressClass_spec_parameters_namespace']  # Lista para modificar a otros posibles tipos de los features (Cambiado del original por la compatibilidad) ##
 
     def sanitize_name(self, name):
         """Reemplaza caracteres no permitidos en el nombre con guiones bajos y asegura que solo haya uno con ese nombre"""
@@ -81,7 +85,7 @@ class SchemaProcessor:
     def extract_values(self, description):
         """Extrae valores que están entre comillas u otros delimitadores, solo si se encuentran ciertas palabras clave"""
         palabras_patrones_minus = ['values are', 'possible values are', 'following states', '. must be', 'implicitly inferred to be', 'the currently supported reasons are', '. can be', 'it can be in any of following states',
-                                   'valid options are']
+                                   'valid options are', 'may be set to', 'a value of `']
         palabras_patrones_may = ['Supports'] ## 'values are', 
         if not any(keyword in description.lower() for keyword in palabras_patrones_minus) and not any(keyword in description for keyword in palabras_patrones_may): # , '. Must be' , 'allowed valures are'
             return None
@@ -91,7 +95,7 @@ class SchemaProcessor:
         value_patterns = [
 
             # Captura valores entre comillas escapadas o no escapadas
-            re.compile(r'\\?["\'](.*?)\\?["\']'),
+            re.compile(r'\\?["\'](.*?)\\?["\']'), #### Aparte de los que habian de antes, captura A value of `\"Exempt\"`...
 
             #re.compile(r'-\s*([\w]+(?:Resize\w+)):'), ## Patron para los guiones y doble punto al final.
             #re.compile(r'\\?["\'](.*?)\\?["\']'),  # Captura valores entre comillas simples o dobles, escapadas o no
@@ -101,19 +105,30 @@ class SchemaProcessor:
             
             re.compile(r'(?<=Valid values are:)[\s\S]*?(?=\.)'),
             re.compile(r'(?<=Possible values are:)[\s\S]*?(?=\.)'),
-            re.compile(r'(?<=Allowed values are)[\s\S]*?(?=\.)', re.IGNORECASE),
+            re.compile(r'(?<=Allowed values are)[\s\S]*?(?=\.|\s+Required)', re.IGNORECASE),
+            #re.compile(r'(?<=Allowed values are)[`\'"]?([a-zA-Z]+)[`\'"]?(?:\s*,?\s*[`\'"]?([a-zA-Z]+)[`\'"]?)*\s*(?=\.|\s+Required)', re.IGNORECASE),
+
             re.compile(r'\b(UDP.*?SCTP)\b'),
             re.compile(r'\n\s*-\s+(\w+)\s*\n', re.IGNORECASE), ## caso suelto Infeasible, Pending...
             #re.compile(r'\n\s*-\s+([A-Za-z]+)\s*\n', re.IGNORECASE), ## caso suelto Infeasible, Pending...
-
-            #re.compile(r'\n\s*([a-zA-Z]+)\s*-\s'), ## Anterior expresion usada pero no agrega todos los valores de valid options are...
-            re.compile(r'(\b[a-zA-Z]+\b)\s*-\s'), ## Prueba para añadir los valores que hay en valid options are...
-            #re.compile(r'Valid options are:\s*(?:\n\s*)?([a-zA-Z]+)\s*-\s'),
-            #re.compile(r'(?<=Valid options are\s(\w+)*?\,\s(\w+)\,?<=and\s(\w+))*?)')            
+            re.compile(r'\b(Localhost|RuntimeDefault|Unconfined)\b'), ### Valid options are:
+            ###re.compile(r'(?<=Valid options are:)*?(\b[a-zA-Z]+\b)\s*-\s', re.IGNORECASE),
+            #re.compile(r'(?:\n\s*)?([a-zA-Z]+)\s*-\s'),
+            
             re.compile(r'\b(Retain|Delete|Recycle)\b', re.IGNORECASE), ## Prueba añadir valores persistentVolumeReclaimPolicy, quizas general pero no afecta ahora mismo a otros valores con descripciones
 
         ]
+        """
+        allowed_pattern = re.compile(r'(?<=Allowed values are)[\s\S]*?(?=\.|\s+Required)', re.IGNORECASE)
+        matches_allowed = allowed_pattern.search(description)
+        
+        print(matches_allowed)  # Esto debería imprimir los valores permitidos.
+        if matches_allowed is not None:
+            print(f"Patrones de allowed: {matches_allowed}")
 
+        #for pattern_all in matches_allowed:
+        #    print(f"Patrones de allowed: {pattern_all}")
+        """
         values = []
         #add_quotes = False  # Variable para verificar si se necesita añadir comillas
         default_value = self.patterns_process_enum(description)
@@ -127,7 +142,7 @@ class SchemaProcessor:
                 #print(f"VALORES EXPLORADOS / OBTENIDOS: {match}")  # Debug: Ver los valores separados
                 #split_values = re.split(r',\s*|\n', match)
                 split_values = re.split(r',\s*|\s+or\s+|\sor|or\s|\s+and\s+|and\s', match)  # Asegurarse de que "or" esté rodeado de espacios ### or\s: soluciona quitar el or en STCP.
-                #print(f"Split Values: {split_values}")  # Debug: Ver los valores separados
+                print(f"Split Values: {split_values}")  # Debug: Ver los valores separados
                 for v in split_values:
                     v = v.strip()
                     #v = v.replace(r'\sor\s', '').strip()
@@ -140,17 +155,17 @@ class SchemaProcessor:
                     #v = v.replace('/', '_')
 
                     # Filtrar valores que contienen puntos, corchetes, llaves o que son demasiado largos
-                    if v and len(v) <= 24 and not any(char in v for char in {'.', '{', '}', '[', ']',';', ':', 'prefixed_keys'}): # añadido / por problemas con la sintaxis 'yet', ## Agregado prefixed_keys para eliminarlo, no es un valor
-                        if len(v) >= 20 and '_' in v:
+                    if v and len(v) <= 24 and not any(char in v for char in {'.', '{', '}', '[', ']',';', ':', 'prefixed_keys'}): # añadido / por problemas con la sintaxis 'yet', ## Agregado prefixed_keys, handled para eliminarlo, no son valores
+                        if len(v) >= 20 and '_' in v:                                               #### , 'handled', 'cluster'
                         # Excluir valores con guion bajo y tamaño >= 20
                             print(f"Excluyendo valor: {v}")
                         else:
                         # Agregar el valor si no tiene guion bajo o si es menor a 20 caracteres
                             if v == default_value:
                                 v = f"{v} {{default}}"
-                            if len(v) < 20 and '_' in v:
+                            #if len(v) < 20 and '_' in v:
                         # Excluir valores con guion bajo y tamaño >= 20
-                                print(f"VALORES CON BARRA BAJA** Comprobarlo: {v}")
+                            #    print(f"VALORES CON BARRA BAJA** Comprobarlo: {v}")
                             values.append(v)
                         """
                         if v == default_value: ## if default_value and v.lower() == default_value.lower():
@@ -550,7 +565,8 @@ def properties_to_uvl(feature_list, indent=1):
 
     uvl_output = ""
     indent_str = '\t' * indent
-    boolean_keywords = ['AppArmorProfile_localhostProfile', 'appArmorProfile_localhostProfile']
+    boolean_keywords = ['AppArmorProfile_localhostProfile', 'appArmorProfile_localhostProfile', 'seccompProfile_localhostProfile', 'SeccompProfile_localhostProfile', 'IngressClassList_items_spec_parameters_namespace',
+                        'IngressClassParametersReference_namespace', 'IngressClass_spec_parameters_namespace', 'IngressClassSpec_parameters_namespace'] ## Agregados Ingress...Custom por restriccion ***
     for feature in feature_list:
         type_str = f"{feature['type_data'].capitalize()} " if feature['type_data'] else "Boolean "
         
@@ -651,5 +667,23 @@ definitions_file = '../kubernetes-json-v1.30.2/v1.30.2/_definitions.json'
 output_file = './kubernetes_combined_02.uvl'
 descriptions_file = './descriptions_01.json'
 
+restrictions_output_file = './restrictions02.txt'
+
 # Generar archivo UVL y guardar descripciones
 generate_uvl_from_definitions(definitions_file, output_file, descriptions_file)
+
+
+"""
+# Generar las restricciones y agregarlas al archivo UVL generado
+# Este paso se hace después de la generación del modelo y descripciones
+process_restrictions(descriptions_file, restrictions_output_file)
+
+# Añadir las restricciones al archivo UVL generado
+with open(output_file, 'a', encoding='utf-8') as f_out, open(restrictions_output_file, 'r', encoding='utf-8') as f_restrictions:
+    #f_out.write("\n# Restricciones UVL generadas\n")
+    #f_out.write(f"\t{f_restrictions.read()}")
+    for restrict in f_restrictions:
+        f_out.write(f"\t{restrict}")
+
+print(f"Modelo UVL y restricciones guardados en {output_file}")
+"""

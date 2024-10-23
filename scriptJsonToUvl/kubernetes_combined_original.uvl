@@ -1,4 +1,4 @@
-namespace KubernetesTest03
+namespace KubernetesTest003
 
 features
 	Kubernetes
