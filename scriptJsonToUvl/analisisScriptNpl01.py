@@ -23,19 +23,32 @@ def convert_word_to_num(word):
     return word_to_num.get(word.lower(), None)
 
 
-def extract_constraints_if(description, feature_key):
-    """ Metodo para extraer las restricciones "especificas" de tipo This field MUST be empty if, _Exempt"""
-    print("")
+def extract_constraints_mutualy_exclusive(description, feature_key):
+    """ Metodo para extraer las restricciones de exclusion mutua encontradas en _name y _selector"""
+    ## Para este caso hay 12 descript que no se acceden porque no hace falta al tener en cada par la misma ref, con procesar una equivale a las 2
+
+    exclusive_pattern = re.compile(r'\`([A-Za-z]+)\`')
+    uvl_rule =""
+    exclusive_match = exclusive_pattern.findall(description)
+    feature_without_lastProperty = feature_key.rsplit('_', 1)[0]
+
+    if exclusive_match:
+        type_property01 = exclusive_match[0] ## Hay valores repetidos pero solo se acceden a los 2 primeros
+        type_property02 = exclusive_match[1]
+        uvl_rule = f"({feature_without_lastProperty}_{type_property01} => !{feature_without_lastProperty}_{type_property02}) & ({feature_without_lastProperty}_{type_property02} => {feature_without_lastProperty}_{type_property01})"
+    
+    if uvl_rule is not None:
+        return uvl_rule
+    else:
+        print("UVL RULE ESTA VACÍO")
 
 ## Función para convertir constraints strings y requires 
 def extract_constraints_if(description, feature_key):
     """ Metodo para extraer las restricciones "generales" de only if type, Must be set if type is, This field MUST be empty if: relacionadas con _RollingUpdate, _Localhost, _Limited, _Exempt"""
-    #only_if_pattern = re.compile(r'\"(Limited)\"')
 
     only_if_pattern = re.compile(r'\"([A-Za-z]+)\"')
     ##if_exempt_pattern = re.compile(r'\"([A-Za-z]+)\"')
 
-    #(r'\\?["\'](.*?)\\?["\']')
     #only_if_pattern = re.compile(r'\"([^\"]+)\"')
 
     uvl_rule =""
@@ -54,10 +67,11 @@ def extract_constraints_if(description, feature_key):
     
     elif 'exempt' in feature_key:
         exempt_match = only_if_pattern.findall(description)
-        #exempt_match = set(exempt_match) 
+        #exempt_match = set(exempt_match) ## hay valores repetidos pero solo se acceden a los 2 primeros
         print("Lo que captura el patron", exempt_match)
-        type_property01 = exempt_match[1]
-        type_property02 = exempt_match[2]
+        type_property01 = exempt_match[0]
+        type_property02 = exempt_match[1]
+        print("Valores exempt capturados", exempt_match)
         print(f"{type_property01}, tipo2: {type_property02}")
         uvl_rule = f"({feature_without_lastProperty}_type_{type_property01} => !{feature_key}) | ({feature_without_lastProperty}_type_{type_property02} => {feature_key})" ### Aqui se especifican los 2 casos
         
@@ -229,6 +243,10 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
             first_constraint = extract_constraints_if(description, feature_key)
             print("NO SE EJECUTA?",first_constraint)
             uvl_rule = first_constraint
+        elif "selector can be used to match multiple param objects based on their labels" in description:
+            constraint = extract_constraints_mutualy_exclusive(description, feature_key)
+            print("Restricciones", constraint)
+            uvl_rule = constraint
                            
     elif type_data == "Integer" or type_data == "integer":
         if is_port_number:

@@ -29,11 +29,15 @@ class SchemaProcessor:
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
         self.patterns = {
             'values': re.compile(r'^\b$', re.IGNORECASE), # values are|valid|supported|acceptable|can be
-            'restrictions': re.compile(r'Must be set if type is|field MUST be empty if|must be non-empty if and only if', re.IGNORECASE),### Must be set if type is||only if type|valid port number|must be in the range|must be greater than|\. Required when|required when scope  ## allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
+            'restrictions': re.compile(r'the currently supported values are|are mutually exclusive properties', re.IGNORECASE),###|Must be set if type is|field MUST be empty if|must be non-empty if and only if # Must be set if type is||only if type|valid port number|must be in the range|must be greater than|\. Required when|required when scope  ## allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
             'dependencies': re.compile(r'^\b$', re.IGNORECASE) ## (requires|if[\s\S]*?only if|only if) # depends on ningun caso especial, quitar relies on: no hay casos, contingent upon: igual = related to
         }
+        # Lista de parte de nombres de features que se altera el tipo de dato a Boolean para la compatibilidad con las constraints y uvl.
         self.boolean_keywords = ['AppArmorProfile_localhostProfile', 'appArmorProfile_localhostProfile', 'seccompProfile_localhostProfile', 'SeccompProfile_localhostProfile', 'IngressClassList_items_spec_parameters_namespace',
                         'IngressClassParametersReference_namespace', 'IngressClassSpec_parameters_namespace',  'IngressClass_spec_parameters_namespace']  # Lista para modificar a otros posibles tipos de los features (Cambiado del original por la compatibilidad) ##
+        
+        # Lista de expresiones regulares para casos en que la lista anterior necesite de más precisión para solo alterar el tipo en los parametros requeridos
+        self.boolean_keywords_regex = [r'.*_paramRef_name$', r'.*_ParamRef_name$'] ## , r'.*_paramRef_selector$', r'.*_ParamRef_selector$'
 
     def sanitize_name(self, name):
         """Reemplaza caracteres no permitidos en el nombre con guiones bajos y asegura que solo haya uno con ese nombre"""
@@ -85,7 +89,7 @@ class SchemaProcessor:
     def extract_values(self, description):
         """Extrae valores que están entre comillas u otros delimitadores, solo si se encuentran ciertas palabras clave"""
         palabras_patrones_minus = ['values are', 'possible values are', 'following states', '. must be', 'implicitly inferred to be', 'the currently supported reasons are', '. can be', 'it can be in any of following states',
-                                   'valid options are', 'may be set to', 'a value of `']
+                                   'valid options are', 'may be set to', 'a value of `', 'the supported types are', 'the currently supported values are']
         palabras_patrones_may = ['Supports'] ## 'values are', 
         if not any(keyword in description.lower() for keyword in palabras_patrones_minus) and not any(keyword in description for keyword in palabras_patrones_may): # , '. Must be' , 'allowed valures are'
             return None
@@ -114,8 +118,9 @@ class SchemaProcessor:
             re.compile(r'\b(Localhost|RuntimeDefault|Unconfined)\b'), ### Valid options are:
             ###re.compile(r'(?<=Valid options are:)*?(\b[a-zA-Z]+\b)\s*-\s', re.IGNORECASE),
             #re.compile(r'(?:\n\s*)?([a-zA-Z]+)\s*-\s'),
-            
             re.compile(r'\b(Retain|Delete|Recycle)\b', re.IGNORECASE), ## Prueba añadir valores persistentVolumeReclaimPolicy, quizas general pero no afecta ahora mismo a otros valores con descripciones
+            re.compile(r'(?<=The currently supported values are\s)([a-zA-Z\s,]+)(?=\.)', re.IGNORECASE),
+            #re.compile(r'(?<=The currently supported values are)[\w\s](?=\.)'),
 
         ]
         """
@@ -193,6 +198,8 @@ class SchemaProcessor:
     def patterns_process_enum(self, description):
  
         patterns_default_values = ['defaults to', '. implicitly inferred to be', 'the currently supported reasons are', '. default is'] # 'Defaults to', al comprobar luego con minus en mayuscula no cuenta
+        patterns_default_values_numbers = ['defaults to', '. implicitly inferred to be', 'the currently supported reasons are', '. default is'] # Grupo alternativo al anterior para definir los patrones que tienen Integers por defecto
+        
         if not any(keyword in description.lower() for keyword in patterns_default_values):
             return None
          
@@ -214,7 +221,6 @@ class SchemaProcessor:
         for pattern in default_patterns:
             matches = pattern.findall(description)
             for match in matches:
-
                 #if len(match) > 30:
                 #    split_value = match.split('.')[0]
                     #value = split_value[0]
@@ -232,9 +238,8 @@ class SchemaProcessor:
                     #default_value.append(v)
                     default_value = v
                     #print("VALOR AÑADIDO: ",default_value)
-
         if not default_value:
-        #    print("Valores que no son por defecto ",default_value)
+            print("Valores que no son por defecto ",default_value)
             return None
         #print("Estos son los valores:: ",default_value)
     # Si no se encuentra ningún valor válido, devolver el nombre sin cambios
@@ -309,7 +314,16 @@ class SchemaProcessor:
     def update_type_data(self, full_name, feature_type_data): ## sino probar con full_name
     # Cambia el tipo de dato a 'Boolean' si el nombre del feature o sub_feature contiene algún fragmento en boolean_keywords
         if any(keyword in full_name for keyword in self.boolean_keywords):
-            return 'Boolean'
+            #return 'Boolean'
+            feature_type_data = 'Boolean'
+
+            # Verificar coincidencias con expresiones regulares
+        for pattern in self.boolean_keywords_regex:
+            if re.search(pattern, full_name):
+                print(f"Coincidencia de expresión regular encontrada: {full_name}")
+                #return 'Boolean'
+                feature_type_data = 'Boolean'
+            
         return feature_type_data
                 
 

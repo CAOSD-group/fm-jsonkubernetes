@@ -468,10 +468,6 @@ posible constraint: if name == '' => generateName
 GenerateName is an optional prefix, used by the server, to generate a unique name ONLY IF the Name field has not been provided.
 n\nSi se especifica este campo y el nombre generado existe, el servidor devolverá un 409.\n\nSólo se aplica si no se especifica Nombre. se tendria que comprobar si el nombre ya existe en el servidor
 
-terminationGracePeriodSeconds:  ## Complicado para implementar, posibles opciones etc..
-Minimum value is 1  rule > 1
-Minimum value is (5) para constraints
-
 
 
 "description": "timeoutSeconds specifies the seconds of ClientIP type session sticky time. The value must be >0 && <=86400(for 1 day) if ServiceAffinity == \"ClientIP\". Default value is 10800(for 3 hours).",
@@ -523,7 +519,6 @@ Interviene en la expresion que captura los valores de valid options are...
 
 --Nuevo--
 
-
 --- Hecho
 Supports:: añadido
 ---Hecho
@@ -543,7 +538,6 @@ Supports:: añadido
             "StatefulSet"
           ]
         },
-
 
 varios valores que no deberian de estar en este feature y otros...
 Revisar expresion, enfoque... (patrones en un mismo lugar...): prefixed_keys, example, capacity, values de más. 
@@ -569,10 +563,97 @@ Revisar expresion, enfoque... (patrones en un mismo lugar...): prefixed_keys, ex
 													Boolean io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_allocatedResources_storage
 											Boolean io_k8s_api_apps_v1_StatefulSet_spec_volumeClaimTemplates_status_capacity
 
-Expresion que puede significar mandatory: \n\nRequired"
+Nueva xpresion que puede significar mandatory: \n\nRequired"
 
 "description": "`parameterNotFoundAction` controls the behavior of the binding when the resource exists, and name or selector is valid, but there are no parameters matched by the binding. If the value is set to `Allow`, then no matched parameters will be treated as successful validation by the binding. If set to `Deny`, then no matched parameters will be subject to the `failurePolicy` of the policy.\n\nAllowed values are `Allow` or `Deny`\n\nRequired",
 
 
 Quizas sirva para abrir 2 restricciones beta
 and requires the
+
+--- Hecho
+          "description": "name is the name of the resource being referenced.\n\nOne of `name` or `selector` must be set, but `name` and `selector` are mutually exclusive properties. If one is set, the other must be unset.\n\nA single parameter used for all admission requests can be configured by setting the `name` field, leaving `selector` blank, and setting namespace if `paramKind` is namespace-scoped.",
+restriccions exclusivas con require:
+if (feature_name => !feature_selector) & (feature_selector => !feature_name)
+--- Hecho
+
+          "description": "namespace is the namespace of the referenced resource. Allows limiting the search for params to a specific namespace. Applies to both `name` and `selector` fields.\n\nA per-namespace parameter may be used by specifying a namespace-scoped `paramKind` in the policy and leaving this field empty.\n\n- If `paramKind` is cluster-scoped, this field MUST be unset. Setting this field results in a configuration error.\n\n- If `paramKind` is namespace-scoped, the namespace of the object being evaluated for admission will be used when this field is left unset. Take care that if this is left empty the binding must not match any cluster-scoped resources, which will result in an error.",
+
+\n\n- If `paramKind` is cluster-scoped, this field MUST be unset. 
+
+Expresion "One of" con mayus
+
+
++ Valores:
+"description": "`type` is the type of flow distinguisher method The supported types are \"ByUser\" and \"ByNamespace\". Required.",
+The supported types are (2 tipos) : 16 insertados
+
+-- Hacer: Insertar como default los enteros que tambien tienen {default} 
+-- Hacer: actualizacion formato de añadir los Boolean
+
+
+Descripciones para Rangos Integer y valor por defecto
+ClientIPConfig
+Default value is 0.
+This cannot be 0 if MaxSurge is 0 Default value is 1.
+The default value is 10.
+"description": "timeoutSeconds specifies the seconds of ClientIP type session sticky time. The value must be >0 && <=86400(for 1 day) if ServiceAffinity == \"ClientIP\". Default value is 10800(for 3 hours).",
+
+terminationGracePeriodSeconds:  ## Complicado para implementar, posibles opciones etc..
+Minimum value is 1  rule > 1
+Minimum value is (5) para constraints
+
+Defaults to 1
+Defaults to 3
+Defaults to 6
+Defaults to 600
+
+
+"description": "appArmorProfile is the AppArmor options to use by the containers in this pod. Note that this field cannot be set when spec.os.name is windows."
+
+"io.k8s.api.core.v1.AppArmorProfile": {
+
+The profile must be preconfigured on the node to work. Must match the loaded name of the profile.
+this field cannot be set when 
+
+spec.os.name
+se podria traducir a "io_k8s_api_core_v1_PodSpec_os"
+esquema: PodOS => agregar linunx and windows
+"description": "Name is the name of the operating system. The currently supported values are linux and windows. Additional value may be defined in future and can be one of: https://github.com/opencontainers/runtime-spec/blob/master/config.md#platform-specific-configuration Clients should expect to handle additional values and treat unrecognized values in this field as os: null",
+ref a "os"
+"$ref": "#/definitions/io.k8s.api.core.v1.PodOS",
+"description": "Specifies the OS of the containers in the pod. Some pod and container fields are restricted if this is set.\n\nIf the OS field is set to linux, the following fields must be unset: -securityContext.windowsOptions\n\nIf the OS field is set to windows, following fields must be unset: - spec.hostPID - spec.hostIPC - spec.hostUsers - spec.securityContext.appArmorProfile - spec.securityContext.seLinuxOptions - spec.securityContext.seccompProfile - spec.securityContext.fsGroup - spec.securityContext.fsGroupChangePolicy - spec.securityContext.sysctls - spec.shareProcessNamespace - spec.securityContext.runAsUser - spec.securityContext.runAsGroup - spec.securityContext.supplementalGroups - spec.containers[*].securityContext.appArmorProfile - spec.containers[*].securityContext.seLinuxOptions - spec.containers[*].securityContext.seccompProfile - spec.containers[*].securityContext.capabilities - spec.containers[*].securityContext.readOnlyRootFilesystem - spec.containers[*].securityContext.privileged - spec.containers[*].securityContext.allowPrivilegeEscalation - spec.containers[*].securityContext.procMount - spec.containers[*].securityContext.runAsUser - spec.containers[*].securityContext.runAsGroup"
+
+Deducciones:
+\n\nIf the OS field is set to windows, following fields must be unset: - spec.hostPID - spec.hostIPC - spec.hostUsers - spec.securityContext.appArmorProfile - spec.securityContext.seLinuxOptions - spec.securityContext.seccompProfile - spec.securityContext.fsGroup - spec.securityContext.fsGroupChangePolicy - spec.securityContext.sysctls - spec.shareProcessNamespace - spec.securityContext.runAsUser - spec.securityContext.runAsGroup - spec.securityContext.supplementalGroups
+if this is set.\n\nIf the OS field is set to linux, the following fields must be unset: -securityContext.windowsOptions
+
+    "io.k8s.api.core.v1.SecurityContext": {
+      "description": "SecurityContext holds security configuration that will be applied to a container. Some fields are present in both SecurityContext and PodSecurityContext.  When both are set, the values in SecurityContext take precedence.",
+      "properties": {
+        "allowPrivilegeEscalation": {
+          "description": "AllowPrivilegeEscalation controls whether a process can gain more privileges than its parent process. This bool directly controls if the no_new_privs flag will be set on the container process. AllowPrivilegeEscalation is true always when the container is: 1) run as Privileged 2) has CAP_SYS_ADMIN Note that this field cannot be set when spec.os.name is windows.",
+          "type": "boolean"
+        },
+        "appArmorProfile": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.AppArmorProfile",
+          "description": "appArmorProfile is the AppArmor options to use by this container. If set, this profile overrides the pod's appArmorProfile. Note that this field cannot be set when spec.os.name is windows."
+        },
+        "capabilities": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.Capabilities",
+          "description": "The capabilities to add/drop when running containers. Defaults to the default set of capabilities granted by the container runtime. Note that this field cannot be set when spec.os.name is windows."
+        },
+        "privileged": {
+          "description": "Run container in privileged mode. Processes in privileged containers are essentially equivalent to root on the host. Defaults to false. Note that this field cannot be set when spec.os.name is windows.",
+          "type": "boolean"
+        },
+        "procMount": {
+          "description": "procMount denotes the type of proc mount to use for the containers. The default is DefaultProcMount which uses the container runtime defaults for readonly paths and masked paths. This requires the ProcMountType feature flag to be enabled. Note that this field cannot be set when spec.os.name is windows.",
+          "type": "string"
+        },
+        "readOnlyRootFilesystem": {
+          "description": "Whether this container has a read-only root filesystem. Default is false. Note that this field cannot be set when spec.os.name is windows.",
+          "type": "boolean"
+        },
+        "runAsGroup": {
+          "description": "The GID to run the entrypoint of the container process. Uses runtime default if unset. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is windows.",
