@@ -29,7 +29,7 @@ class SchemaProcessor:
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
         self.patterns = {
             'values': re.compile(r'^\b$', re.IGNORECASE), # values are|valid|supported|acceptable|can be
-            'restrictions': re.compile(r'the currently supported values are|are mutually exclusive properties', re.IGNORECASE),###|Must be set if type is|field MUST be empty if|must be non-empty if and only if # Must be set if type is||only if type|valid port number|must be in the range|must be greater than|\. Required when|required when scope  ## allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
+            'restrictions': re.compile(r'Note that this field cannot be set when', re.IGNORECASE),### |the currently supported values are|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if # Must be set if type is||only if type|valid port number|must be in the range|must be greater than|\. Required when|required when scope  ## allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
             'dependencies': re.compile(r'^\b$', re.IGNORECASE) ## (requires|if[\s\S]*?only if|only if) # depends on ningun caso especial, quitar relies on: no hay casos, contingent upon: igual = related to
         }
         # Lista de parte de nombres de features que se altera el tipo de dato a Boolean para la compatibilidad con las constraints y uvl.
@@ -105,7 +105,7 @@ class SchemaProcessor:
             #re.compile(r'\\?["\'](.*?)\\?["\']'),  # Captura valores entre comillas simples o dobles, escapadas o no
             
             #re.compile(r'-\s*[\'"]?([\w\s]+)[\'"]?\s*:'),  ### Antiguo patron usado pero cogia valores numericos y raros como https, 6335 ** No usado
-            re.compile(r'-\s*[\'"]?([a-zA-Z/.\s]+[a-zA-Z])[\'"]?\s*:', re.IGNORECASE), #### Expresion que tiene que se modifica en un futuro para evitar capturar "prefixed_keys"
+            re.compile(r'-\s*[\'"]?([a-zA-Z/.\s]+[a-zA-Z])[\'"]?\s*:', re.IGNORECASE), # Patron que coge los valores precedidos con un guion y que terminan con dos puntos: #### Expresion que tiene que se modifica en un futuro para evitar capturar "prefixed_keys" (coge frases largas sin que se muestren pero...)
             
             re.compile(r'(?<=Valid values are:)[\s\S]*?(?=\.)'),
             re.compile(r'(?<=Possible values are:)[\s\S]*?(?=\.)'),
@@ -254,7 +254,7 @@ class SchemaProcessor:
         description_entry = {
         "feature_name": feature_name,
         "description": description,
-        "type_data": type_data # Adición tipo para tener el tipo de dato para las restricciones
+        "type_data":type_data  # Adición tipo para tener el tipo de dato para las restricciones ### 'Boolean' 
     }
         for category, pattern in self.patterns.items():
             if pattern.search(description):

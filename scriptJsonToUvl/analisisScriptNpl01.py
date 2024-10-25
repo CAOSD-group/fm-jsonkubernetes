@@ -23,6 +23,78 @@ def convert_word_to_num(word):
     return word_to_num.get(word.lower(), None)
 
 
+def extract_constraints_os_name(description, feature_key):
+    """ Metodo para extraer las restricciones que definen el posible uso de unos features o no en base al sistema operativo que se seleccione: windows o linux"""
+
+    osName_pattern = re.compile(r'(?<=Note that this field cannot be set when spec.os.name is\s)([a-zA-Z\s,]+)(?=\.)', re.IGNORECASE) # re.compile(r'\`([A-Za-z]+)\`')
+    uvl_rule =""
+    osName_match = osName_pattern.search(description)
+    path_osName = "os_name"
+    print("Los SO son: ",osName_match)
+    list_anothers = ['_v1_Container_securityContext_', '_v1_EphemeralContainer_securityContext_', '_PodSecurityContext_', '_v1_SecurityContext_']
+    #feature_without_02 = feature_key.rsplit('_', 1)[0]
+
+    if osName_match and '_template_spec_' in feature_key: ## Dependiendo de que grupo pertenece el feature_os_name es distinto, grupo principal de 1247 features, de momento solo Boolean (Falta cambior tipo a los demas casos)
+        match = re.search(r'^(.*?_template_spec)', feature_key) #(r'^(.*?_template_spec)')
+
+        if match:
+            feature_without0 = match.group(1)
+            print("EL FEATURE DEL MATCH ES ",feature_without0)
+        else:
+            print("ERROR EN EL MATCH DE feature_key")
+
+        name_obtained = osName_match.group(1) ## Obtener el nombre del patron obtenido
+
+        uvl_rule = f"({feature_without0}_{path_osName}_{name_obtained} => !{feature_key})"
+
+    elif osName_match and '_Pod_spec_' in feature_key: ## Caso del segundo grupo, _Pod_spec_, 43 features
+        match = re.search(r'^(.*?_Pod_spec)', feature_key) #(r'^(.*?_template_spec)')
+
+        if match:
+            feature_without0 = match.group(1)
+            print("EL FEATURE DEL MATCH ES ",feature_without0)
+        else:
+            print("ERROR EN EL SEGUNDO MATCH DE feature_key")
+
+        name_obtained = osName_match.group(1) ## Obtener el nombre del patron obtenido
+        uvl_rule = f"{feature_without0}_{path_osName}_{name_obtained} => !{feature_key}"
+
+
+    elif osName_match and '_PodList_items_spec_' in feature_key: ## Caso del tercer grupo, _PodList_items_spec_, 43 features
+        
+        match = re.search(r'^(.*?_PodList_items_spec)', feature_key) #(r'^(.*?_template_spec)')
+        feature_without0 = match.group(1)
+        name_obtained = osName_match.group(1) ## Obtener el nombre del patron obtenido
+        uvl_rule = f"{feature_without0}_{path_osName}_{name_obtained} => !{feature_key}"
+
+    elif osName_match and '_core_v1_PodSpec_' in feature_key: ## Caso del cuarto grupo, _core_v1_PodSpec, 43 features
+
+        match = re.search(r'^(.*?_core_v1_PodSpec)', feature_key) #(r'^(.*?_template_spec)')
+
+        feature_without0 = match.group(1)
+        name_obtained = osName_match.group(1) ## Obtener el nombre del patron obtenido
+        uvl_rule = f"{feature_without0}_{path_osName}_{name_obtained} => !{feature_key}"
+
+    elif osName_match and '_PodTemplateSpec_spec_' in feature_key: ## Caso del quinto grupo, _PodTemplateSpec_spec_, 43 features
+
+        match = re.search(r'^(.*?_PodTemplateSpec_spec)', feature_key) #(r'^(.*?_template_spec)')
+        feature_without0 = match.group(1)
+        name_obtained = osName_match.group(1) ## Obtener el nombre del sistema operativo
+        uvl_rule = f"{feature_without0}_{path_osName}_{name_obtained} => !{feature_key}"
+
+    elif osName_match and any(pattern in feature_key for pattern in list_anothers): ## Caso del grupo sin feature spec: grupo general
+
+        predefined_feature_os = "io_k8s_api_core_v1_PodSpec_os_name"        
+        name_obtained = osName_match.group(1) ## Obtener el nombre del patron obtenido
+
+        uvl_rule = f"{predefined_feature_os}_{name_obtained} => !{feature_key}"
+
+    if uvl_rule is not None:
+        return uvl_rule
+    else:
+        print("UVL RULE ESTA VACÍO")
+
+
 def extract_constraints_mutualy_exclusive(description, feature_key):
     """ Metodo para extraer las restricciones de exclusion mutua encontradas en _name y _selector"""
     ## Para este caso hay 12 descript que no se acceden porque no hace falta al tener en cada par la misma ref, con procesar una equivale a las 2
@@ -247,6 +319,11 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
             constraint = extract_constraints_mutualy_exclusive(description, feature_key)
             print("Restricciones", constraint)
             uvl_rule = constraint
+        elif "Note that this field cannot be" in description:
+            constraint = extract_constraints_os_name(description, feature_key)
+            print("DEBERIA DE FUNKAR: ", constraint)
+            uvl_rule = constraint
+            
                            
     elif type_data == "Integer" or type_data == "integer":
         if is_port_number:

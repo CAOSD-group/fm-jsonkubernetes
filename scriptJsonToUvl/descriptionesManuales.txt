@@ -624,6 +624,48 @@ ref a "os"
 "$ref": "#/definitions/io.k8s.api.core.v1.PodOS",
 "description": "Specifies the OS of the containers in the pod. Some pod and container fields are restricted if this is set.\n\nIf the OS field is set to linux, the following fields must be unset: -securityContext.windowsOptions\n\nIf the OS field is set to windows, following fields must be unset: - spec.hostPID - spec.hostIPC - spec.hostUsers - spec.securityContext.appArmorProfile - spec.securityContext.seLinuxOptions - spec.securityContext.seccompProfile - spec.securityContext.fsGroup - spec.securityContext.fsGroupChangePolicy - spec.securityContext.sysctls - spec.shareProcessNamespace - spec.securityContext.runAsUser - spec.securityContext.runAsGroup - spec.securityContext.supplementalGroups - spec.containers[*].securityContext.appArmorProfile - spec.containers[*].securityContext.seLinuxOptions - spec.containers[*].securityContext.seccompProfile - spec.containers[*].securityContext.capabilities - spec.containers[*].securityContext.readOnlyRootFilesystem - spec.containers[*].securityContext.privileged - spec.containers[*].securityContext.allowPrivilegeEscalation - spec.containers[*].securityContext.procMount - spec.containers[*].securityContext.runAsUser - spec.containers[*].securityContext.runAsGroup"
 
+feature al que apuntaran los spec.os.name: PodSpec.os
+"description": "AllowPrivilegeEscalation controls whether a process can gain more privileges than its parent process. This bool directly controls if the no_new_privs flag will be set on the container process. AllowPrivilegeEscalation is true always when the container is: 1) run as Privileged 2) has CAP_SYS_ADMIN Note that this field cannot be set when spec.os.name is windows.",
+Constraints::
+io_k8s_api_core_v1_PodSpec_os_name
+io_k8s_api_core_v1_PodSpec_os_name_windows => !io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_securityContext_allowPrivilegeEscalation
+
+
+"description": "The Windows specific settings applied to all containers. If unspecified, the options from the PodSecurityContext will be used. If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is linux.",
+io_k8s_api_core_v1_PodSpec_os_name_linux => !io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_securityContext_windowsOptions
+                                             io_k8s_api_apps_v1_DaemonSet_spec_template_spec_os_name_linux
+Parte del nombre a coger:: io_k8s_api_apps_v1_DaemonSet_spec_template_spec
+Total 1247 features
+_spec_template_spec_ 688 features
+_template_spec_ (1032) features -- Haciendo
+
+
+215 pendientes
+io_k8s_api_core_v1_Container_securityContext_allowPrivilegeEscalation => no encuentro spec, por defecto esquema general spec_os_name? 
+io_k8s_api_core_v1_EphemeralContainer_securityContext_runAsGroup =>igual
+
+io_k8s_api_core_v1_Pod_spec_containers_securityContext_allowPrivilegeEscalation => io_k8s_api_core_v1_Pod_spec_os 
+_Pod_spec_ (43 features) --
+¿Cada spec.os.name se refiere al esquema general o al propio a cada esquema?
+172 restantes
+io_k8s_api_core_v1_PodList_items_spec_containers_securityContext_allowPrivilegeEscalation => io_k8s_api_core_v1_PodList_items_spec_os_name 
+_PodList_items_spec_ (43) -- Haciendo / Falta parte String, Integer
+129 restantes
+io_k8s_api_core_v1_PodSpec_containers_securityContext_allowPrivilegeEscalation => io_k8s_api_core_v1_PodSpec_os_name
+_core_v1_PodSpec_ (43) -- Haciendo
+86 restantes
+io_k8s_api_core_v1_PodTemplateSpec_spec_containers_securityContext_allowPrivilegeEscalation => 
+_PodTemplateSpec_spec_ (43) -- Haciendo
+43 restantes
+io_k8s_api_core_v1_Container_securityContext_allowPrivilegeEscalation
+_v1_Container_securityContext_ (11)
+io_k8s_api_core_v1_EphemeralContainer_securityContext_allowPrivilegeEscalation
+_v1_EphemeralContainer_securityContext_ (11)
+_PodSecurityContext_ (10) sin spec_os_name
+io_k8s_api_core_v1_SecurityContext_allowPrivilegeEscalation => 
+_v1_SecurityContext_ _(11) -- Haciendo
+
+0 restantes
 Deducciones:
 \n\nIf the OS field is set to windows, following fields must be unset: - spec.hostPID - spec.hostIPC - spec.hostUsers - spec.securityContext.appArmorProfile - spec.securityContext.seLinuxOptions - spec.securityContext.seccompProfile - spec.securityContext.fsGroup - spec.securityContext.fsGroupChangePolicy - spec.securityContext.sysctls - spec.shareProcessNamespace - spec.securityContext.runAsUser - spec.securityContext.runAsGroup - spec.securityContext.supplementalGroups
 if this is set.\n\nIf the OS field is set to linux, the following fields must be unset: -securityContext.windowsOptions
