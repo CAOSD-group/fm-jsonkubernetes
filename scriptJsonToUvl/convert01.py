@@ -39,6 +39,13 @@ class SchemaProcessor:
         # Lista de expresiones regulares para casos en que la lista anterior necesite de más precisión para solo alterar el tipo en los parametros requeridos
         self.boolean_keywords_regex = [r'.*_paramRef_name$', r'.*_ParamRef_name$'] ## , r'.*_paramRef_selector$', r'.*_ParamRef_selector$'
 
+
+        # Definición de tramos de features con configuraciones específicas para la compatibilidad con las restricciones
+        self.special_features_config = [ '_template_spec_', '_Pod_spec_', '_PodList_items_spec_', '_core_v1_PodSpec_', '_PodTemplateSpec_spec_', '_v1_PodSecurityContext_'
+                                       , '_v1_Container_securityContext_', '_v1_EphemeralContainer_securityContext_', '_v1_SecurityContext_']
+        
+            # Aquí se pueden añadir más configuraciones de características especiales
+
     def sanitize_name(self, name):
         """Reemplaza caracteres no permitidos en el nombre con guiones bajos y asegura que solo haya uno con ese nombre"""
         return name.replace("-", "_").replace(".", "_").replace("$", "")
@@ -250,6 +257,13 @@ class SchemaProcessor:
         
         if not self.is_valid_description(description, feature_name):
             return False
+        
+        ## special_features_config
+        # Verificar si el feature_name tiene configuración especial y ajustar type_data
+        if any(special_name in feature_name for special_name in self.special_features_config):
+            type_data = 'Boolean'
+            #if special_name in feature_name:
+        
         # Entrada de descripción con datos del tipo para mejorar la precisión de las reglas
         description_entry = {
         "feature_name": feature_name,
@@ -359,7 +373,10 @@ class SchemaProcessor:
                 description = details.get('description', '')
                 if description:
                     feature_type_data = self.update_type_data(full_name, feature_type_data) ### Modificion para que en descriptions_01.json se cambie de String a Boolean si coincide con el nombre
-                    self.categorize_description(description, full_name, feature_type_data)
+                    categorized = self.categorize_description(description, full_name, feature_type_data)
+                    if categorized:
+                        if any(special_name in full_name for special_name in self.special_features_config):
+                            feature_type_data = 'Boolean'   
 
                 feature = {
                     'name': full_name,

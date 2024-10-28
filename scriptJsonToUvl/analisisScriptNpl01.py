@@ -45,7 +45,7 @@ def extract_constraints_os_name(description, feature_key):
 
         name_obtained = osName_match.group(1) ## Obtener el nombre del patron obtenido
 
-        uvl_rule = f"({feature_without0}_{path_osName}_{name_obtained} => !{feature_key})"
+        uvl_rule = f"{feature_without0}_{path_osName}_{name_obtained} => !{feature_key}"
 
     elif osName_match and '_Pod_spec_' in feature_key: ## Caso del segundo grupo, _Pod_spec_, 43 features
         match = re.search(r'^(.*?_Pod_spec)', feature_key) #(r'^(.*?_template_spec)')
