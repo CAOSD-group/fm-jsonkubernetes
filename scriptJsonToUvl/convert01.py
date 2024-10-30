@@ -29,7 +29,7 @@ class SchemaProcessor:
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
         self.patterns = {
             'values': re.compile(r'^\b$', re.IGNORECASE), # values are|valid|supported|acceptable|can be
-            'restrictions': re.compile(r'Note that this field cannot be set when', re.IGNORECASE),### |the currently supported values are|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if # Must be set if type is||only if type|valid port number|must be in the range|must be greater than|\. Required when|required when scope  ## allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
+            'restrictions': re.compile(r'Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope', re.IGNORECASE),###   # \. Required when|required when scope  ## the currently supported values are allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
             'dependencies': re.compile(r'^\b$', re.IGNORECASE) ## (requires|if[\s\S]*?only if|only if) # depends on ningun caso especial, quitar relies on: no hay casos, contingent upon: igual = related to
         }
         # Lista de parte de nombres de features que se altera el tipo de dato a Boolean para la compatibilidad con las constraints y uvl.
@@ -130,20 +130,10 @@ class SchemaProcessor:
             #re.compile(r'(?<=The currently supported values are)[\w\s](?=\.)'),
 
         ]
-        """
-        allowed_pattern = re.compile(r'(?<=Allowed values are)[\s\S]*?(?=\.|\s+Required)', re.IGNORECASE)
-        matches_allowed = allowed_pattern.search(description)
-        
-        print(matches_allowed)  # Esto debería imprimir los valores permitidos.
-        if matches_allowed is not None:
-            print(f"Patrones de allowed: {matches_allowed}")
 
-        #for pattern_all in matches_allowed:
-        #    print(f"Patrones de allowed: {pattern_all}")
-        """
         values = []
         #add_quotes = False  # Variable para verificar si se necesita añadir comillas
-        default_value = self.patterns_process_enum(description)
+        default_value = self.patterns_process_enum_values_default(description)
 
         for pattern in value_patterns:
             matches = pattern.findall(description)
@@ -154,10 +144,9 @@ class SchemaProcessor:
                 #print(f"VALORES EXPLORADOS / OBTENIDOS: {match}")  # Debug: Ver los valores separados
                 #split_values = re.split(r',\s*|\n', match)
                 split_values = re.split(r',\s*|\s+or\s+|\sor|or\s|\s+and\s+|and\s', match)  # Asegurarse de que "or" esté rodeado de espacios ### or\s: soluciona quitar el or en STCP.
-                print(f"Split Values: {split_values}")  # Debug: Ver los valores separados
+                #print(f"Split Values: {split_values}")  # Debug: Ver los valores separados
                 for v in split_values:
                     v = v.strip()
-                    #v = v.replace(r'\sor\s', '').strip()
                     v = v.replace('*', 'estrella') # Reemplazar '*' por "estrella"
                     v = v.replace('"', '').replace("'", '').replace('`','')  # Elimina comillas dobles, simples y cerradas
                     #print("VALOR ANTES",v)
@@ -202,14 +191,14 @@ class SchemaProcessor:
 
         return values #, add_quotes  # Devuelve los valores y el nombre del feature
 
-    def patterns_process_enum(self, description):
+    def patterns_process_enum_values_default(self, description):
  
         patterns_default_values = ['defaults to', '. implicitly inferred to be', 'the currently supported reasons are', '. default is'] # 'Defaults to', al comprobar luego con minus en mayuscula no cuenta
-        patterns_default_values_numbers = ['defaults to', '. implicitly inferred to be', 'the currently supported reasons are', '. default is'] # Grupo alternativo al anterior para definir los patrones que tienen Integers por defecto
         
         if not any(keyword in description.lower() for keyword in patterns_default_values):
             return None
-         
+        default_value = ""
+        
         default_patterns = [  
             #re.compile(r'(?<=Defaults to\s)(["\']?[\w\s\.\-"\']+["\']?)'),  # Captura con "Defaults to"
             #re.compile(r'(?<=defaults to\s)(["\']?[\w\s\.\-"\']+["\']?)', re.IGNORECASE), ## No tiene en cuenta si es mayus o minis
@@ -223,7 +212,6 @@ class SchemaProcessor:
             #default to use
             #Implicitly inferred to be
         ]
-        default_value = ""
         
         for pattern in default_patterns:
             matches = pattern.findall(description)
@@ -234,7 +222,6 @@ class SchemaProcessor:
                 #if not 'ext4' in match:
                 #    print("PALABRAS COGIDAS: ", match)
                 first_part = match.split('.')[0]  # Solo tomamos lo que está antes del primer punto
-
                 v = first_part.strip().replace('"', '').replace("'", '').replace('.', '').strip()
                 #if not 'ext4' in v:
                 #    print("PALABRAS YA PROCESADAS: ", v)
@@ -249,8 +236,9 @@ class SchemaProcessor:
             print("Valores que no son por defecto ",default_value)
             return None
         #print("Estos son los valores:: ",default_value)
-    # Si no se encuentra ningún valor válido, devolver el nombre sin cambios
+        
         return default_value
+
 
     def categorize_description(self, description, feature_name, type_data):
         """Categoriza la descripción según los patrones predefinidos."""
@@ -260,10 +248,11 @@ class SchemaProcessor:
         
         ## special_features_config
         # Verificar si el feature_name tiene configuración especial y ajustar type_data
-        if any(special_name in feature_name for special_name in self.special_features_config):
+        if any(special_name in feature_name for special_name in self.special_features_config) and 'Note that this field cannot be set when' in description:
             type_data = 'Boolean'
             #if special_name in feature_name:
-        
+        if ' {default ' in feature_name: ### Parte añadida para evitar que se agregue el {default X} como parte del nombre en la descripcion y mantener el original (Mantener formato por las comprobaciones de nombres)
+            feature_name = re.sub(r'\s*\{default\s\d+\}', '', feature_name)
         # Entrada de descripción con datos del tipo para mejorar la precisión de las reglas
         description_entry = {
         "feature_name": feature_name,
@@ -296,7 +285,9 @@ class SchemaProcessor:
             if 'type' in option: # 'type' in option:
                 option_type_data = option['type'].capitalize()  # Captura el tipo (por ejemplo: string, number, integer)
                 sanitized_name = self.sanitize_name(full_name)  # Limpiar el nombre completo
-
+                if ' {default ' in sanitized_name: ### Parte añadida para evitar que se agregue el {default X} como parte del nombre para algunos sub-features generando un error: feature_name_{default X}_asType
+                    sanitized_name = re.sub(r'\s*\{default\s\d+\}', '', sanitized_name)
+                    print("Nombre saneado sin DEFAULT INTEGER",sanitized_name)
                 # Crear subfeature con el nombre adecuado
                 sub_feature = {
                     'name': f"{sanitized_name}_as{option_type_data}",
@@ -311,8 +302,10 @@ class SchemaProcessor:
 
         return feature
     
-    def process_enum(self, property, full_name):
+    def process_enum_defaultInte(self, property, full_name, description):
         """ Agrega en el nombre del feature el valor por defecto que tiene. Comprueba si el feature tiene la caracteristica enum y añade el contenido de este al valor por defecto"""
+        patterns_default_values_numbers = ['defaults to'] # Grupo alternativo al anterior para definir los patrones que tienen Integers por defecto o grupos similares
+        default_integer = 0
 
         if 'enum' in property and property['enum']:
             #default_name = property.get('enum',[])
@@ -323,6 +316,21 @@ class SchemaProcessor:
             #property['name'] = default_full_name # Opcion de pasar el parametro modificado del property
             return default_full_name
 
+            #print("Estos son los valores:: ",default_value)
+        if any(keyword in description.lower() for keyword in patterns_default_values_numbers):
+            default_patterns = [
+                re.compile(r'(?<=Defaults to\s)(\d+)[\s\.]'), 
+                ## re.compile(r'Defaults to (\d+)'), probar cual es mejor
+            ]
+            for pattern in default_patterns:
+                matches = pattern.search(description)
+                if matches:
+                    default = matches.group(1)
+                    print(default)
+                    default_integer = default
+                    default_full_name = f"{full_name} {{default {default_integer}}}"
+                    return default_full_name
+                
         return full_name
 
     def update_type_data(self, full_name, feature_type_data): ## sino probar con full_name
@@ -367,16 +375,17 @@ class SchemaProcessor:
                 feature_type_data = details.get('type', 'Boolean')
                 feature_type_data = self.sanitize_type_data (feature_type_data) 
                 # *** Aquí llamamos a process_enum para modificar el nombre si tiene un enum ***
-                full_name = self.process_enum(details, full_name)
+                full_name = self.process_enum_defaultInte(details, full_name, description) #### PROBANDO: cambiado para añadir default Integer
                 #full_name = self.patterns_process_enum(description, full_name) ##PROBANDO
 
                 description = details.get('description', '')
                 if description:
                     feature_type_data = self.update_type_data(full_name, feature_type_data) ### Modificion para que en descriptions_01.json se cambie de String a Boolean si coincide con el nombre
                     categorized = self.categorize_description(description, full_name, feature_type_data)
+                    
                     if categorized:
-                        if any(special_name in full_name for special_name in self.special_features_config):
-                            feature_type_data = 'Boolean'   
+                        if any(special_name in full_name for special_name in self.special_features_config) and 'Note that this field cannot be set when' in description:
+                            feature_type_data = 'Boolean'
 
                 feature = {
                     'name': full_name,
