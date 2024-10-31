@@ -32,7 +32,7 @@ class SchemaProcessor:
             'restrictions': re.compile(r'Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope', re.IGNORECASE),###   # \. Required when|required when scope  ## the currently supported values are allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
             'dependencies': re.compile(r'^\b$', re.IGNORECASE) ## (requires|if[\s\S]*?only if|only if) # depends on ningun caso especial, quitar relies on: no hay casos, contingent upon: igual = related to
         }
-        # Lista de parte de nombres de features que se altera el tipo de dato a Boolean para la compatibilidad con las constraints y uvl.
+        # Lista de parte de nombres de features que se altera el tipo de dato a Boolean para la compatibilidad con las constraints y uvl. ### Quizas los que haya que cambiar para agregar un nivel mas y String
         self.boolean_keywords = ['AppArmorProfile_localhostProfile', 'appArmorProfile_localhostProfile', 'seccompProfile_localhostProfile', 'SeccompProfile_localhostProfile', 'IngressClassList_items_spec_parameters_namespace',
                         'IngressClassParametersReference_namespace', 'IngressClassSpec_parameters_namespace',  'IngressClass_spec_parameters_namespace']  # Lista para modificar a otros posibles tipos de los features (Cambiado del original por la compatibilidad) ##
         
@@ -40,7 +40,7 @@ class SchemaProcessor:
         self.boolean_keywords_regex = [r'.*_paramRef_name$', r'.*_ParamRef_name$'] ## , r'.*_paramRef_selector$', r'.*_ParamRef_selector$'
 
 
-        # Definición de tramos de features con configuraciones específicas para la compatibilidad con las restricciones
+        # Definición de tramos de features con configuraciones específicas para la compatibilidad con las restricciones # os.name
         self.special_features_config = [ '_template_spec_', '_Pod_spec_', '_PodList_items_spec_', '_core_v1_PodSpec_', '_PodTemplateSpec_spec_', '_v1_PodSecurityContext_'
                                        , '_v1_Container_securityContext_', '_v1_EphemeralContainer_securityContext_', '_v1_SecurityContext_']
         
@@ -52,9 +52,11 @@ class SchemaProcessor:
 
     def sanitize_type_data(self, type_data):
         if type_data in ['array', 'object']:
-            return 'Boolean'
+            type_data = 'Boolean'
         elif type_data in ['number', 'Number']:
-            return 'Integer'
+            type_data = 'Integer'
+        elif type_data == 'Boolean':
+            type_data = ''
         return type_data
 
     def resolve_reference(self, ref):
@@ -249,7 +251,7 @@ class SchemaProcessor:
         ## special_features_config
         # Verificar si el feature_name tiene configuración especial y ajustar type_data
         if any(special_name in feature_name for special_name in self.special_features_config) and 'Note that this field cannot be set when' in description:
-            type_data = 'Boolean'
+            type_data = 'Boolean' ## Descripciones unicamente
             #if special_name in feature_name:
         if ' {default ' in feature_name: ### Parte añadida para evitar que se agregue el {default X} como parte del nombre en la descripcion y mantener el original (Mantener formato por las comprobaciones de nombres)
             feature_name = re.sub(r'\s*\{default\s\d+\}', '', feature_name)
@@ -278,7 +280,7 @@ class SchemaProcessor:
             'type': type_feature,  # Lo ponemos como 'optional' ya que puede ser uno de varios tipos 'optional'
             'description': f"Feature based on oneOf in {full_name}",    
             'sub_features': [],
-            'type_data': 'Boolean'  # Aquí definimos el tipo (por ejemplo: String, Number)
+            'type_data': 'Boolean'  # Aquí definimos el tipo (por ejemplo: String, Number) ## Omitir Bool
         }
         # Procesar cada opción dentro de 'oneOf'
         for option in oneOf:
@@ -287,7 +289,7 @@ class SchemaProcessor:
                 sanitized_name = self.sanitize_name(full_name)  # Limpiar el nombre completo
                 if ' {default ' in sanitized_name: ### Parte añadida para evitar que se agregue el {default X} como parte del nombre para algunos sub-features generando un error: feature_name_{default X}_asType
                     sanitized_name = re.sub(r'\s*\{default\s\d+\}', '', sanitized_name)
-                    print("Nombre saneado sin DEFAULT INTEGER",sanitized_name)
+                    #print("Nombre saneado sin DEFAULT INTEGER",sanitized_name)
                 # Crear subfeature con el nombre adecuado
                 sub_feature = {
                     'name': f"{sanitized_name}_as{option_type_data}",
@@ -304,7 +306,7 @@ class SchemaProcessor:
     
     def process_enum_defaultInte(self, property, full_name, description):
         """ Agrega en el nombre del feature el valor por defecto que tiene. Comprueba si el feature tiene la caracteristica enum y añade el contenido de este al valor por defecto"""
-        patterns_default_values_numbers = ['defaults to'] # Grupo alternativo al anterior para definir los patrones que tienen Integers por defecto o grupos similares
+        patterns_default_values_numbers = ['defaults to', 'default value is'] # Grupo alternativo al anterior para definir los patrones que tienen Integers por defecto o grupos similares
         default_integer = 0
 
         if 'enum' in property and property['enum']:
@@ -319,15 +321,18 @@ class SchemaProcessor:
             #print("Estos son los valores:: ",default_value)
         if any(keyword in description.lower() for keyword in patterns_default_values_numbers):
             default_patterns = [
-                re.compile(r'(?<=Defaults to\s)(\d+)[\s\.]'), 
-                ## re.compile(r'Defaults to (\d+)'), probar cual es mejor
+                re.compile(r'(?<=Defaults to\s)(\d+)(?=\D|$)'), # (\d+)[\s\.] ## omite el 600s de progressDeadlineSeconds / pendiente (\d+)(?=\D|$)
+                re.compile(r'(?<=Default value is\s)(\d+)(?=\D|$)', re.IGNORECASE), 
+                ## re.compile(r'Defaults to (\d+)'), probar cual es mejor default value is 1
             ]
             for pattern in default_patterns:
                 matches = pattern.search(description)
                 if matches:
                     default = matches.group(1)
-                    print(default)
+                    #print("MATCH ENCONTRADO",default)
                     default_integer = default
+                    if default_integer == '0644':
+                        default_integer = 644
                     default_full_name = f"{full_name} {{default {default_integer}}}"
                     return default_full_name
                 
@@ -385,14 +390,15 @@ class SchemaProcessor:
                     
                     if categorized:
                         if any(special_name in full_name for special_name in self.special_features_config) and 'Note that this field cannot be set when' in description:
-                            feature_type_data = 'Boolean'
-
+                            feature_type_data = 'Boolean' ### Omision de los Boolen en special_name
+                #if feature_type_data == 'Boolean':
+                #    feature_type_data = ''
                 feature = {
                     'name': full_name,
                     'type': feature_type,
                     'description': description,
                     'sub_features': [],
-                    'type_data': feature_type_data ## String ##
+                    'type_data': '' if feature_type_data == 'Boolean' else feature_type_data ## String ##
                 }
 
                 # Procesar referencias
@@ -444,11 +450,11 @@ class SchemaProcessor:
                                 'type': 'mandatory', #mandatory no hay declaradas como optional
                                 'description': ref_schema.get('description', ''),
                                 'sub_features': [],
-                                'type_data': 'Boolean' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature
+                                'type_data': '' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature
                             })
                             #print(f"Referencias simples detectadas: {ref}")
 
-                    # Eliminar la referencia de la pila local al salir de esta rama
+                    # Eliminar la referencia de la pila  local al salir de esta rama
                     local_stack_refs.pop()
 
                 # Procesar ítems en arreglos o propiedades adicionales
@@ -488,7 +494,7 @@ class SchemaProcessor:
                                     'type': feature_type,
                                     'description': ref_schema.get('description', ''),
                                     'sub_features': [],
-                                    'type_data': 'Boolean' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature
+                                    'type_data': '' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature: Boolean
                                 })
                         # Eliminar la referencia de la pila local al salir de esta rama
                         local_stack_refs.pop()
@@ -535,7 +541,7 @@ class SchemaProcessor:
                                     'type': 'feature_type',
                                     'description': ref_schema.get('description', ''),
                                     'sub_features': [],
-                                    'type_data': 'Boolean' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature
+                                    'type_data': '' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature: Boolean
                                 })
 
                         # Eliminar la referencia de la pila local al salir de esta rama
@@ -546,7 +552,7 @@ class SchemaProcessor:
                 ## Todos los valores que se extraen son "String", para facilitar la representacion de los valores prestablecidos se cambia el tipo a Boolean
                 if extracted_values: 
                     ## details['type_data'] = 'Boolean' ## Esto es para acceder al tipo del ESQUEMA
-                    feature['type_data'] = 'Boolean' ## Se accede al tipo de dato del FEATURE actual 
+                    feature['type_data'] = '' ## Se accede al tipo de dato del FEATURE actual: De Boolean a vacio '' 
 
                     #print(f"PORQUE NO SE REPRESENTAN TODOS LOS ESQUEMAS? - Tipo: {details['type_data']}, - Nombre: {full_name}")
                     for value in extracted_values:
@@ -555,7 +561,7 @@ class SchemaProcessor:
                             'type': 'alternative', # Todos los valores suelen ser alternatives (Elección de solo uno)
                             'description': f"Specific value: {value}",
                             'sub_features': [],
-                            'type_data': "Boolean"  # Boolean por defecto
+                            'type_data': ''  # Boolean por defecto: se cambia a vacio
                         })
 
                 # Procesar propiedades anidadas
@@ -608,17 +614,21 @@ def properties_to_uvl(feature_list, indent=1):
     boolean_keywords = ['AppArmorProfile_localhostProfile', 'appArmorProfile_localhostProfile', 'seccompProfile_localhostProfile', 'SeccompProfile_localhostProfile', 'IngressClassList_items_spec_parameters_namespace',
                         'IngressClassParametersReference_namespace', 'IngressClass_spec_parameters_namespace', 'IngressClassSpec_parameters_namespace'] ## Agregados Ingress...Custom por restriccion ***
     for feature in feature_list:
-        type_str = f"{feature['type_data'].capitalize()} " if feature['type_data'] else "Boolean "
-        
+        type_str = f"{feature['type_data'].capitalize()} " if feature['type_data'] else "Boolean " ### Espacio para no ponerlo en el uvl_output
+        """if type_str == 'Boolean':
+            print("EL TIPO DE DATO ES:", type_str)
+            type_str == ''
+            feature['type_data'] == ''"""
+        if type_str == 'Boolean ':
+            type_str = ''
+            #feature['type_data'] = ''
+
         if any(keyword in feature['name'] for keyword in boolean_keywords): #### Caso especifico 002-localhostProfile String a Boolean
-            #print("EL CASO NO COINCIDE o es que no se cambia?")
-            #print("Feature donde coincide: ",feature['name'])
+            type_str = ''
             #feature['type_data'] = 'Boolean'
-            type_str = 'Boolean '
 
         if feature['sub_features']:
-            #if feature['sub_features']['type'] == 'alternative':
-            #    type_str = 'Boolean '
+
             uvl_output += f"{indent_str}{type_str}{feature['name']}\n"  # {type_str} opcional si se necesita ## 
             # uvl_output += f"{indent_str}\t{feature['type']}\n" opcional si se necesita
             # Separar características obligatorias y opcionales
@@ -648,13 +658,13 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
     for schema_name, schema in definitions.get('definitions', {}).items():
         root_schema = schema.get('properties', {})
         required = schema.get('required', [])
-        type_str_feature = 'Boolean' ## Por defecto al no tener definido un tipo los features principales se les pone como Boolean
+        #type_str_feature = 'Boolean' ## Por defecto al no tener definido un tipo los features principales se les pone como Boolean
         #print(f"Processing schema: {schema_name}")
         mandatory_features, optional_features = processor.parse_properties(root_schema, required, processor.sanitize_name(schema_name)) # Obtener características obligatorias y opcionales
         
         # Agregar las características obligatorias y opcionales al archivo UVL
         if mandatory_features:
-            uvl_output += f"\t\t\t{type_str_feature+' '}{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '} 
+            uvl_output += f"\t\t\t{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '} ## Omitiendo el tipo Boolean de los features 
             uvl_output += f"\t\t\t\tmandatory\n"
             uvl_output += properties_to_uvl(mandatory_features, indent=5)
 
@@ -662,7 +672,7 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
                 uvl_output += f"\t\t\t\toptional\n"
                 uvl_output += properties_to_uvl(optional_features, indent=5)
         elif optional_features:
-            uvl_output += f"\t\t\t{type_str_feature+' '}{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '} 
+            uvl_output += f"\t\t\t{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '} ## Omitiendo el tipo Boolean de los features 
             uvl_output += f"\t\t\t\toptional\n"
             uvl_output += properties_to_uvl(optional_features, indent=5)
         # Ajuste adicion esquemas simples
@@ -685,7 +695,7 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
                         print(names)
                 """
             else:
-                uvl_output += f"\t\t\t{type_str_feature+' '}{processor.sanitize_name(schema_name)}\n"
+                uvl_output += f"\t\t\t{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '} ## Omitiendo Bool
                 #print("Schemas sin propiedades:",schema_name)
             #print(schema_name)
             #print(count2)

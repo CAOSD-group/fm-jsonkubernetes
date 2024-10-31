@@ -588,15 +588,15 @@ Expresion "One of" con mayus
 "description": "`type` is the type of flow distinguisher method The supported types are \"ByUser\" and \"ByNamespace\". Required.",
 The supported types are (2 tipos) : 16 insertados
 
--- Hacer: Insertar como default los enteros que tambien tienen {default} 
--- Hacer: actualizacion formato de añadir los Boolean
+-- Hacer: Insertar como default los enteros que tambien tienen {default} - Hecho
+-- Hacer: actualizacion formato de añadir los Boolean -- Pendiente
 
 
 Descripciones para Rangos Integer y valor por defecto
 ClientIPConfig
 Default value is 0.
 This cannot be 0 if MaxSurge is 0 Default value is 1.
-The default value is 10.
+The default value is 10. igual que los otros
 "description": "timeoutSeconds specifies the seconds of ClientIP type session sticky time. The value must be >0 && <=86400(for 1 day) if ServiceAffinity == \"ClientIP\". Default value is 10800(for 3 hours).",
 
 terminationGracePeriodSeconds:  ## Complicado para implementar, posibles opciones etc..
@@ -607,7 +607,7 @@ Defaults to 1
 Defaults to 3
 Defaults to 6
 Defaults to 600
-
+--- Hecho
 
 "description": "appArmorProfile is the AppArmor options to use by the containers in this pod. Note that this field cannot be set when spec.os.name is windows."
 
@@ -699,3 +699,52 @@ if this is set.\n\nIf the OS field is set to linux, the following fields must be
         },
         "runAsGroup": {
           "description": "The GID to run the entrypoint of the container process. Uses runtime default if unset. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is windows.",
+
+
+          Quizas, valores por defecto:
+
+          If not specified, \"Always\" is used.
+
+- Eliminacion Boolean de los nombres de los features
+- Ajuste en los default-Integer con quitar el 0, de 0644..
+
+En lo referente a la adicion de otro nivel en los features donde se ha cambiado el tipo (normlamente String) a Boolean, se focalizan el los features que eran String y podian contener un nombre cualquiera o mencionan uno pero
+no especifican qué nombre de esquema coger. Como por ejemplo el siguiente esquema:
+
+    "io.k8s.api.core.v1.AppArmorProfile": {
+      "description": "AppArmorProfile defines a pod or container's AppArmor settings.",
+      "properties": {
+        "localhostProfile": {
+          "description": "localhostProfile indicates a profile loaded on the node that should be used. The profile must be preconfigured on the node to work. Must match the loaded name of the profile. Must be set if and only if type is \"Localhost\".",
+          "type": "string"
+        },
+        "type": {
+          "description": "type indicates which kind of AppArmor profile will be applied. Valid options are:\n  Localhost - a profile pre-loaded on the node.\n  RuntimeDefault - the container runtime's default profile.\n  Unconfined - no AppArmor enforcement.",
+          "type": "string"
+        }
+      },
+
+Las frases, The profile must be preconfigured on the node to work. Must match the loaded name of the profile., mencionan un posible nombre que ya esta definido antes pero no se especifica el esquema ni se puede deducir...
+
+
+En otros casos no se indica ningun otro posible valor asi que se deduce que tiene que ser un String "abierto" y que puede tomar cualquier caracter posible. Como para el caso siguiente, namespace al convertirlo a Boolean
+no puede coger un valor String ya que se podria nombrar solo diciendo si esta seleccionado o no. Por lo tanto, para estos casos se ha decidido agregar otro nivel de sub-feature donde el que contina será mandatory y String.
+
+
+    "io.k8s.api.networking.v1.IngressClassParametersReference": {
+      "description": "IngressClassParametersReference identifies an API object. This can be used to specify a cluster or namespace-scoped resource.",
+      "properties": {
+        "apiGroup": {
+          "description": "apiGroup is the group for the resource being referenced. If APIGroup is not specified, the specified Kind must be in the core API group. For any other third-party types, APIGroup is required.",
+          "type": "string"
+          [...]
+        },
+        "namespace": {
+          "description": "namespace is the namespace of the resource being referenced. This field is required when scope is set to \"Namespace\" and must be unset when scope is set to \"Cluster\".",
+          "type": "string"
+        },
+        "scope": {
+          "description": "scope represents if this refers to a cluster or namespace scoped resource. This may be set to \"Cluster\" (default) or \"Namespace\".",
+          "type": "string"
+        }
+      },
