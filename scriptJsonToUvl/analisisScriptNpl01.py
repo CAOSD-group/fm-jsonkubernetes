@@ -128,9 +128,13 @@ def extract_constraints_if(description, feature_key):
 
     if if_match and 'exempt' not in feature_key: ### Trata de las descipciones con el patrón "Must be set if type is"
         value_obtained = if_match.group(1) ## Obtener el valor del patron obtenido
+        if 'Must be set if type is' in description or 'Must be set if and only if type' in description:
+            uvl_rule = f"{feature_without_lastProperty}_type_{value_obtained} <=> {feature_key}"
+        else:
+            ## Division entre los tipos por si solo se puede acceder al feature si el tipo es el concretado
+            uvl_rule = f"{feature_without_lastProperty}_type_{value_obtained} => {feature_key}" ## No se si haria falta los 2 #### PARTE QUIZAS REDUNDANTE(Preguntar): | (!{feature_without_lastProperty}_type_{value_obtained} => !{feature_key})
         #feature_without_lastProperty = feature_key.rsplit('_', 1)[0]
         #feature_without_lastProperty = only_if_pattern.split("_").remove[-1]
-        uvl_rule = f"{feature_without_lastProperty}_type_{value_obtained} => {feature_key}" ## No se si haria falta los 2 #### PARTE QUIZAS REDUNDANTE(Preguntar): | (!{feature_without_lastProperty}_type_{value_obtained} => !{feature_key})
         # objetivo primario: io_k8s_api_core_v1_PodTemplateSpec_spec_securityContext_seccompProfile_type_Localhost => io_k8s_api_core_v1_PodTemplateSpec_spec_securityContext_seccompProfile_localhostProfile
         ## objetivo al añadir segundo patron: io_k8s_api_apps_v1_DaemonSetUpdateStrategy_type_RollingUpdate => io_k8s_api_apps_v1_DaemonSetUpdateStrategy_rollingUpdate
     
@@ -209,6 +213,9 @@ def extract_bounds(description):
     less_than_pattern = re.compile(r'less than or equal to (\d+)', re.IGNORECASE)
     #must_be_range = re.compile(r'must be greater than or equal to (\d+)\sand\sless than or equal to(\d+)')
 
+    ### Prueba adicion restriccion con palabras: must be between
+    between_text_pattern = re.compile(r'must\s+be\s+between\s+(\d+)\s+and\s+(\d+)', re.IGNORECASE)
+
     # Detectar si la descripción menciona puertos válidos
     if "valid port number" in description.lower():
         is_port_number = True
@@ -237,6 +244,13 @@ def extract_bounds(description):
     if range_text_match:
         min_bound = int(range_text_match.group(1))
         max_bound = int(range_text_match.group(2))
+        return min_bound, max_bound, is_port_number, is_other_number
+        
+    # Detectar rangos de la forma "must be between 0 and 100" y "...1 and 30". El rango 1-30 son segundos y el rango 0-100 representa "niveles" de prioridad. Tot: 22 restric
+    between_text_match = between_text_pattern.search(description) 
+    if between_text_pattern:
+        min_bound = int(between_text_match.group(1))
+        max_bound = int(between_text_match.group(2))
         return min_bound, max_bound, is_port_number, is_other_number
 
     # Detectar expresiones simples de "greater than" o "less than"

@@ -13,7 +13,7 @@ matchPolicy defines how the "MatchResources" list is used to match incoming requ
 Defaults to "Equivalent"
 
 matchExpressions is a list of label selector requirements. The requirements are ANDed.
-operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist. -- Pendiente
 
 ClientConfig defines how to communicate with the hook. Required
 `caBundle` is a PEM encoded CA bundle which will be used to validate the webhook's server certificate. If unspecified, system trust roots on the apiserver are used.
@@ -28,7 +28,7 @@ IfNeeded: the webhook will be called at least one additional time as part of the
 Defaults to "Never".
 SideEffects states whether this webhook has side effects. Acceptable values are: None, NoneOnDryRun (webhooks created via v1beta1 may also specify Some or Unknown). Webhooks with side effects MUST implement a reconciliation system, since a request may be rejected by a future step in the admission chain and the side effects therefore need to be undone. Requests with the dryRun attribute will be auto-rejected if they match a webhook with sideEffects == Unknown or Some.
 
-TimeoutSeconds specifies the timeout for this webhook. After the timeout passes, the webhook call will be ignored or the API call will fail based on the failure policy. The timeout value must be between 1 and 30 seconds. Default to 10 seconds.
+TimeoutSeconds specifies the timeout for this webhook. After the timeout passes, the webhook call will be ignored or the API call will fail based on the failure policy. The timeout value must be between 1 and 30 seconds. Default to 10 seconds. --
 FieldsType is the discriminator for the different fields format and version. There is currently only one possible value: "FieldsV1"
 Operation is the type of operation which lead to this ManagedFieldsEntry being created. The only valid values for this field are 'Apply' and 'Update'.
 One of `name` or `selector` must be set, but `name` and `selector` are mutually exclusive properties. If one is set, the other must be unset.
@@ -748,3 +748,30 @@ no puede coger un valor String ya que se podria nombrar solo diciendo si esta se
           "type": "string"
         }
       },
+Hecho-- Grupo must be between, 22 restricciones: 0<100, 1<30 segs
+Adicion de patron para añadir default to integer y restricc
+"description": "TimeoutSeconds specifies the timeout for this webhook. After the timeout passes, the webhook call will be ignored or the API call will fail based on the failure policy. The timeout value must be between 1 and 30 seconds. Default to 10 seconds.",         
+Otra descripc:          
+"description": "`lendablePercent` prescribes the fraction of the level's NominalCL that can be borrowed by other priority levels.  This value of this field must be between 0 and 100, inclusive, and it defaults to 0. The number of seats that other levels can borrow from this level, known as this level's LendableConcurrencyLimit (LendableCL), is defined as follows.\n\nLendableCL(i) = round( NominalCL(i) * lendablePercent(i)/100.0 )",
+Hecho--
+
+Agregar-pendiente:
+Valid operators are (4):
+        "operator": {
+          "description": "operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.",
+          "type": "string"
+        },
+
+Asociado a values => restriccion
+        "values": {
+          "description": "values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.",
+          "items": {
+            "type": "string"
+          },
+
+Posibles valores (Comprobar**)
+
+        "sideEffects": {
+          "description": "SideEffects states whether this webhook has side effects. Acceptable values are: None, NoneOnDryRun (webhooks created via v1beta1 may also specify Some or Unknown). Webhooks with side effects MUST implement a reconciliation system, since a request may be rejected by a future step in the admission chain and the side effects therefore need to be undone. Requests with the dryRun attribute will be auto-rejected if they match a webhook with sideEffects == Unknown or Some.",
+          "type": "string"
+        },

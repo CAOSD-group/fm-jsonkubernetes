@@ -29,10 +29,11 @@ class SchemaProcessor:
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
         self.patterns = {
             'values': re.compile(r'^\b$', re.IGNORECASE), # values are|valid|supported|acceptable|can be
-            'restrictions': re.compile(r'Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope', re.IGNORECASE),###   # \. Required when|required when scope  ## the currently supported values are allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
+            'restrictions': re.compile(r'must be between', re.IGNORECASE),###   # \. Required when|required when scope  ## the currently supported values are allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
             'dependencies': re.compile(r'^\b$', re.IGNORECASE) ## (requires|if[\s\S]*?only if|only if) # depends on ningun caso especial, quitar relies on: no hay casos, contingent upon: igual = related to
         }
-        # Lista de parte de nombres de features que se altera el tipo de dato a Boolean para la compatibilidad con las constraints y uvl. ### Quizas los que haya que cambiar para agregar un nivel mas y String
+        ### |Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope
+        # Lista de parte de nombres de features que se altera el tipo de dato a Boolean para la compatibilidad con las constraints y uvl. ### Los que se cambian para añadir un nivel mas que represente el String que se omite al cambiar el tipo a Boolean
         self.boolean_keywords = ['AppArmorProfile_localhostProfile', 'appArmorProfile_localhostProfile', 'seccompProfile_localhostProfile', 'SeccompProfile_localhostProfile', 'IngressClassList_items_spec_parameters_namespace',
                         'IngressClassParametersReference_namespace', 'IngressClassSpec_parameters_namespace',  'IngressClass_spec_parameters_namespace']  # Lista para modificar a otros posibles tipos de los features (Cambiado del original por la compatibilidad) ##
         
@@ -248,13 +249,16 @@ class SchemaProcessor:
         if not self.is_valid_description(description, feature_name):
             return False
         
-        ## special_features_config
         # Verificar si el feature_name tiene configuración especial y ajustar type_data
         if any(special_name in feature_name for special_name in self.special_features_config) and 'Note that this field cannot be set when' in description:
             type_data = 'Boolean' ## Descripciones unicamente
+    
             #if special_name in feature_name:
         if ' {default ' in feature_name: ### Parte añadida para evitar que se agregue el {default X} como parte del nombre en la descripcion y mantener el original (Mantener formato por las comprobaciones de nombres)
             feature_name = re.sub(r'\s*\{default\s\d+\}', '', feature_name)
+
+        if type_data == '':
+            type_data = 'Boolean'
         # Entrada de descripción con datos del tipo para mejorar la precisión de las reglas
         description_entry = {
         "feature_name": feature_name,
@@ -306,7 +310,7 @@ class SchemaProcessor:
     
     def process_enum_defaultInte(self, property, full_name, description):
         """ Agrega en el nombre del feature el valor por defecto que tiene. Comprueba si el feature tiene la caracteristica enum y añade el contenido de este al valor por defecto"""
-        patterns_default_values_numbers = ['defaults to', 'default value is'] # Grupo alternativo al anterior para definir los patrones que tienen Integers por defecto o grupos similares
+        patterns_default_values_numbers = ['defaults to', 'default value is', 'default to'] # Grupo alternativo al anterior para definir los patrones que tienen Integers por defecto o grupos similares
         default_integer = 0
 
         if 'enum' in property and property['enum']:
@@ -321,9 +325,10 @@ class SchemaProcessor:
             #print("Estos son los valores:: ",default_value)
         if any(keyword in description.lower() for keyword in patterns_default_values_numbers):
             default_patterns = [
-                re.compile(r'(?<=Defaults to\s)(\d+)(?=\D|$)'), # (\d+)[\s\.] ## omite el 600s de progressDeadlineSeconds / pendiente (\d+)(?=\D|$)
-                re.compile(r'(?<=Default value is\s)(\d+)(?=\D|$)', re.IGNORECASE), 
-                ## re.compile(r'Defaults to (\d+)'), probar cual es mejor default value is 1
+                re.compile(r'(?<=Defaults to\s)(\d+)(?=\D|$)', re.IGNORECASE), # (\d+)[\s\.] ## omite el 600s de progressDeadlineSeconds / pendiente (\d+)(?=\D|$) / --Hecho probando con re.IGNORECASE
+                re.compile(r'(?<=Default value is\s)(\d+)(?=\D|$)', re.IGNORECASE),
+                re.compile(r'(?<=Default to\s)(\d+)(?=\D|$)'), # (\d+)[\s\.] ## Prueba insercion mas default.. agregados agregados 250 default 10 y varios... 0 => 20
+                #re.compile(r'Defaults to (\d+)', re.IGNORECASE), ## probar cual es mejor default value is 1 ## agregado casos donde no se tenia en cuenta el default minus
             ]
             for pattern in default_patterns:
                 matches = pattern.search(description)
@@ -340,15 +345,14 @@ class SchemaProcessor:
 
     def update_type_data(self, full_name, feature_type_data): ## sino probar con full_name
     # Cambia el tipo de dato a 'Boolean' si el nombre del feature o sub_feature contiene algún fragmento en boolean_keywords
-        if any(keyword in full_name for keyword in self.boolean_keywords):
-            #return 'Boolean'
+        if any(keyword in full_name for keyword in self.boolean_keywords) and not full_name.endswith('nameStr'): ### and not '_name' in full_name
             feature_type_data = 'Boolean'
+            #return 'Boolean'
 
             # Verificar coincidencias con expresiones regulares
         for pattern in self.boolean_keywords_regex:
             if re.search(pattern, full_name):
-                print(f"Coincidencia de expresión regular encontrada: {full_name}")
-                #return 'Boolean'
+                #print(f"Coincidencia de expresión regular encontrada: {full_name}")
                 feature_type_data = 'Boolean'
             
         return feature_type_data
@@ -563,6 +567,17 @@ class SchemaProcessor:
                             'sub_features': [],
                             'type_data': ''  # Boolean por defecto: se cambia a vacio
                         })
+                
+                if any(keyword in full_name for keyword in self.boolean_keywords): ## and not full_name.endswith('_name')
+                #return 'Boolean'
+                    feature['sub_features'].append({
+                        'name': f"{full_name}_nameStr",
+                        'type': 'mandatory', # Todos los valores suelen ser alternatives (Elección de solo uno)
+                        'description': f"Added String mandatory for changing booleans of boolean_keywords: String *_name",
+                        'sub_features': [],
+                        'type_data': 'String'  # String por defecto: se necesita un feature abierto para poder introducir un campo de texto
+                    })
+                
 
                 # Procesar propiedades anidadas
                 if 'properties' in details:
@@ -623,9 +638,12 @@ def properties_to_uvl(feature_list, indent=1):
             type_str = ''
             #feature['type_data'] = ''
 
-        if any(keyword in feature['name'] for keyword in boolean_keywords): #### Caso especifico 002-localhostProfile String a Boolean
+
+        if any(keyword in feature['name'] for keyword in boolean_keywords) and not feature['name'].endswith('nameStr'): #### Caso especifico 002-localhostProfile String a Boolean / Agregado el mantener String los features agregados en la rama Boolean
+            #print(f"COINCIDENCIA CON NOMBRES EN:{feature['name']} Los tipos son... {type_str}")
             type_str = ''
-            #feature['type_data'] = 'Boolean'
+        #if (keyword in feature['name'] for keyword in boolean_keywords)  
+        #    type_str = 'String '
 
         if feature['sub_features']:
 
