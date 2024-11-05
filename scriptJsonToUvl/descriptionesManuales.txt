@@ -35,7 +35,7 @@ One of `name` or `selector` must be set, but `name` and `selector` are mutually 
 name is the name of the resource being referenced.
 
 One of `name` or `selector` must be set, but `name` and `selector` are mutually exclusive properties. If one is set, the other must be unset.
-
+--
 A single parameter used for all admission requests can be configured by setting the `name` field, leaving `selector` blank, and setting namespace if `paramKind` is namespace-scoped.
 namespace is the namespace of the referenced resource. Allows limiting the search for params to a specific namespace. Applies to both `name` and `selector` fields.
 A per-namespace parameter may be used by specifying a namespace-scoped `paramKind` in the policy and leaving this field empty.
@@ -61,7 +61,7 @@ Required
 
     "io_k8s_api_autoscaling_v1_HorizontalPodAutoscaler_spec_minReplicas": "minReplicas is the lower limit for the number of replicas to which the autoscaler can scale down.  It defaults to 1 pod.  minReplicas is allowed to be 0 if the alpha feature gate HPAScaleToZero is enabled and at least one Object or External metric is configured.  Scaling is active as long as at least one metric value is available.",
 
-
+--
         {
             "feature_name": "io_k8s_api_autoscaling_v2_HPAScalingRules_stabilizationWindowSeconds",
             "description": "stabilizationWindowSeconds is the number of seconds for which past recommendations should be considered while scaling up or scaling down. StabilizationWindowSeconds must be greater than or equal to zero and less than or equal to 3600 (one hour). If not set, use the default values: - For scale up: 0 (i.e. no stabilization is done). - For scale down: 300 (i.e. the stabilization window is 300 seconds long).",
@@ -86,7 +86,7 @@ Required
         },
 
 Otra descripcion de la que se obtiene un unico valor// dejar por defecto
-
+-
         {
             "feature_name": "io_k8s_api_core_v1_Service_spec_clusterIP",
             "description": "clusterIP is the IP address of the service and is usually assigned randomly. If an address is specified manually, is in-range (as per system configuration), and is not in use, it will be allocated to the service; otherwise creation of the service will fail. This field may not be changed through updates unless the type field is also being changed to ExternalName (which requires this field to be blank) or the type field is being changed from ExternalName (in which case this field may optionally be specified, as describe above).  Valid values are \"None\", empty string (\"\"), or a valid IP address. Setting this to \"None\" makes a \"headless service\" (no virtual IP), which is useful when direct endpoint connections are preferred and proxying is not required.  Only applies to types ClusterIP, NodePort, and LoadBalancer. If this field is specified when creating a Service of type ExternalName, creation will fail. This field will be wiped when updating a Service to type ExternalName. More info: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies",
@@ -754,13 +754,20 @@ Adicion de patron para añadir default to integer y restricc
 Otra descripc:          
 "description": "`lendablePercent` prescribes the fraction of the level's NominalCL that can be borrowed by other priority levels.  This value of this field must be between 0 and 100, inclusive, and it defaults to 0. The number of seats that other levels can borrow from this level, known as this level's LendableConcurrencyLimit (LendableCL), is defined as follows.\n\nLendableCL(i) = round( NominalCL(i) * lendablePercent(i)/100.0 )",
 Hecho--
-
-Agregar-pendiente:
+Hecho--
+Agregar-pendiente: patron:: Valid operators are
 Valid operators are (4):
         "operator": {
           "description": "operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.",
           "type": "string"
         },
+Hecho --
+
+        "values": {
+          "description": "An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.",
+          "items": {
+            "type": "string"
+          },
 
 Asociado a values => restriccion
         "values": {
@@ -775,3 +782,273 @@ Posibles valores (Comprobar**)
           "description": "SideEffects states whether this webhook has side effects. Acceptable values are: None, NoneOnDryRun (webhooks created via v1beta1 may also specify Some or Unknown). Webhooks with side effects MUST implement a reconciliation system, since a request may be rejected by a future step in the admission chain and the side effects therefore need to be undone. Requests with the dryRun attribute will be auto-rejected if they match a webhook with sideEffects == Unknown or Some.",
           "type": "string"
         },
+
+
+Más valores:
+        "status": {
+          "description": "Status of the condition, one of True, False, Unknown.",
+          "type": "string"
+        },
+        "type": {
+          "description": "Type of job condition, Complete or Failed.",
+          "type": "string"
+        }
+      },
+
+          "description": "Node address type, one of Hostname, ExternalIP or InternalIP.",
+
+        "preemptionPolicy": {
+          "description": "PreemptionPolicy is the Policy for preempting pods with lower priority. One of Never, PreemptLowerPriority. Defaults to PreemptLowerPriority if unset.",
+          "type": "string"
+        },
+
+        "restartPolicy": {
+          "description": "Restart policy for all containers within the pod. One of Always, OnFailure, Never. In some contexts, only a subset of those values may be permitted. Default to Always. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy",
+          "type": "string"
+        },
+
+Valores... y una restricc simple / type is the type of metric source y Note: \"ContainerResource\" type is available on when the feature-gate HPAContainerMetrics is enabled
+        "type": {
+          "description": "type is the type of metric source.  It should be one of \"ContainerResource\", \"External\", \"Object\", \"Pods\" or \"Resource\", each mapping to a matching field in the object. Note: \"ContainerResource\" type is available on when the feature-gate HPAContainerMetrics is enabled",
+          "type": "string"
+        }
+},
+        "type": {
+          "description": "type is the type of metric source.  It will be one of \"ContainerResource\", \"External\", \"Object\", \"Pods\" or \"Resource\", each corresponds to a matching field in the object. Note: \"ContainerResource\" type is available on when the feature-gate HPAContainerMetrics is enabled",
+          "type": "string"
+        }
+      },
+
+
+aparte::
+
+          "description": "auditAnnotations contains CEL expressions which are used to produce audit annotations for the audit event of the API request. validations and auditAnnotations may not both be empty; a least one of validations or auditAnnotations is required.",
+
+restric en feature principal:
+      "description": "SelfSubjectAccessReviewSpec is a description of the access request.  Exactly one of ResourceAuthorizationAttributes and NonResourceAuthorizationAttributes must be set",
+
+      "description": "SubjectAccessReviewSpec is a description of the access request.  Exactly one of ResourceAuthorizationAttributes and NonResourceAuthorizationAttributes must be set",
+
+      "description": "SuccessPolicyRule describes rule for declaring a Job as succeeded. Each rule must have at least one of the \"succeededIndexes\" or \"succeededCount\" specified.",
+      "properties": {
+        "succeededCount": {
+          "description": "succeededCount specifies the minimal required size of the actual set of the succeeded indexes for the Job. When succeededCount is used along with succeededIndexes, the check is constrained only to the set of indexes specified by succeededIndexes. For example, given that succeededIndexes is \"1-4\", succeededCount is \"3\", and completed indexes are \"1\", \"3\", and \"5\", the Job isn't declared as succeeded because only \"1\" and \"3\" indexes are considered in that rules. When this field is null, this doesn't default to any value and is never evaluated at any time. When specified it needs to be a positive integer.",
+          "format": "int32",
+          "type": "integer"
+        },
+        "succeededIndexes": {
+          "description": "succeededIndexes specifies the set of indexes which need to be contained in the actual set of the succeeded indexes for the Job. The list of indexes must be within 0 to \".spec.completions-1\" and must not contain duplicates. At least one element is required. The indexes are represented as intervals separated by commas. The intervals can be a decimal integer or a pair of decimal integers separated by a hyphen. The number are listed in represented by the first and last element of the series, separated by a hyphen. For example, if the completed indexes are 1, 3, 4, 5 and 7, they are represented as \"1,3-5,7\". When this field is null, this field doesn't default to any value and is never evaluated at any time.",
+          "type": "string"
+        }
+      },
+
+Restric compleja:
+      "description": "The latest available observations of an object's current state. When a Job fails, one of the conditions will have type \"Failed\" and status true. When a Job is suspended, one of the conditions will have type \"Suspended\" and status true; when the Job is resumed, the status of this condition will become false. When a Job is completed, one of the conditions will have type \"Complete\" and status true.\n\nA job is considered finished when it is in a terminal condition, either \"Complete\" or \"Failed\". A Job cannot have both the \"Complete\" and \"Failed\" conditions. Additionally, it cannot be in the \"Complete\" and \"FailureTarget\" conditions. The \"Complete\", \"Failed\" and \"FailureTarget\" conditions cannot be disabled.\n\nMore info: https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/",
+
+Otra:      
+      "description": "PodFailurePolicyRule describes how a pod failure is handled when the requirements are met. One of onExitCodes and onPodConditions, but not both, can be used in each rule.",
+
+
+
+        "status": {
+          "description": "status of the condition, one of True, False, Unknown. Approved, Denied, and Failed conditions may not be \"False\" or \"Unknown\".",
+          "type": "string"
+        },
+        "type": {
+          "description": "type of the condition. Known conditions are \"Approved\", \"Denied\", and \"Failed\".\n\nAn \"Approved\" condition is added via the /approval subresource, indicating the request was approved and should be issued by the signer.\n\nA \"Denied\" condition is added via the /approval subresource, indicating the request was denied and should not be issued by the signer.\n\nA \"Failed\" condition is added via the /status subresource, indicating the signer failed to issue the certificate.\n\nApproved and Denied conditions are mutually exclusive. Approved, Denied, and Failed conditions cannot be removed once added.\n\nOnly one condition of a given type is allowed.",
+          "type": "string"
+        }
+
+
+      "io.k8s.api.core.v1.ClaimSource": {
+      "description": "ClaimSource describes a reference to a ResourceClaim.\n\nExactly one of these fields should be set.  Consumers of this type must treat an empty object as if it has an unknown value.",
+      "properties": {
+        "resourceClaimName": {
+          "description": "ResourceClaimName is the name of a ResourceClaim object in the same namespace as this pod.",
+          "type": "string"
+        },
+        "resourceClaimTemplateName": {
+          "description": "ResourceClaimTemplateName is the name of a ResourceClaimTemplate object in the same namespace as this pod.\n\nThe template will be used to create a new ResourceClaim, which will be bound to this pod. When this pod is deleted, the ResourceClaim will also be deleted. The pod name and resource name, along with a generated component, will be used to form a unique name for the ResourceClaim, which will be recorded in pod.status.resourceClaimStatuses.\n\nThis field is immutable and no changes will be made to the corresponding ResourceClaim by the control plane after creating the ResourceClaim.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+
+        "imagePullPolicy": {
+          "description": "Image pull policy. One of Always, Never, IfNotPresent. Defaults to Always if :latest tag is specified, or IfNotPresent otherwise. Cannot be updated. More info: https://kubernetes.io/docs/concepts/containers/images#updating-images",
+          "type": "string"
+        },
+    
+    Restricciones multiples de que solo uno de los 3 puede ser seleccionado
+
+    "io.k8s.api.core.v1.ContainerState": {
+      "description": "ContainerState holds a possible state of container. Only one of its members may be specified. If none of them is specified, the default one is ContainerStateWaiting.",
+
+Creo que no se puede aplicar una regla a la siguiente:
+    "io.k8s.api.core.v1.FlockerVolumeSource": {
+      "description": "Represents a Flocker volume mounted by the Flocker agent. One and only one of datasetName and datasetUUID should be set. Flocker volumes do not support ownership management or SELinux relabeling.",
+
+## Hay un deprecated mostrado por compatibilidad
+    "io.k8s.api.core.v1.LifecycleHandler": {
+      "description": "LifecycleHandler defines a specific action that should be taken in a lifecycle hook. One and only one of the fields, except TCPSocket must be specified.",
+      "properties": {
+        "exec": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.ExecAction",
+          "description": "Exec specifies the action to take."
+        },
+        "httpGet": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.HTTPGetAction",
+          "description": "HTTPGet specifies the http request to perform."
+        },
+        "sleep": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.SleepAction",
+          "description": "Sleep represents the duration that the container should sleep before being terminated."
+        },
+        "tcpSocket": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.TCPSocketAction",
+          "description": "Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept for the backward compatibility. There are no validation of this field and lifecycle hooks will fail in runtime when tcp handler is specified."
+        }
+      },
+
+        "externalTrafficPolicy": {
+          "description": "externalTrafficPolicy describes how nodes distribute service traffic they receive on one of the Service's \"externally-facing\" addresses (NodePorts, ExternalIPs, and LoadBalancer IPs). If set to \"Local\", the proxy will configure the service in a way that assumes that external load balancers will take care of balancing the service traffic between nodes, and so each node will deliver traffic only to the node-local endpoints of the service, without masquerading the client source IP. (Traffic mistakenly sent to a node with no endpoints will be dropped.) The default value, \"Cluster\", uses the standard behavior of routing to all endpoints evenly (possibly modified by topology and other features). Note that traffic sent to an External IP or LoadBalancer IP from within the cluster will always get \"Cluster\" semantics, but clients sending to a NodePort from within the cluster may need to take traffic policy into account when picking a node.",
+          "type": "string"
+        },
+
+        "ipFamilyPolicy": {
+          "description": "IPFamilyPolicy represents the dual-stack-ness requested or required by this Service. If there is no value provided, then this field will be set to SingleStack. Services can be \"SingleStack\" (a single IP family), \"PreferDualStack\" (two IP families on dual-stack configured clusters or a single IP family on single-stack clusters), or \"RequireDualStack\" (two IP families on dual-stack configured clusters, otherwise fail). The ipFamilies and clusterIPs fields depend on the value of this field. This field will be wiped when updating a service to type ExternalName.",
+          "type": "string"
+        },
+
+
+        "ipFamilies": {
+          "description": "IPFamilies is a list of IP families (e.g. IPv4, IPv6) assigned to this service. This field is usually assigned automatically based on cluster configuration and the ipFamilyPolicy field. If this field is specified manually, the requested family is available in the cluster, and ipFamilyPolicy allows it, it will be used; otherwise creation of the service will fail. This field is conditionally mutable: it allows for adding or removing a secondary IP family, but it does not allow changing the primary IP family of the Service. Valid values are \"IPv4\" and \"IPv6\".  This field only applies to Services of types ClusterIP, NodePort, and LoadBalancer, and does apply to \"headless\" services. This field will be wiped when updating a Service to type ExternalName.\n\nThis field may hold a maximum of two entries (dual-stack families, in either order).  These families must correspond to the values of the clusterIPs field, if specified. Both clusterIPs and ipFamilies are governed by the ipFamilyPolicy field.",
+          "items": {
+            "type": "string"
+        },
+
+        "resourceRules": {
+          "description": "`resourceRules` is a slice of ResourcePolicyRules that identify matching requests according to their verb and the target resource. At least one of `resourceRules` and `nonResourceRules` has to be non-empty.",
+          "items": {
+            "$ref": "#/definitions/io.k8s.api.flowcontrol.v1.ResourcePolicyRule"
+          },
+
+    "io.k8s.api.flowcontrol.v1.Subject": {
+      "description": "Subject matches the originator of a request, as identified by the request authentication system. There are three ways of matching an originator; by user, group, or service account.",
+      "properties": {
+        "group": {
+          "$ref": "#/definitions/io.k8s.api.flowcontrol.v1.GroupSubject",
+          "description": "`group` matches based on user group name."
+        },
+        "kind": {
+          "description": "`kind` indicates which one of the other fields is non-empty. Required",
+          "type": "string"
+        },
+        "serviceAccount": {
+          "$ref": "#/definitions/io.k8s.api.flowcontrol.v1.ServiceAccountSubject",
+          "description": "`serviceAccount` matches ServiceAccounts."
+        },
+        "user": {
+          "$ref": "#/definitions/io.k8s.api.flowcontrol.v1.UserSubject",
+          "description": "`user` matches based on username."
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object",
+      "x-kubernetes-unions": [
+        {
+          "discriminator": "kind",
+          "fields-to-discriminateBy": {
+            "group": "Group",
+            "serviceAccount": "ServiceAccount",
+            "user": "User"
+          }
+        }
+
+      "properties": {
+        "nonResourceRules": {
+          "description": "`nonResourceRules` is a list of NonResourcePolicyRules that identify matching requests according to their verb and the target non-resource URL.",
+          "items": {
+            "$ref": "#/definitions/io.k8s.api.flowcontrol.v1beta3.NonResourcePolicyRule"
+          },
+          "type": "array",
+          "x-kubernetes-list-type": "atomic"
+        },
+        "resourceRules": {
+          "description": "`resourceRules` is a slice of ResourcePolicyRules that identify matching requests according to their verb and the target resource. At least one of `resourceRules` and `nonResourceRules` has to be non-empty.",
+          "items": {
+            "$ref": "#/definitions/io.k8s.api.flowcontrol.v1beta3.ResourcePolicyRule"
+          },
+          "type": "array",
+          "x-kubernetes-list-type": "atomic"
+        },
+
+Se puede usar la cardinalidad para el numero posible de features que se pueden crear?
+
+        "cidrs": {
+          "description": "CIDRs defines the IP blocks in CIDR notation (e.g. \"192.168.0.0/24\" or \"2001:db8::/64\") from which to assign service cluster IPs. Max of two CIDRs is allowed, one of each IP family. This field is immutable.",
+          "items": {
+            "type": "string"
+          },
+
+        "preemptionPolicy": {
+          "description": "preemptionPolicy is the Policy for preempting pods with lower priority. One of Never, PreemptLowerPriority. Defaults to PreemptLowerPriority if unset.",
+          "type": "string"
+        },
+      
+
+          "description": "url gives the location of the webhook, in standard URL form (`scheme://host:port/path`). Exactly one of `url` or `service` must be specified.\n\nThe `host` should not refer to a service running in the cluster; use the `service` field instead. The host might be resolved via external DNS in some apiservers (e.g., `kube-apiserver` cannot resolve in-cluster DNS as that would be a layering violation). `host` may also be an IP address.\n\nPlease note that using `localhost` or `127.0.0.1` as a `host` is risky unless you take great care to run this webhook on all hosts which run an apiserver which might need to make calls to this webhook. Such installs are likely to be non-portable, i.e., not easy to turn up in a new cluster.\n\nThe scheme must be \"https\"; the URL must begin with \"https://\".\n\nA path is optional, and if present may be any string permissible in a URL. You may use the path to pass an arbitrary string to the webhook, for example, a cluster identifier.\n\nAttempting to use a user or basic auth e.g. \"user:password@\" is not allowed. Fragments (\"#...\") and query parameters (\"?...\") are not allowed, either.",
+
+        "status": {
+          "description": "Status of the operation. One of: \"Success\" or \"Failure\". More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status",
+          "type": "string"
+        }
+
+## Parecido al Exempt (por el type)
+      "properties": {
+        "queuing": {
+          "$ref": "#/definitions/io.k8s.api.flowcontrol.v1beta3.QueuingConfiguration",
+          "description": "`queuing` holds the configuration parameters for queuing. This field may be non-empty only if `type` is `\"Queue\"`."
+        },
+        "type": {
+          "description": "`type` is \"Queue\" or \"Reject\". \"Queue\" means that requests that can not be executed upon arrival are held in a queue until they can be executed or a queuing limit is reached. \"Reject\" means that requests that can not be executed upon arrival are rejected. Required.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object",
+      "x-kubernetes-unions": [
+        {
+          "discriminator": "type",
+          "fields-to-discriminateBy": {
+            "queuing": "Queuing"
+          }
+        }
+      ]
+
+
+
+Hay features que dependiendo del contexto mencionan unos posibles valores u otros asociados a un sub-feature(template.spec.restartPolicy):
+
+        "template": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.PodTemplateSpec",
+          "description": "An object that describes the pod that will be created. The DaemonSet will create exactly one copy of this pod on every node that matches the template's node selector (or on every node if no node selector is specified). The only allowed template.spec.restartPolicy value is \"Always\". More info: https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller#pod-template"
+        },
+
+        },
+        "template": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.PodTemplateSpec",
+          "description": "Template describes the pods that will be created. The only allowed template.spec.restartPolicy value is \"Always\"."
+        }
+      },
+
+      },
+        "template": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.PodTemplateSpec",
+          "description": "Describes the pod that will be created when executing a job. The only allowed template.spec.restartPolicy values are \"Never\" or \"OnFailure\". More info: https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/"
+      },

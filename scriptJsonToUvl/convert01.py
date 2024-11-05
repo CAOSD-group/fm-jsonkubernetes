@@ -99,7 +99,7 @@ class SchemaProcessor:
     def extract_values(self, description):
         """Extrae valores que están entre comillas u otros delimitadores, solo si se encuentran ciertas palabras clave"""
         palabras_patrones_minus = ['values are', 'possible values are', 'following states', '. must be', 'implicitly inferred to be', 'the currently supported reasons are', '. can be', 'it can be in any of following states',
-                                   'valid options are', 'may be set to', 'a value of `', 'the supported types are', 'the currently supported values are']
+                                   'valid options are', 'may be set to', 'a value of `', 'the supported types are', 'the currently supported values are', 'valid operators are']
         palabras_patrones_may = ['Supports'] ## 'values are', 
         if not any(keyword in description.lower() for keyword in palabras_patrones_minus) and not any(keyword in description for keyword in palabras_patrones_may): # , '. Must be' , 'allowed valures are'
             return None
@@ -132,6 +132,9 @@ class SchemaProcessor:
             re.compile(r'(?<=The currently supported values are\s)([a-zA-Z\s,]+)(?=\.)', re.IGNORECASE),
             #re.compile(r'(?<=The currently supported values are)[\w\s](?=\.)'),
 
+            re.compile(r'(?<=Valid operators are\s)([A-Za-z\s,]+)(?=\.)', re.IGNORECASE),
+            re.compile(r'\b(Gt|Lt)\b'),
+            ###re.compile(r'(?<=Valid operators are\s)([A-Za-z\s,]+(?:,\s)?(?:Gt,\sand\sLt)?)(?=\.)', re.IGNORECASE), ## Expresion para añadir los valores de "Valid operators are" en operator
         ]
 
         values = []
@@ -236,7 +239,7 @@ class SchemaProcessor:
                     default_value = v
                     #print("VALOR AÑADIDO: ",default_value)
         if not default_value:
-            print("Valores que no son por defecto ",default_value)
+            #print("Valores que no son por defecto ",default_value)
             return None
         #print("Estos son los valores:: ",default_value)
         
