@@ -38,6 +38,12 @@ Un punto a destacar es que en la implementación de las reglas de rangos habían
 
 En total se generaron mas de 700 restricciones de tipo Integer y Boolean.
 
+Adición de un nuevo grupo "must be between". Son nuevas restricciones con intervalos de 1-30 segundos y 0-100. Seguidos por el siguiente patron y similar a la funcionalidad ya propuesta:
+    between_text_pattern = re.compile(r'must\s+be\s+between\s+(\d+)\s+and\s+(\d+)', re.IGNORECASE)
+
+En total se agregaron 22 restricciones nuevas de este tipo.
+
+
 ### Agrupación de restricciones valores que por defecto son mayor a cero y rangos en segundos:
 
 En este caso se agrupan las constraints que por defecto o que su valor como número entero es mayor a cero. Este grupo forma parte de la anterior pero se disgrega para mostrarlo de manera individual, así se podria mostrar el mayor numero posible de estas descripciones y su variación. En este caso se tratan las descripciones que tienen el valor del mínimo como número entero o como nombre, en algunos casos se representaba el 0 como "zero" y se realizo una conversión entre esos valores para obtener un valor entero. Esta agrupación se encarga de manejar las expresiones como "must be greater than" o "less than or equal to", tratando así descripciones como "periodSeconds specifies the window of time for which the policy should hold true. PeriodSeconds must be greater than zero and less than or equal to 1800 (30 min)." o "value contains the amount of change which is permitted by the policy. It must be greater than zero". Ejemplo de algunas reglas:
@@ -90,6 +96,18 @@ Esta agrupación se basa en las descripciones con palabras clave: _\. Required w
 En total se generan 8 restricciones de este tipo.
 
 
+
+### Agrupación de restricciones operator
+
+Esta agrupación se basa en las descripciones con palabras clave: _If the operator is_, todas las descripciones relacionadas mencionan en 2 casos varios pares de valores que si se seleccionan encadenan a otro feature a que se seleccione. Por otro lado, hay un caso aislado donde se menciona solo un posible valor para realizar la dependencia. El tratamiento en general es similar en todos los casos por las palabras clave pero se obtienen mas o menos dependiendo de la descripcción. Las descripciones sobre las que se trabaja son las siguientes: _"values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.",_, o la del caso único: _"Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.",_ . La función que desarrolla estas constraints es extract_constraints_operator(). Estas son algunas de las restricciones obtenidas:
+
+1	(io_k8s_api_core_v1_ScopedResourceSelectorRequirement_operator_In | io_k8s_api_core_v1_ScopedResourceSelectorRequirement_operator_NotIn => 				   
+	io_k8s_api_core_v1_ScopedResourceSelectorRequirement_values) | (io_k8s_api_core_v1_ScopedResourceSelectorRequirement_operator_Exists |io_k8s_api_core_v1_ScopedResourceSelectorRequirement_operator_DoesNotExist => !io_k8s_api_core_v1_ScopedResourceSelectorRequirement_values)
+2	io_k8s_api_core_v1_Toleration_operator_Exists => io_k8s_api_core_v1_Toleration_value
+3	(io_k8s_api_core_v1_TopologySpreadConstraint_labelSelector_matchExpressions_operator_In
+	io_k8s_api_core_v1_TopologySpreadConstraint_labelSelector_matchExpressions_operator_NotIn => io_k8s_api_core_v1_TopologySpreadConstraint_labelSelector_matchExpressions_values) | (io_k8s_api_core_v1_TopologySpreadConstraint_labelSelector_matchExpressions_operator_Exists |io_k8s_api_core_v1_TopologySpreadConstraint_labelSelector_matchExpressions_operator_DoesNotExist => !io_k8s_api_core_v1_TopologySpreadConstraint_labelSelector_matchExpressions_values)
+
+En total se agregaron 701 restricciones.
 ### Agrupación de restricciones $... :
 
 En desarrollo de más patrones y constraints...
