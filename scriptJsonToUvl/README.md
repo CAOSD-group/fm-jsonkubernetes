@@ -97,7 +97,7 @@ En total se generan 8 restricciones de este tipo.
 
 
 
-### Agrupación de restricciones operator
+### Agrupación de restricciones If the operator
 
 Esta agrupación se basa en las descripciones con palabras clave: _If the operator is_, todas las descripciones relacionadas mencionan en 2 casos varios pares de valores que si se seleccionan encadenan a otro feature a que se seleccione. Por otro lado, hay un caso aislado donde se menciona solo un posible valor para realizar la dependencia. El tratamiento en general es similar en todos los casos por las palabras clave pero se obtienen mas o menos dependiendo de la descripcción. Las descripciones sobre las que se trabaja son las siguientes: _"values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.",_, o la del caso único: _"Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.",_ . La función que desarrolla estas constraints es extract_constraints_operator(). Estas son algunas de las restricciones obtenidas:
 

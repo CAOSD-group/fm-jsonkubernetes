@@ -22,6 +22,45 @@ def load_json_features(file_path):
 def convert_word_to_num(word):
     return word_to_num.get(word.lower(), None)
 
+def extract_constraints_operator(description, feature_key):
+    """ Función que extrae las restricciones de las descripciones que contienen "If the operator is" con posibles valores y opciones de selección de features"""
+    # Expresión regular para "Requires (X, Y) when feature is up" ## Se ha definido el orden de seleccion del feature o no por las expresiones "non-empty, empty. Si hubiese variacion se tendria en cuenta para la selección"
+    operator_is_pattern01 = re.compile(r'If the operator is\s+(\w+)\s+or\s+(\w+)', re.IGNORECASE) #  Expresión regular para obtener todos los pares (X,Y) de las descripcciones con "If the operator is"
+    operator_if_pattern02 = re.compile(r'If the operator is\s+(\w+)') # Expresion para las restricciones que solo tienen un único valor
+
+
+    uvl_rule = ""
+    feature_without_lastProperty = feature_key.rsplit('_', 1)[0]
+    operator_match01 = operator_is_pattern01.findall(description)
+
+    print("Operator 01",operator_match01)
+
+    # Inicializar las variables para almacenar los valores de las restricciones
+    required_value = None
+    #unset_property, unset_value = None, None
+
+    if  operator_match01 and 'is Exists,' not in description:
+        # Capturar la propiedad y el valor de "Required when"
+        type_property01 = operator_match01[0] # Captura los primeros valores del par "In or NotIn"
+        type_property02 = operator_match01[1] # Captura los primeros valores del par "Exists or DoesNotExist"
+        print("Required 01", type_property01)
+        print("Required 02", type_property02)
+
+        uvl_rule = f"({feature_without_lastProperty}_operator_{type_property01[0]} | {feature_without_lastProperty}_operator_{type_property01[1]} => {feature_key}) | ({feature_without_lastProperty}_operator_{type_property02[0]} |{feature_without_lastProperty}_operator_{type_property02[1]} => !{feature_key})"
+        if('the operator is Gt or Lt' in description):
+            type_property05 = operator_match01[2]
+            uvl_rule += f"| ({feature_without_lastProperty}_operator_{type_property05[0]} |{feature_without_lastProperty}_operator_{type_property05[1]} => {feature_key})"
+
+    elif 'is Exists' in description: ## Caso en el que solo hay un valor y se usa una captura diferente (32 descripciones)
+        operator_match02 = operator_if_pattern02.search(description)
+        print("OPERATOR CASO ESPE 32",operator_match02)
+        required_value = operator_match02.group(1)
+        uvl_rule = f"{feature_without_lastProperty}_operator_{required_value} => {feature_key}"
+
+    if uvl_rule is not None:
+        return uvl_rule
+    else:
+        return "El conjunto esta vacio"
 
 def extract_constraints_os_name(description, feature_key):
     """ Metodo para extraer las restricciones que definen el posible uso de features o no en base al sistema operativo que se seleccione: windows o linux"""
@@ -34,7 +73,7 @@ def extract_constraints_os_name(description, feature_key):
     list_anothers = ['_v1_Container_securityContext_', '_v1_EphemeralContainer_securityContext_', '_PodSecurityContext_', '_v1_SecurityContext_']
     #feature_without_02 = feature_key.rsplit('_', 1)[0]
 
-    if osName_match and '_template_spec_' in feature_key: ## Dependiendo de que grupo pertenece el feature_os_name es distinto, grupo principal de 1247 features, de momento solo Boolean (Falta cambior tipo a los demas casos)
+    if osName_match and '_template_spec_' in feature_key: ## Dependiendo de que grupo pertenece el feature_os_name es distinto, grupo principal de 1247 features
         match = re.search(r'^(.*?_template_spec)', feature_key) #(r'^(.*?_template_spec)')
 
         if match:
@@ -213,7 +252,7 @@ def extract_bounds(description):
     less_than_pattern = re.compile(r'less than or equal to (\d+)', re.IGNORECASE)
     #must_be_range = re.compile(r'must be greater than or equal to (\d+)\sand\sless than or equal to(\d+)')
 
-    ### Prueba adicion restriccion con palabras: must be between
+    ### Adicion restriccion con palabras: must be between
     between_text_pattern = re.compile(r'must\s+be\s+between\s+(\d+)\s+and\s+(\d+)', re.IGNORECASE)
 
     # Detectar si la descripción menciona puertos válidos
@@ -248,9 +287,10 @@ def extract_bounds(description):
         
     # Detectar rangos de la forma "must be between 0 and 100" y "...1 and 30". El rango 1-30 son segundos y el rango 0-100 representa "niveles" de prioridad. Tot: 22 restric
     between_text_match = between_text_pattern.search(description) 
-    if between_text_pattern:
+    if between_text_match:
         min_bound = int(between_text_match.group(1))
         max_bound = int(between_text_match.group(2))
+        is_other_number = True
         return min_bound, max_bound, is_port_number, is_other_number
 
     # Detectar expresiones simples de "greater than" o "less than"
@@ -312,6 +352,9 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
         elif "Note that this field cannot be" in description:
             constraint = extract_constraints_os_name(description, feature_key)
             #print("DEBERIA DE FUNKAR: ", constraint)
+            uvl_rule = constraint
+        elif "If the operator is":
+            constraint = extract_constraints_operator(description, feature_key)
             uvl_rule = constraint
                        
     elif type_data == "Integer" or type_data == "integer":
