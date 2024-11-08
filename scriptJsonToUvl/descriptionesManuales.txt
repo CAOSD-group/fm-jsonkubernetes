@@ -761,8 +761,14 @@ Valid operators are (4):
           "description": "operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.",
           "type": "string"
         },
-Hecho --
+Hecho -- 
 
+Hecho--
+
+Constraints grupo Operator
+Reglas objetivas: (feature_lastKey_operator_In | feature_lastKey_operator_NotIn (if not-empty) => feature (añadir al grupo de String)) | (feature_lastKey_operator_Exists | feature_lastKey_operator_DoesNotExist (if empty) => !feature)
+(feature_lastKey_operator_Gt | feature_lastKey_operator_Lt => feature (deberia ser un array con un unico elemento pero.. o otro feature Integer pero solo esta este caso))
+ 
         "values": {
           "description": "An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.",
           "items": {
@@ -775,6 +781,7 @@ Asociado a values => restriccion
           "items": {
             "type": "string"
           },
+Hecho--
 
 Posibles valores (Comprobar**)
 
@@ -782,8 +789,9 @@ Posibles valores (Comprobar**)
           "description": "SideEffects states whether this webhook has side effects. Acceptable values are: None, NoneOnDryRun (webhooks created via v1beta1 may also specify Some or Unknown). Webhooks with side effects MUST implement a reconciliation system, since a request may be rejected by a future step in the admission chain and the side effects therefore need to be undone. Requests with the dryRun attribute will be auto-rejected if they match a webhook with sideEffects == Unknown or Some.",
           "type": "string"
         },
+Hecho--
 
-
+-- Hecho
 Más valores:
         "status": {
           "description": "Status of the condition, one of True, False, Unknown.",
@@ -794,20 +802,48 @@ Más valores:
           "type": "string"
         }
       },
+Hecho--
 
-          "description": "Node address type, one of Hostname, ExternalIP or InternalIP.",
+Hecho--
+        "status": {
+          "description": "Status of the condition for a component. Valid values for \"Healthy\": \"True\", \"False\", or \"Unknown\".",
+          "type": "string"
+        },
+        "type": {
+          "description": "Type of condition for a component. Valid value: \"Healthy\"", ### Si es un unico valor añadir como optional no?... u mandatory si especifica que es el unico? ### PREGUNTAR SI HAY COND IGUAL
+          "type": "string"
+        }
+Pendiente una cosa--
 
-        "preemptionPolicy": {
+Hecho--
+        "status": {
+          "description": "`status` is the status of the condition. Can be True, False, Unknown. Required.",
+          "type": "string"
+        },
+        "type": {
+          "description": "`type` is the type of the condition. Required.",
+          "type": "string"
+        }
+        "description": "status is the status of the condition (True, False, Unknown)",
+Hecho--
+
+Hecho--
+"description": "Node address type, one of Hostname, ExternalIP or InternalIP.",
+
+        "preemptionPolicy": { # En esta hay una restric con el default dependiendo de si no se escoge
           "description": "PreemptionPolicy is the Policy for preempting pods with lower priority. One of Never, PreemptLowerPriority. Defaults to PreemptLowerPriority if unset.",
           "type": "string"
         },
 
-        "restartPolicy": {
+        "restartPolicy": { ## En esta hay una restric con el default dependiendo de que cambia...
           "description": "Restart policy for all containers within the pod. One of Always, OnFailure, Never. In some contexts, only a subset of those values may be permitted. Default to Always. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy",
           "type": "string"
         },
+Hecho--
 
+Hecho-- 
 Valores... y una restricc simple / type is the type of metric source y Note: \"ContainerResource\" type is available on when the feature-gate HPAContainerMetrics is enabled
+## Ignorando HPAContainerMetrics porque no se encontro donde se menciona en las descripciones o a que propiedad pertenece
         "type": {
           "description": "type is the type of metric source.  It should be one of \"ContainerResource\", \"External\", \"Object\", \"Pods\" or \"Resource\", each mapping to a matching field in the object. Note: \"ContainerResource\" type is available on when the feature-gate HPAContainerMetrics is enabled",
           "type": "string"
@@ -818,16 +854,22 @@ Valores... y una restricc simple / type is the type of metric source y Note: \"C
           "type": "string"
         }
       },
-
+Hecho--
 
 aparte::
 
-          "description": "auditAnnotations contains CEL expressions which are used to produce audit annotations for the audit event of the API request. validations and auditAnnotations may not both be empty; a least one of validations or auditAnnotations is required.",
+Haciendo--
+
+"description": "auditAnnotations contains CEL expressions which are used to produce audit annotations for the audit event of the API request. validations and auditAnnotations may not both be empty; a least one of validations or auditAnnotations is required.",
+restrict:
+validations and auditAnnotations may not both be empty; a least one of validations or auditAnnotations is required
+feature_validations | feature_auditAnnotations \ feature_validations & feature_auditAnnotations 
 
 restric en feature principal:
       "description": "SelfSubjectAccessReviewSpec is a description of the access request.  Exactly one of ResourceAuthorizationAttributes and NonResourceAuthorizationAttributes must be set",
 
       "description": "SubjectAccessReviewSpec is a description of the access request.  Exactly one of ResourceAuthorizationAttributes and NonResourceAuthorizationAttributes must be set",
+          "description": "url gives the location of the webhook, in standard URL form (`scheme://host:port/path`). Exactly one of `url` or `service` must be specified.\n\nThe `host` should not refer to a service running in the cluster; use the `service` field instead. The host might be resolved via external DNS in some apiservers (e.g., `kube-apiserver` cannot resolve in-cluster DNS as that would be a layering violation). `host` may also be an IP address.\n\nPlease note that using `localhost` or `127.0.0.1` as a `host` is risky unless you take great care to run this webhook on all hosts which run an apiserver which might need to make calls to this webhook. Such installs are likely to be non-portable, i.e., not easy to turn up in a new cluster.\n\nThe scheme must be \"https\"; the URL must begin with \"https://\".\n\nA path is optional, and if present may be any string permissible in a URL. You may use the path to pass an arbitrary string to the webhook, for example, a cluster identifier.\n\nAttempting to use a user or basic auth e.g. \"user:password@\" is not allowed. Fragments (\"#...\") and query parameters (\"?...\") are not allowed, either.",
 
       "description": "SuccessPolicyRule describes rule for declaring a Job as succeeded. Each rule must have at least one of the \"succeededIndexes\" or \"succeededCount\" specified.",
       "properties": {
@@ -841,6 +883,9 @@ restric en feature principal:
           "type": "string"
         }
       },
+
+      "description": "`resourceRules` is a slice of ResourcePolicyRules that identify matching requests according to their verb and the target resource. At least one of `resourceRules` and `nonResourceRules` has to be non-empty.",
+
 
 Restric compleja:
       "description": "The latest available observations of an object's current state. When a Job fails, one of the conditions will have type \"Failed\" and status true. When a Job is suspended, one of the conditions will have type \"Suspended\" and status true; when the Job is resumed, the status of this condition will become false. When a Job is completed, one of the conditions will have type \"Complete\" and status true.\n\nA job is considered finished when it is in a terminal condition, either \"Complete\" or \"Failed\". A Job cannot have both the \"Complete\" and \"Failed\" conditions. Additionally, it cannot be in the \"Complete\" and \"FailureTarget\" conditions. The \"Complete\", \"Failed\" and \"FailureTarget\" conditions cannot be disabled.\n\nMore info: https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/",
@@ -1052,3 +1097,6 @@ Hay features que dependiendo del contexto mencionan unos posibles valores u otro
           "$ref": "#/definitions/io.k8s.api.core.v1.PodTemplateSpec",
           "description": "Describes the pod that will be created when executing a job. The only allowed template.spec.restartPolicy values are \"Never\" or \"OnFailure\". More info: https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/"
       },
+
+De reojo
+      "description": "Operation is the type of operation which lead to this ManagedFieldsEntry being created. The only valid values for this field are 'Apply' and 'Update'.",

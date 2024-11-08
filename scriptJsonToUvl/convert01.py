@@ -5,7 +5,7 @@ import re
 from collections import deque
 
 # Importar el procesador de restricciones
-from restrictions_processor import process_restrictions
+#from restrictions_processor import process_restrictions
 
 class SchemaProcessor:
     def __init__(self, definitions):
@@ -29,13 +29,13 @@ class SchemaProcessor:
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
         self.patterns = {
             'values': re.compile(r'^\b$', re.IGNORECASE), # values are|valid|supported|acceptable|can be
-            'restrictions': re.compile(r'If the operator is|must be between', re.IGNORECASE),###   # \. Required when|required when scope  ## the currently supported values are allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
+            'restrictions': re.compile(r'a least one of|Exactly one of|resource access request|at least one of', re.IGNORECASE),### If the operator is|must be between|   # \. Required when|required when scope  ## the currently supported values are allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
             'dependencies': re.compile(r'^\b$', re.IGNORECASE) ## (requires|if[\s\S]*?only if|only if) # depends on ningun caso especial, quitar relies on: no hay casos, contingent upon: igual = related to
         }
-        ### |Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope
+        ###  |Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope
         # Lista de parte de nombres de features que se altera el tipo de dato a Boolean para la compatibilidad con las constraints y uvl. ### Los que se cambian para añadir un nivel mas que represente el String que se omite al cambiar el tipo a Boolean
         self.boolean_keywords = ['AppArmorProfile_localhostProfile', 'appArmorProfile_localhostProfile', 'seccompProfile_localhostProfile', 'SeccompProfile_localhostProfile', 'IngressClassList_items_spec_parameters_namespace',
-                        'IngressClassParametersReference_namespace', 'IngressClassSpec_parameters_namespace',  'IngressClass_spec_parameters_namespace','_tolerations_value','_Toleration_value']  # Lista para modificar a otros posibles tipos de los features (Cambiado del original por la compatibilidad) ##
+                        'IngressClassParametersReference_namespace', 'IngressClassSpec_parameters_namespace',  'IngressClass_spec_parameters_namespace','_tolerations_value','_Toleration_value', '_clientConfig_url', '_WebhookClientConfig_url']  # Lista para modificar a otros posibles tipos de los features (Cambiado del original por la compatibilidad) ##
         
         # Lista de expresiones regulares para casos en que la lista anterior necesite de más precisión para solo alterar el tipo en los parametros requeridos
         self.boolean_keywords_regex = [r'.*_paramRef_name$', r'.*_ParamRef_name$'] ## , r'.*_paramRef_selector$', r'.*_ParamRef_selector$'
@@ -84,6 +84,7 @@ class SchemaProcessor:
     def is_valid_description(self, feature_name, description):
         """Verifica si una descripción es válida (No muy corta y sin repeticiones) para analizarla después en busca de restricciones"""
         if len(description) < 10:
+            print(description)
             return False
         # Crear una clave única combinando el nombre del feature y la descripción
         description_key = f"{feature_name}:{description}"
@@ -99,12 +100,18 @@ class SchemaProcessor:
     def extract_values(self, description):
         """Extrae valores que están entre comillas u otros delimitadores, solo si se encuentran ciertas palabras clave"""
         palabras_patrones_minus = ['values are', 'possible values are', 'following states', '. must be', 'implicitly inferred to be', 'the currently supported reasons are', '. can be', 'it can be in any of following states',
-                                   'valid options are', 'may be set to', 'a value of `', 'the supported types are', 'the currently supported values are', 'valid operators are']
-        palabras_patrones_may = ['Supports'] ## 'values are', 
+                                   'valid options are', 'may be set to', 'a value of `', 'the supported types are', 'the currently supported values are', 'valid operators are', 'status of the condition,', 'status of the condition.',
+                                    'type of the condition.', 'status of the condition (', 'node address type', 'should be one of', 'will be one of'] ## , 'condition. known conditions are' # Probando para añadir 2 en vez de solo 1 descr
+        ## . must be provoca muchas agregaciones de un solo valor ya que hay varias constraints que coinciden con esa expresion... definir mejor en un futuro si son necesarias los valores unitarios
+        
+        palabras_patrones_may = ['Supports', 'Type of job condition', 'Status of the condition for', 'Type of condition', '. One of'] ## 'values are', ## Type pendiente de sumar Healthy
+
         if not any(keyword in description.lower() for keyword in palabras_patrones_minus) and not any(keyword in description for keyword in palabras_patrones_may): # , '. Must be' , 'allowed valures are'
             return None
-        #if not any (keyword in description for keyword in palabras_patrones_may):
+        #if 'onPodConditions, but not both,' in description.lower(): ### Por si hace falta evitar alguna descripcion mas especifica
         #    return None
+        #if not any (keyword in description for keyword in palabras_patrones_may):
+        #    return None ### Se deberia de hacer lista de valores tambien? status of the condition, 07/11 - mayoria de valores, True, False, Unknown. | condition. Known conditions are: patron para agregar una descrip y obtener sus valores(se busca 1 solo)
         
         value_patterns = [
 
@@ -137,7 +144,23 @@ class SchemaProcessor:
             ###re.compile(r'(?<=Valid operators are\s)([A-Za-z\s,]+(?:,\s)?(?:Gt,\sand\sLt)?)(?=\.)', re.IGNORECASE), ## Expresion para añadir los valores de "Valid operators are" en operator
 
             re.compile(r'(?<=Acceptable values are:)([A-Za-z\s,]+)(?=\()'), ### Grupo para añadir los valores de "Acceptable values are:"
-
+            
+            re.compile(r'(?<=status of the condition, one of\s)([a-zA-Z\s,]+)(?=\.)', re.IGNORECASE), ## True, False, Unknown, expr: 'status of the condition,'
+            re.compile(r'(?<=Type of job condition,\s)([a-zA-Z\s,]+)(?=\.)'), ## Complete or Failed, expr: 'Type of job condition'
+            ### status of the condition. Can be (7)
+            re.compile(r'(?<=status of the condition. Can be\s)([a-zA-Z\s,]+)(?=\.)'), ## Variante del anterior patron: Can be True, False, Unknown.. expr arriba: 'status of the condition.'
+            ### Valid value: \"Healthy\" he omitido el resultado de valores con 1 solo valor pero este si define que solo tiene una posible opcion...
+            re.compile(r'(?<=Types include\s)([a-zA-Z\s,]+)(?=\.)'), ## Patron para una unica descripcion: Established, NamesAccepted and Terminating 'type of the condition.' (2)
+            
+            re.compile(r'(?<=status of the condition \()([a-zA-Z\s,]+)(?=\))'), ## caso unico de valores (1 descr): (True, False, Unknown), expr: 'status of the condition (' (1)
+            re.compile(r'(?<=Node address type, one of\s)([a-zA-Z\s,]+)(?=\.)'), ## Patron para una  descripcion: Hostname, ExternalIP or InternalIP 'node address type' (1)
+            re.compile(r'(?<=. One of\s)([a-zA-Z\s,]+)(?=\.)'), ## Patron para una  descripcion: [Always, Never, IfNotPresent], Never, PreemptLowerPriority, [Always, OnFailure, Never], \"Success\" or \"Failure\" '. One of' (6)
+            ## Expresiones agregadas directamente por patrones genericos "[$value]":... 'should be one of', 'will be one of': \"ContainerResource\", \"External\", \"Object\", \"Pods\" or \"Resource\"
+            
+            ##. One of
+            ## Node address type, one of 
+            ## status of the condition (
+            ## Types include
         ]
 
         values = []
@@ -193,7 +216,7 @@ class SchemaProcessor:
         if not values:
             return None
         elif len(values) == 1:
-            #print(f"LOS VALORES DE TAMAÑO 1 SON: {values}")
+            print(f"LOS VALORES DE TAMAÑO 1 SON: {values}")
             return None
         elif case_not_none == values:
             values.remove('None')
@@ -256,7 +279,7 @@ class SchemaProcessor:
             return False
         
         # Verificar si el feature_name tiene configuración especial y ajustar type_data
-        if any(special_name in feature_name for special_name in self.special_features_config) and 'Note that this field cannot be set when' in description:
+        if any(special_name in feature_name for special_name in self.special_features_config) and 'Note that this field cannot be set when' in description or 'Exactly one of' in description:
             type_data = 'Boolean' ## Descripciones unicamente
     
             #if special_name in feature_name:
@@ -393,7 +416,7 @@ class SchemaProcessor:
                 full_name = self.process_enum_defaultInte(details, full_name, description) #### PROBANDO: cambiado para añadir default Integer
                 #full_name = self.patterns_process_enum(description, full_name) ##PROBANDO
 
-                description = details.get('description', '')
+                #description = details.get('description', '')
                 if description:
                     feature_type_data = self.update_type_data(full_name, feature_type_data) ### Modificion para que en descriptions_01.json se cambie de String a Boolean si coincide con el nombre
                     categorized = self.categorize_description(description, full_name, feature_type_data)
@@ -563,11 +586,16 @@ class SchemaProcessor:
                 if extracted_values: 
                     ## details['type_data'] = 'Boolean' ## Esto es para acceder al tipo del ESQUEMA
                     feature['type_data'] = '' ## Se accede al tipo de dato del FEATURE actual: De Boolean a vacio '' 
-
-                    #print(f"PORQUE NO SE REPRESENTAN TODOS LOS ESQUEMAS? - Tipo: {details['type_data']}, - Nombre: {full_name}")
+                    #full_name_value = f"{full_name}_{value}"
+        
                     for value in extracted_values:
+                        full_name_value = f"{full_name}_{value}"
+                        if '_Healthy' in full_name_value: ### Comprobacion para omitir valores que no se deberian de agregar en el modelo
+                            print("OMITIENDO HEALTHY", full_name_value)
+                            continue
+
                         feature['sub_features'].append({
-                            'name': f"{full_name}_{value}",
+                            'name': full_name_value,
                             'type': 'alternative', # Todos los valores suelen ser alternatives (Elección de solo uno)
                             'description': f"Specific value: {value}",
                             'sub_features': [],

@@ -22,12 +22,58 @@ def load_json_features(file_path):
 def convert_word_to_num(word):
     return word_to_num.get(word.lower(), None)
 
+def extract_constraints_primary_or(description, feature_key):
+    """ Función que extrae las restricciones de las descripciones que contienen "Exactly one of" en las descripciones generales de los features. Pero en este caso el programa
+    esta diseñado para no coger estas descripciones de primer nivel por evitar incongruencias. De ese modo, se realizarán las inserciones de las constraints de manera más especifica
+    usando las descripciones y palabras para obtener los features involucrados en las descripciones de los features de primer nivel."""
+
+    uvl_rule = ""
+    feature_without_lastProperty = feature_key.rsplit('_', 1)[0]
+
+    if 'non-resource access request' in description:
+        resourceAtr = f"{feature_without_lastProperty}_resourceAttributes"
+        uvl_rule = f"{feature_key} | {resourceAtr}"
+
+    if uvl_rule is not None:
+        return uvl_rule
+    else:
+        return "El conjunto esta vacio"
+
+def extract_constraints_least_one(description, feature_key):  ### PENDIENTE AGREGAR RESTRICT: at least one of
+    """ Función que extrae las restricciones de las descripciones que contienen "Exactly one of, a least one of", basadas en la constraint de que al menos un feature debe de ser seleccionado """
+    # Expresión regular para "Requires (X, Y) when feature is up" ## Se ha definido el orden de seleccion del feature o no por las expresiones "non-empty, empty. Si hubiese variacion se tendria en cuenta para la selección"
+    least_one_pattern01 = re.compile(r'(?<=a least one of\s)(\w+)\s+or\s+(\w+)', re.IGNORECASE) #  Expresión regular para obtener todos los pares (X,Y) de las descripcciones con "If the operator is"
+    exactly_least_one_pattern02 = re.compile(r'(?<=Exactly one of\s)`(\w+)`\s+or\s+`(\w+)`', re.IGNORECASE) #  Expresión regular para obtener todos los pares (X,Y) de las descripcciones con "If the operator is"
+    
+    uvl_rule = "" ### arreglar el `` = > String
+
+    feature_without_lastProperty = feature_key.rsplit('_', 1)[0]
+    a_least_match01 = least_one_pattern01.search(description)
+    exactly_match01 = exactly_least_one_pattern02.search(description)
+    #print("Comprobacion02", exactly_match01)
+    if a_least_match01:
+        value01 = a_least_match01.group(1)
+        value02 = a_least_match01.group(2)
+
+        uvl_rule = f"{feature_without_lastProperty}_{value01} | {feature_without_lastProperty}_{value02}"
+    elif exactly_match01:
+        print("Comprobacion02", exactly_match01)
+
+        value01 = exactly_match01.group(1)
+        value02 = exactly_match01.group(2)
+        uvl_rule = f"{feature_without_lastProperty}_{value01} | {feature_without_lastProperty}_{value02}"
+
+    if uvl_rule is not None:
+        return uvl_rule
+    else:
+        return "El conjunto esta vacio"
+
+
 def extract_constraints_operator(description, feature_key):
     """ Función que extrae las restricciones de las descripciones que contienen "If the operator is" con posibles valores y opciones de selección de features"""
     # Expresión regular para "Requires (X, Y) when feature is up" ## Se ha definido el orden de seleccion del feature o no por las expresiones "non-empty, empty. Si hubiese variacion se tendria en cuenta para la selección"
     operator_is_pattern01 = re.compile(r'If the operator is\s+(\w+)\s+or\s+(\w+)', re.IGNORECASE) #  Expresión regular para obtener todos los pares (X,Y) de las descripcciones con "If the operator is"
     operator_if_pattern02 = re.compile(r'If the operator is\s+(\w+)') # Expresion para las restricciones que solo tienen un único valor
-
 
     uvl_rule = ""
     feature_without_lastProperty = feature_key.rsplit('_', 1)[0]
@@ -353,10 +399,14 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
             constraint = extract_constraints_os_name(description, feature_key)
             #print("DEBERIA DE FUNKAR: ", constraint)
             uvl_rule = constraint
-        elif "If the operator is":
+        elif "If the operator is" in description: ## add in description
             constraint = extract_constraints_operator(description, feature_key)
             uvl_rule = constraint
-                       
+        elif "a least one of" in description or "Exactly one of" in description:
+            uvl_rule = extract_constraints_least_one(description, feature_key)
+        elif "resource access request" in description:
+            uvl_rule = extract_constraints_primary_or(description, feature_key)
+    
     elif type_data == "Integer" or type_data == "integer":
         if is_port_number:
             # Si es un número de puerto, asegurarse de usar los límites de puerto
@@ -374,11 +424,13 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
         #    min_bound = 0 if min_bound is None else min_bound
         #    max_bound = 1800 if max_bound is None else max_bound
  
-    elif type_data == "String":
+    elif type_data == "String" or type_data == "string":
         if "APIVersion" in description:
             uvl_rule = f"{feature_key} == 'v1' | {feature_key} == 'v1beta1' | {feature_key} == 'v2' | {feature_key} == 'v1alpha1'"
         elif "RFC 3339" in description:
             uvl_rule = f"!{feature_key}"
+        #elif "Exactly one of" in description:
+        #    uvl_rule = extract_constraints_least_one(description, feature_key)
         #elif "required when" in description.lower():
             #print(f"Se ejecuta? {feature_key}")  # Depuración
         #    second_constraint = extract_constraints_required(description, feature_key) ### Sobra en este caso
