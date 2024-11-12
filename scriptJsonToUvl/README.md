@@ -28,7 +28,7 @@ Siendo todas del tipo Requires: feature_os_name => !feature_key. En total se gen
 
 ### Agrupación de constraints de intervalos y limites maximos y minimos
 
-Esta agrupación se basa en las descripciones con palabras clave: _valid port number, must be in the range, must be greater than_. todas las descripciones relacionadas mencionan un número de puerto rango o limite de minimo y/o máximo. Al principio solo se trataba el primer patron de la agrupación pero el método diseñado _extractBounds_()_ maneja todos esos patrones obteniendo una gran variación de constraints. Maneja tanto las descripciones que contienen rangos como: "valid port number (1-65535, inclusive)", "valid port number, 0 < x < 65536.", "must be in the range 1 to 65535" o minimos simples como: "  Must be greater than zero.". Algunas de las restricciones obtenidas:
+Esta agrupación se basa en las descripciones con palabras clave: _valid port number, must be in the range, must be greater than_. todas las descripciones relacionadas mencionan un número de puerto rango o limite de minimo y/o máximo. Al principio solo se trataba el primer patron de la agrupación pero el método diseñado extractBounds() maneja todos esos patrones obteniendo una gran variación de constraints. Maneja tanto las descripciones que contienen rangos como: "valid port number (1-65535, inclusive)", "valid port number, 0 < x < 65536.", "must be in the range 1 to 65535" o minimos simples como: "  Must be greater than zero.". Algunas de las restricciones obtenidas:
 
 	io_k8s_api_core_v1_ReplicationControllerSpec_template_spec_initContainers_lifecycle_preStop_tcpSocket_port => (io_k8s_api_core_v1_ReplicationControllerSpec_template_spec_initContainers_lifecycle_preStop_tcpSocket_port_asInteger > 1 & io_k8s_api_core_v1_ReplicationControllerSpec_template_spec_initContainers_lifecycle_preStop_tcpSocket_port_asInteger < 65535) | (io_k8s_api_core_v1_ReplicationControllerSpec_template_spec_initContainers_lifecycle_preStop_tcpSocket_port_asString == 'IANA_SVC_NAME')
 	io_k8s_api_core_v1_ReplicationControllerSpec_template_spec_initContainers_livenessProbe_grpc_port > 1 & io_k8s_api_core_v1_ReplicationControllerSpec_template_spec_initContainers_livenessProbe_grpc_port < 65535
@@ -108,6 +108,66 @@ Esta agrupación se basa en las descripciones con palabras clave: _If the operat
 	io_k8s_api_core_v1_TopologySpreadConstraint_labelSelector_matchExpressions_operator_NotIn => io_k8s_api_core_v1_TopologySpreadConstraint_labelSelector_matchExpressions_values) | (io_k8s_api_core_v1_TopologySpreadConstraint_labelSelector_matchExpressions_operator_Exists |io_k8s_api_core_v1_TopologySpreadConstraint_labelSelector_matchExpressions_operator_DoesNotExist => !io_k8s_api_core_v1_TopologySpreadConstraint_labelSelector_matchExpressions_values)
 
 En total se agregaron 701 restricciones.
+
+
+### Agrupacion de restricciones least one
+
+Función que extrae las restricciones de las descripciones que contienen _Exactly one of_, _a least one of_, _at least one of_, basadas en la condición de que al menos un feature debe de ser seleccionado. La función donde se implementa el tratamiento es en extract_constraints_least_one(). En esta función se usan varias expresiones con las palabras clave mencionadas para dividir los casos y separar la formación de las constraints en distintas partes de la función. La descripción del primer grupo se expecifica que solo _"url gives the location of the webhook, in standard URL form (`scheme://host:port/path`). Exactly one of `url` or `service` must be specified.\n\nThe `host` should not refer to a service running in the cluster; use the `service` field instead. The host might be resolved via external DNS in some apiservers (e.g., `kube-apiserver` cannot resolve in-cluster DNS as that would be a layering violation). `host`..."_, de aquí se deduce que...
+
+##
+
+
+
+
+
+### Agrupacion de restricciones primary or
+#### one of
+
+Esta agrupación se basa en las descripciones con palabras clave: _non-resource access request_, _succeededIndexes specifies_, _Represents the requirement on the container_, _ResourceClaim object in the same namespace as this pod_. Esta función, extract_constraints_primary_or(), se caracteriza en que no usa patrones para extraer los valores de las descripciones ya que no estan inhibidas en las que se usan como clave. Se empezó analizando las restricciones de las descripciones que contienen "Exactly one of" en las descripciones generales(principales) de los features. Sin embargo, el script principal no esta diseñado para coger descripciones de primer nivel (y añadirlas a descriptions_01.json) por evitar incongruencias. Por ese motivo, se realizan las inserciones de las constraints de manera más especifica usando las descripciones, palabras y nombres de los features para obtener los features involucrados en las descripciones mencionadas en el primer nivel. Es decir, no se usa la descripción principal pero mediante las descripciones de las propiedades se obtienen los valores necesarios. En su mayoría las restricciones suelen ser del mismo tipo: "feature1 or feature2". Por lo que, con obtener uno de los 2 features relacionados se puede añadir el otro añadiendolo directamente. El primer grupo formado se baso en la descripción principal: _"SelfSubjectAccessReviewSpec is a description of the access request. Exactly one of ResourceAuthorizationAttributes and NonResourceAuthorizationAttributes must be set"_, de aquí se dedujo que solo una de las 2 propiedades puede ser seleccionada. En general y precedidas por _one of_ las descripciones usadas en esta agrupación y siguientes se basa en la aparición de _one of_. 
+
+Otra descripción relacionada con el segundo grupo, _"SuccessPolicyRule describes rule for declaring a Job as succeeded. Each rule must have at least one of the \"succeededIndexes\" or \"succeededCount\" specified."_. Se interpreto como que al menos uno de las 2 propiedades tenga que estar activa por lo que se añadio mediante un or simplemente quedando similar a: feature1 or feature2. Repitiendo el mismo patrón que el primer grupo, en la tercera descripción y cuarta la interpretación es la misma. Dando como resultado restricciones de tipo: feature1 XOR feature2. Descripción del tercer grupo: _"PodFailurePolicyRule describes how a pod failure is handled when the requirements are met. One of onExitCodes and onPodConditions, but not both, can be used in each rule."_, cuarto grupo: _"ClaimSource describes a reference to a ResourceClaim.\n\nExactly one of these fields should be set.  Consumers of this type must treat an empty object as if it has an unknown value."_.
+
+Algunas de las descripciones obtenidas son las siguientes:
+Primer grupo, 8 restricciones en total:
+	(io_k8s_api_authorization_v1_SelfSubjectAccessReview_spec_nonResourceAttributes | io_k8s_api_authorization_v1_SelfSubjectAccessReview_spec_resourceAttributes) & 
+	!(io_k8s_api_authorization_v1_SelfSubjectAccessReview_spec_nonResourceAttributes | io_k8s_api_authorization_v1_SelfSubjectAccessReview_spec_resourceAttributes)
+	(io_k8s_api_authorization_v1_SelfSubjectAccessReviewSpec_nonResourceAttributes | io_k8s_api_authorization_v1_SelfSubjectAccessReviewSpec_resourceAttributes) &
+	!(io_k8s_api_authorization_v1_SelfSubjectAccessReviewSpec_nonResourceAttributes | io_k8s_api_authorization_v1_SelfSubjectAccessReviewSpec_resourceAttributes)
+
+Segundo grupo, 9 restricciones en total:
+	io_k8s_api_batch_v1_SuccessPolicy_rules_succeededIndexes | io_k8s_api_batch_v1_SuccessPolicy_rules_succeededCount
+	io_k8s_api_batch_v1_SuccessPolicyRule_succeededIndexes | io_k8s_api_batch_v1_SuccessPolicyRule_succeededCount
+
+Tercer grupo, 9 restricciones en total:
+	(io_k8s_api_batch_v1_PodFailurePolicy_rules_onExitCodes | io_k8s_api_batch_v1_PodFailurePolicy_rules_onPodConditions) & !(io_k8s_api_batch_v1_PodFailurePolicy_rules_onExitCodes & io_k8s_api_batch_v1_PodFailurePolicy_rules_onPodConditions)
+	(io_k8s_api_batch_v1_PodFailurePolicyRule_onExitCodes | io_k8s_api_batch_v1_PodFailurePolicyRule_onPodConditions) & !(io_k8s_api_batch_v1_PodFailurePolicyRule_onExitCodes & io_k8s_api_batch_v1_PodFailurePolicyRule_onPodConditions)
+
+Cuarto grupo, 30 restricciones en total:
+	(io_k8s_api_core_v1_ReplicationControllerList_items_spec_template_spec_resourceClaims_source_resourceClaimName | io_k8s_api_core_v1_ReplicationControllerList_items_spec_template_spec_resourceClaims_source_resourceClaimTemplateName) & !(io_k8s_api_core_v1_ReplicationControllerList_items_spec_template_spec_resourceClaims_source_resourceClaimName & io_k8s_api_core_v1_ReplicationControllerList_items_spec_template_spec_resourceClaims_source_resourceClaimTemplateName)
+	(io_k8s_api_core_v1_ReplicationControllerSpec_template_spec_resourceClaims_source_resourceClaimName | io_k8s_api_core_v1_ReplicationControllerSpec_template_spec_resourceClaims_source_resourceClaimTemplateName) & !(io_k8s_api_core_v1_ReplicationControllerSpec_template_spec_resourceClaims_source_resourceClaimName & io_k8s_api_core_v1_ReplicationControllerSpec_template_spec_resourceClaims_source_resourceClaimTemplateName)
+
+### Agrupacion de restricciones complejas
+
+En esta parte se agregaran las restricciones "complejas", son largas y contienen varios operadores lógicos o featues involucrados. Se implementan en la función extract_constraints_multiple_conditions(). Esta agrupación se basa en las descripciones con palabras clave: _conditions may not be_, _Details about a waiting_, las restricciones se dividen en diferenctes casos por las palabras clave mencionadas. Asi que cada expresion tendrá una funcionalidad totalemente diferente. En el primer caso se usan patrones para obtener los diferentes valores de los features que se van a usar y el objetivo es definir los posibles valores que un feature no tiene que seleccionar. La descripciones que se analizan son: _"status of the condition, one of True, False, Unknown. Approved, Denied, and Failed conditions may not be \"False\" or \"Unknown\"."_. Siendo _False_ y _Unknown_ los estados que las condiciones de tipo _Approved_, _Denied_ y _Failed_ no pueden escogerse. En el otro caso se agregan los posibles valores de los features manualmente ya que no hay una descripción donde se mencionen, al ser los mismos en las descripciones no hay problema en agregarlos de esa manera. Aquí como en el anterior caso, se basa en definir los features que no se pueden seleccionar o seleccionar en relación con los otros features. En base a la siguiente descripción general: _"ContainerState holds a possible state of container. Only one of its members may be specified. If none of them is specified, the default one is ContainerStateWaiting."_, se dedujo que una de las propiedades del esquema debia de ser seleccionada, y si una era seleccionada las otras no se podían seleccionar. Además de que si ninguna esta seleccionada se deja por defecto _ContainerStateWaiting_. Esto se tradujo a las siguientes representaciones:
+	Exclusividad: Solo un estado a la vez
+	(featureWaiting => !featureRunning & !featureTerminated)
+	& (featureRunning => !featureStateWaiting & !featureStateTerminated)
+	& (featureTerminated => !featureStateWaiting & !featureStateRunning)
+	Valor por defecto: Si ninguno está seleccionado, se asume ContainerStateWaiting
+	!featureRunning & !featureTerminated => featureWaiting
+
+Mediante estos grupos de restricciones se generaron las siguientes:
+En total se generaron 4 restricciones del siguiente grupo:
+
+	(io_k8s_api_certificates_v1_CertificateSigningRequest_status_conditions_type_Approved => !io_k8s_api_certificates_v1_CertificateSigningRequest_status_conditions_status_False & !io_k8s_api_certificates_v1_CertificateSigningRequest_status_conditions_status_Unknown)
+	(io_k8s_api_certificates_v1_CertificateSigningRequest_status_conditions_type_Denied => !io_k8s_api_certificates_v1_CertificateSigningRequest_status_conditions_status_False & !io_k8s_api_certificates_v1_CertificateSigningRequest_status_conditions_status_Unknown)
+	(io_k8s_api_certificates_v1_CertificateSigningRequest_status_conditions_type_Failed => !io_k8s_api_certificates_v1_CertificateSigningRequest_status_conditions_status_False & !io_k8s_api_certificates_v1_CertificateSigningRequest_status_conditions_status_Unknown)
+
+En total se generaron 21 del segundo grupo:
+
+	(io_k8s_api_core_v1_PodList_items_status_containerStatuses_lastState_waiting => !io_k8s_api_core_v1_PodList_items_status_containerStatuses_lastState_running & !io_k8s_api_core_v1_PodList_items_status_containerStatuses_lastState_terminated) & (io_k8s_api_core_v1_PodList_items_status_containerStatuses_lastState_running => !io_k8s_api_core_v1_PodList_items_status_containerStatuses_lastState_waiting & !io_k8s_api_core_v1_PodList_items_status_containerStatuses_lastState_terminated) & (io_k8s_api_core_v1_PodList_items_status_containerStatuses_lastState_terminated => !io_k8s_api_core_v1_PodList_items_status_containerStatuses_lastState_waiting & !io_k8s_api_core_v1_PodList_items_status_containerStatuses_lastState_running)& (!io_k8s_api_core_v1_PodList_items_status_containerStatuses_lastState_running &!io_k8s_api_core_v1_PodList_items_status_containerStatuses_lastState_terminated => io_k8s_api_core_v1_PodList_items_status_containerStatuses_lastState_waiting)
+
+
 ### Agrupación de restricciones $... :
 
 En desarrollo de más patrones y constraints...

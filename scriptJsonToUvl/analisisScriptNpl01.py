@@ -22,6 +22,43 @@ def load_json_features(file_path):
 def convert_word_to_num(word):
     return word_to_num.get(word.lower(), None)
 
+def extract_constraints_multiple_conditions(description, feature_key):
+    """ Función que trata restricciones 'complejas' con varias condiciones lógicas o featues involucrados. Primero se desarrollo una en la que se decían los valores que no debían de ser, por otro lado"""
+
+    conditions_pattern = re.compile(r'\b(Approved|Denied|Failed)\b')
+    type_notbe_pattern = re.compile(r'(?<=conditions may not be\s)\"([A-Za-z]+)\"\s+or\s+\"([A-Za-z]+)\"')
+    
+    uvl_rule = ""
+    feature_without_lastProperty = feature_key.rsplit('_', 1)[0]
+
+    if 'conditions may not be' in description: ## Restriccion que... (4)
+        type_match = type_notbe_pattern.search(description)
+        type01 = type_match.group(1)    
+        type02 = type_match.group(2)
+        types_notbe = f"!{feature_key}_{type01} & !{feature_key}_{type02}"
+        conditions_match = conditions_pattern.findall(description)
+        for condition in conditions_match:
+            print("Valor condition", condition)
+            uvl_rule += f"({feature_without_lastProperty}_type_{condition} => {types_notbe})\n"
+        ##uvl_rule = uvl_rule.strip()
+        """ feature_Approved => not (feature_False or feature_Unknown) ## objetivo
+            feature_Denied => not (feature_False or feature_Unknown)
+            feature_Failed => not (feature_False or feature_Unknown)"""
+    elif 'Details about a waiting' in description: ## Solo se procesara una de las descripciones y se introduciran los otros features estaticamente. Al ser 3 valores y no haber una descrip con estas se agregaran los otros 2 manualmente...
+        ## waiting {default} // feature_key {default} ## Funcion que define el estado de un contenedor con 3 posibles opciones. Solo se puede seleccionar una (21)
+        print("No SE EJECUTA?")
+        container_state01 = f"{feature_without_lastProperty}_running"
+        container_state02 = f"{feature_without_lastProperty}_terminated"
+        uvl_rule += f"({feature_key} => !{container_state01} & !{container_state02})" \
+        f" & ({container_state01} => !{feature_key} & !{container_state02})" \
+        f" & ({container_state02} => !{feature_key} & !{container_state01})"
+        uvl_rule += f"& (!{container_state01} & !{container_state02} => {feature_key})" ### Regla por defecto, si no hay otro seleccionado, se selecciona por defecto waiting..
+
+    if uvl_rule is not None:
+        return uvl_rule.strip() ### Devolver restricciones y eliminar las lineas en blanco
+    else:
+        return "El conjunto esta vacio"
+
 def extract_constraints_primary_or(description, feature_key):
     """ Función que extrae las restricciones de las descripciones que contienen "Exactly one of" en las descripciones generales de los features. Pero en este caso el programa
     esta diseñado para no coger estas descripciones de primer nivel por evitar incongruencias. De ese modo, se realizarán las inserciones de las constraints de manera más especifica
@@ -30,9 +67,18 @@ def extract_constraints_primary_or(description, feature_key):
     uvl_rule = ""
     feature_without_lastProperty = feature_key.rsplit('_', 1)[0]
 
-    if 'non-resource access request' in description:
-        resourceAtr = f"{feature_without_lastProperty}_resourceAttributes"
-        uvl_rule = f"{feature_key} | {resourceAtr}"
+    if 'non-resource access request' in description: ## Exactly one of 
+        resourceAtr01 = f"{feature_without_lastProperty}_resourceAttributes"
+        uvl_rule = f"({feature_key} | {resourceAtr01}) & !({feature_key} & {resourceAtr01})"
+    elif 'succeededIndexes specifies' in description: ## Each rule must have at least one of the
+        resourceAtr02 = f"{feature_without_lastProperty}_succeededCount" ## (9)
+        uvl_rule = f"{feature_key} | {resourceAtr02}"
+    elif 'Represents the requirement on the container' in description: ## Adición de un grupo con una regla "compleja" en la que tiene que haber un feature activo pero no se pueden los 2 a la vez (9)
+        resourceAtr03 = f"{feature_without_lastProperty}_onPodConditions" ## One of onExitCodes and onPodConditions, but not both,
+        uvl_rule = f"({feature_key} | {resourceAtr03}) & !({feature_key} & {resourceAtr03})"
+    elif 'ResourceClaim object in the same namespace as this pod' in description: ## Se convierte y asume que "ClaimSource describes a reference to a ResourceClaim.\n\nExactly one of these fields should be set.", se pasa a feature1 XOR feature2
+        resourceAtr04 = f"{feature_without_lastProperty}_resourceClaimTemplateName" ## ()
+        uvl_rule = f"({feature_key} | {resourceAtr04}) & !({feature_key} & {resourceAtr04})"
 
     if uvl_rule is not None:
         return uvl_rule
@@ -40,17 +86,18 @@ def extract_constraints_primary_or(description, feature_key):
         return "El conjunto esta vacio"
 
 def extract_constraints_least_one(description, feature_key):  ### PENDIENTE AGREGAR RESTRICT: at least one of
-    """ Función que extrae las restricciones de las descripciones que contienen "Exactly one of, a least one of", basadas en la constraint de que al menos un feature debe de ser seleccionado """
-    # Expresión regular para "Requires (X, Y) when feature is up" ## Se ha definido el orden de seleccion del feature o no por las expresiones "non-empty, empty. Si hubiese variacion se tendria en cuenta para la selección"
-    least_one_pattern01 = re.compile(r'(?<=a least one of\s)(\w+)\s+or\s+(\w+)', re.IGNORECASE) #  Expresión regular para obtener todos los pares (X,Y) de las descripcciones con "If the operator is"
-    exactly_least_one_pattern02 = re.compile(r'(?<=Exactly one of\s)`(\w+)`\s+or\s+`(\w+)`', re.IGNORECASE) #  Expresión regular para obtener todos los pares (X,Y) de las descripcciones con "If the operator is"
-    
-    uvl_rule = "" ### arreglar el `` = > String
+    """ Función que extrae las restricciones de las descripciones que contienen "Exactly one of, a least one of, at least one of", basadas en la constraint de que al menos un feature debe de ser seleccionado """
+    least_one_pattern01 = re.compile(r'(?<=a least one of\s)(\w+)\s+or\s+(\w+)', re.IGNORECASE) #  Expresión regular para obtener los 2 valores precedidos por "a least one of" y separados por un "or"
+    exactly_least_one_pattern02 = re.compile(r'(?<=Exactly one of\s)`(\w+)`\s+or\s+`(\w+)`', re.IGNORECASE) #  Expresión regular para los valores precedidos por "Exactly..." y que se encuentren bajo comillas invertidas separados por un "or"
+    at_least_one_pattern01 = re.compile(r'(?<=At least one of\s)`(\w+)`\s+and\s+`(\w+)`', re.IGNORECASE ) #  Expresión regular para los valores precedidos por "At..." y que se encuentran como en el anterior, bajo comillas invertidas y separadas por un "and"
+
+    uvl_rule = "" ### arreglar el `` = > String: Arreglado
 
     feature_without_lastProperty = feature_key.rsplit('_', 1)[0]
     a_least_match01 = least_one_pattern01.search(description)
     exactly_match01 = exactly_least_one_pattern02.search(description)
-    #print("Comprobacion02", exactly_match01)
+    at_least_match01 = at_least_one_pattern01.search(description)
+
     if a_least_match01:
         value01 = a_least_match01.group(1)
         value02 = a_least_match01.group(2)
@@ -58,9 +105,14 @@ def extract_constraints_least_one(description, feature_key):  ### PENDIENTE AGRE
         uvl_rule = f"{feature_without_lastProperty}_{value01} | {feature_without_lastProperty}_{value02}"
     elif exactly_match01:
         print("Comprobacion02", exactly_match01)
-
         value01 = exactly_match01.group(1)
         value02 = exactly_match01.group(2)
+
+        uvl_rule = f"{feature_without_lastProperty}_{value01} | {feature_without_lastProperty}_{value02}"
+    elif at_least_match01:
+        value01 = at_least_match01.group(1)
+        value02 = at_least_match01.group(2)
+
         uvl_rule = f"{feature_without_lastProperty}_{value01} | {feature_without_lastProperty}_{value02}"
 
     if uvl_rule is not None:
@@ -379,11 +431,11 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
     #min_bound01, is_other_number = extract_min_max(description)
     # Ajustar los patrones para generar sintaxis UVL válida según el tipo de datos
     if type_data == "Boolean" or type_data == "boolean":
-        if any(tok.lemma_ == "slice" and tok.text in description for tok in doc):
-            print("")
+        #if any(tok.lemma_ == "slice" and tok.text in description for tok in doc):
+        #    print("")
         #elif "empty" in description: 
         #    uvl_rule = f"!{feature_key}"
-        elif "Number must be in the range" in description:
+        if "Number must be in the range" in description:
             uvl_rule = f"{feature_key} => ({feature_key}_asInteger > 1 & {feature_key}_asInteger < 65535) | ({feature_key}_asString == 'IANA_SVC_NAME')" ## Ver como añadir ese formato
         elif "required when" in description or 'Required when' in description:
             const = extract_constraints_required_when(description, feature_key)
@@ -402,11 +454,16 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
         elif "If the operator is" in description: ## add in description
             constraint = extract_constraints_operator(description, feature_key)
             uvl_rule = constraint
-        elif "a least one of" in description or "Exactly one of" in description:
-            uvl_rule = extract_constraints_least_one(description, feature_key)
-        elif "resource access request" in description:
+        elif "a least one of" in description or "Exactly one of" in description or "At least one of" in description:
+            constraint = extract_constraints_least_one(description, feature_key)
+            print("CONSTRAINT ES ", constraint)
+            uvl_rule = constraint
+        elif "resource access request" in description or "succeededIndexes specifies" in description or "Represents the requirement on the container" in description or "ResourceClaim object in the same namespace as this pod" in description:
             uvl_rule = extract_constraints_primary_or(description, feature_key)
-    
+        elif "conditions may not be" in description or "Details about a waiting" in description:
+            constraint = extract_constraints_multiple_conditions(description, feature_key)
+            print("FUNKA BIEN?")
+            uvl_rule = constraint
     elif type_data == "Integer" or type_data == "integer":
         if is_port_number:
             # Si es un número de puerto, asegurarse de usar los límites de puerto
@@ -425,10 +482,14 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
         #    max_bound = 1800 if max_bound is None else max_bound
  
     elif type_data == "String" or type_data == "string":
-        if "APIVersion" in description:
-            uvl_rule = f"{feature_key} == 'v1' | {feature_key} == 'v1beta1' | {feature_key} == 'v2' | {feature_key} == 'v1alpha1'"
-        elif "RFC 3339" in description:
-            uvl_rule = f"!{feature_key}"
+        if 'conditions may not be' in description:
+            constraint = extract_constraints_multiple_conditions(description, feature_key)
+            print("FUNKA BIEN?")
+            uvl_rule = constraint
+        #if "APIVersion" in description:
+        #    uvl_rule = f"{feature_key} == 'v1' | {feature_key} == 'v1beta1' | {feature_key} == 'v2' | {feature_key} == 'v1alpha1'"
+        #elif "RFC 3339" in description:
+        #    uvl_rule = f"!{feature_key}"
         #elif "Exactly one of" in description:
         #    uvl_rule = extract_constraints_least_one(description, feature_key)
         #elif "required when" in description.lower():

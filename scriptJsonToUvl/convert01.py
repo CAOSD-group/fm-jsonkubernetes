@@ -6,6 +6,7 @@ from collections import deque
 
 # Importar el procesador de restricciones
 #from restrictions_processor import process_restrictions
+##global feature_aux_original_type
 
 class SchemaProcessor:
     def __init__(self, definitions):
@@ -17,6 +18,7 @@ class SchemaProcessor:
         self.constraints = []  # Lista para almacenar las dependencias como constraints
         #Prueba pila para las referencias ciclicas
         #self.stact_refs = []
+        self.feature_aux_original_type = ""
         # Se inicializa un diccionario para almacenar descripciones por grupo
         self.descriptions = {
             'values': [], 
@@ -29,14 +31,16 @@ class SchemaProcessor:
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
         self.patterns = {
             'values': re.compile(r'^\b$', re.IGNORECASE), # values are|valid|supported|acceptable|can be
-            'restrictions': re.compile(r'a least one of|Exactly one of|resource access request|at least one of', re.IGNORECASE),### If the operator is|must be between|   # \. Required when|required when scope  ## the currently supported values are allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
+            'restrictions': re.compile(r'succeededIndexes specifies|Represents the requirement on the container|conditions may not be|ResourceClaim object in the same namespace as this pod|Details about a waiting', re.IGNORECASE),### If the operator is|must be between|   # \. Required when|required when scope  ## the currently supported values are allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
             'dependencies': re.compile(r'^\b$', re.IGNORECASE) ## (requires|if[\s\S]*?only if|only if) # depends on ningun caso especial, quitar relies on: no hay casos, contingent upon: igual = related to
         }
+        ####  At least one of|a least one of|Exactly one of|resource access request|
         ###  |Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope
         # Lista de parte de nombres de features que se altera el tipo de dato a Boolean para la compatibilidad con las constraints y uvl. ### Los que se cambian para añadir un nivel mas que represente el String que se omite al cambiar el tipo a Boolean
         self.boolean_keywords = ['AppArmorProfile_localhostProfile', 'appArmorProfile_localhostProfile', 'seccompProfile_localhostProfile', 'SeccompProfile_localhostProfile', 'IngressClassList_items_spec_parameters_namespace',
-                        'IngressClassParametersReference_namespace', 'IngressClassSpec_parameters_namespace',  'IngressClass_spec_parameters_namespace','_tolerations_value','_Toleration_value', '_clientConfig_url', '_WebhookClientConfig_url']  # Lista para modificar a otros posibles tipos de los features (Cambiado del original por la compatibilidad) ##
-        
+                        'IngressClassParametersReference_namespace', 'IngressClassSpec_parameters_namespace',  'IngressClass_spec_parameters_namespace','_tolerations_value','_Toleration_value', '_clientConfig_url', '_WebhookClientConfig_url',
+                        '_succeededIndexes', '_succeededCount', 'source_resourceClaimName', '_ClaimSource_resourceClaimName', '_resourceClaimTemplateName']  # Lista para modificar a otros posibles tipos de los features (Cambiado del original por la compatibilidad) ##
+        #### probar porque no se cambian cosas de string en las descripciones pero si en el modelo:, 'conditions_status'
         # Lista de expresiones regulares para casos en que la lista anterior necesite de más precisión para solo alterar el tipo en los parametros requeridos
         self.boolean_keywords_regex = [r'.*_paramRef_name$', r'.*_ParamRef_name$'] ## , r'.*_paramRef_selector$', r'.*_ParamRef_selector$'
 
@@ -374,7 +378,9 @@ class SchemaProcessor:
 
     def update_type_data(self, full_name, feature_type_data): ## sino probar con full_name
     # Cambia el tipo de dato a 'Boolean' si el nombre del feature o sub_feature contiene algún fragmento en boolean_keywords
-        if any(keyword in full_name for keyword in self.boolean_keywords) and not full_name.endswith('nameStr'): ### and not '_name' in full_name
+        if any(keyword in full_name for keyword in self.boolean_keywords) and not full_name.endswith('nameStr') and not full_name.endswith('valueInt'): ### and not '_name' in full_name
+            self.feature_aux_original_type = feature_type_data
+            print ("Tipo de dato original: ", self.feature_aux_original_type)
             feature_type_data = 'Boolean'
             #return 'Boolean'
 
@@ -604,14 +610,24 @@ class SchemaProcessor:
                 
                 if any(keyword in full_name for keyword in self.boolean_keywords): ## and not full_name.endswith('_name')
                 #return 'Boolean'
-                    feature['sub_features'].append({
+                    print("El tipo de dato es: ", self.feature_aux_original_type)
+    
+                    if self.feature_aux_original_type == 'String' or self.feature_aux_original_type == 'string': ## Se comprueba con el valor original del feature. Para añadir el sub-feature como String o Integer
+                        feature['sub_features'].append({
                         'name': f"{full_name}_nameStr",
                         'type': 'mandatory', # Todos los valores suelen ser alternatives (Elección de solo uno)
                         'description': f"Added String mandatory for changing booleans of boolean_keywords: String *_name",
                         'sub_features': [],
                         'type_data': 'String'  # String por defecto: se necesita un feature abierto para poder introducir un campo de texto
                     })
-                
+                    elif self.feature_aux_original_type == 'Integer' or self.feature_aux_original_type == 'integer':
+                        feature['sub_features'].append({
+                        'name': f"{full_name}_valueInt",
+                        'type': 'mandatory', # Todos los valores suelen ser alternatives (Elección de solo uno)
+                        'description': f"Added Integer mandatory for changing booleans of boolean_keywords: Integer *_name",
+                        'sub_features': [],
+                        'type_data': 'Integer'  # String por defecto: se necesita un feature abierto para poder introducir un campo de texto
+                    })
 
                 # Procesar propiedades anidadas
                 if 'properties' in details:

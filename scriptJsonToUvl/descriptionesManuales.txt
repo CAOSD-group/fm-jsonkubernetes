@@ -858,22 +858,22 @@ Hecho--
 
 aparte::
 
-Haciendo--
+Hecho--
 
 "description": "auditAnnotations contains CEL expressions which are used to produce audit annotations for the audit event of the API request. validations and auditAnnotations may not both be empty; a least one of validations or auditAnnotations is required.",
 restrict:
 validations and auditAnnotations may not both be empty; a least one of validations or auditAnnotations is required
 feature_validations | feature_auditAnnotations \ feature_validations & feature_auditAnnotations 
 
-restric en feature principal:
+restric en feature principal: ## Para integrar el uso de la siguiente restrict se deberia de usar la misma metodologia de añadir un sub-nivel mas al Integer y convertir ese feature a Boolean
       "description": "SelfSubjectAccessReviewSpec is a description of the access request.  Exactly one of ResourceAuthorizationAttributes and NonResourceAuthorizationAttributes must be set",
 
-      "description": "SubjectAccessReviewSpec is a description of the access request.  Exactly one of ResourceAuthorizationAttributes and NonResourceAuthorizationAttributes must be set",
-          "description": "url gives the location of the webhook, in standard URL form (`scheme://host:port/path`). Exactly one of `url` or `service` must be specified.\n\nThe `host` should not refer to a service running in the cluster; use the `service` field instead. The host might be resolved via external DNS in some apiservers (e.g., `kube-apiserver` cannot resolve in-cluster DNS as that would be a layering violation). `host` may also be an IP address.\n\nPlease note that using `localhost` or `127.0.0.1` as a `host` is risky unless you take great care to run this webhook on all hosts which run an apiserver which might need to make calls to this webhook. Such installs are likely to be non-portable, i.e., not easy to turn up in a new cluster.\n\nThe scheme must be \"https\"; the URL must begin with \"https://\".\n\nA path is optional, and if present may be any string permissible in a URL. You may use the path to pass an arbitrary string to the webhook, for example, a cluster identifier.\n\nAttempting to use a user or basic auth e.g. \"user:password@\" is not allowed. Fragments (\"#...\") and query parameters (\"?...\") are not allowed, either.",
+      -- (metodo con sus nombres)"description": "SubjectAccessReviewSpec is a description of the access request.  Exactly one of ResourceAuthorizationAttributes and NonResourceAuthorizationAttributes must be set",
+      --"description": "url gives the location of the webhook, in standard URL form (`scheme://host:port/path`). Exactly one of `url` or `service` must be specified.\n\nThe `host` should not refer to a service running in the cluster; use the `service` field instead. The host might be resolved via external DNS in some apiservers (e.g., `kube-apiserver` cannot resolve in-cluster DNS as that would be a layering violation). `host` may also be an IP address.\n\nPlease note that using `localhost` or `127.0.0.1` as a `host` is risky unless you take great care to run this webhook on all hosts which run an apiserver which might need to make calls to this webhook. Such installs are likely to be non-portable, i.e., not easy to turn up in a new cluster.\n\nThe scheme must be \"https\"; the URL must begin with \"https://\".\n\nA path is optional, and if present may be any string permissible in a URL. You may use the path to pass an arbitrary string to the webhook, for example, a cluster identifier.\n\nAttempting to use a user or basic auth e.g. \"user:password@\" is not allowed. Fragments (\"#...\") and query parameters (\"?...\") are not allowed, either.",
 
       "description": "SuccessPolicyRule describes rule for declaring a Job as succeeded. Each rule must have at least one of the \"succeededIndexes\" or \"succeededCount\" specified.",
-      "properties": {
-        "succeededCount": {
+      "properties": { ## No se si añadir una restric mas compleja en el caso de que los 2 esten up... => Solo se usa succeededIndexes en ese caso?
+        "succeededCount": { 
           "description": "succeededCount specifies the minimal required size of the actual set of the succeeded indexes for the Job. When succeededCount is used along with succeededIndexes, the check is constrained only to the set of indexes specified by succeededIndexes. For example, given that succeededIndexes is \"1-4\", succeededCount is \"3\", and completed indexes are \"1\", \"3\", and \"5\", the Job isn't declared as succeeded because only \"1\" and \"3\" indexes are considered in that rules. When this field is null, this doesn't default to any value and is never evaluated at any time. When specified it needs to be a positive integer.",
           "format": "int32",
           "type": "integer"
@@ -883,28 +883,35 @@ restric en feature principal:
           "type": "string"
         }
       },
+A partir de esta restric se han quedado 2 descripciones sin obtener una regla => 2 minus at least of...
+      --"description": "`resourceRules` is a slice of ResourcePolicyRules that identify matching requests according to their verb and the target resource. At least one of `resourceRules` and `nonResourceRules` has to be non-empty.",
+Hecho--
 
-      "description": "`resourceRules` is a slice of ResourcePolicyRules that identify matching requests according to their verb and the target resource. At least one of `resourceRules` and `nonResourceRules` has to be non-empty.",
 
-
-Restric compleja:
+Restric compleja: -  PENDIENTE
       "description": "The latest available observations of an object's current state. When a Job fails, one of the conditions will have type \"Failed\" and status true. When a Job is suspended, one of the conditions will have type \"Suspended\" and status true; when the Job is resumed, the status of this condition will become false. When a Job is completed, one of the conditions will have type \"Complete\" and status true.\n\nA job is considered finished when it is in a terminal condition, either \"Complete\" or \"Failed\". A Job cannot have both the \"Complete\" and \"Failed\" conditions. Additionally, it cannot be in the \"Complete\" and \"FailureTarget\" conditions. The \"Complete\", \"Failed\" and \"FailureTarget\" conditions cannot be disabled.\n\nMore info: https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/",
 
 Otra:      
-      "description": "PodFailurePolicyRule describes how a pod failure is handled when the requirements are met. One of onExitCodes and onPodConditions, but not both, can be used in each rule.",
+      -- Hecho "description": "PodFailurePolicyRule describes how a pod failure is handled when the requirements are met. One of onExitCodes and onPodConditions, but not both, can be used in each rule.",
 
 
-
+-- Hecho
         "status": {
           "description": "status of the condition, one of True, False, Unknown. Approved, Denied, and Failed conditions may not be \"False\" or \"Unknown\".",
           "type": "string"
-        },
-        "type": {
+        }, regla: feature_Approved => !feature_False | !feature_Unknown      feature_Denied => !feature_False | !feature_Unknown      feature_Failed => !feature_False | !feature_Unknown
+        Objetivo:
+        feature_Approved => not (feature_False or feature_Unknown)
+        feature_Denied => not (feature_False or feature_Unknown)
+        feature_Failed => not (feature_False or feature_Unknown)
+
+        "type": { 
           "description": "type of the condition. Known conditions are \"Approved\", \"Denied\", and \"Failed\".\n\nAn \"Approved\" condition is added via the /approval subresource, indicating the request was approved and should be issued by the signer.\n\nA \"Denied\" condition is added via the /approval subresource, indicating the request was denied and should not be issued by the signer.\n\nA \"Failed\" condition is added via the /status subresource, indicating the signer failed to issue the certificate.\n\nApproved and Denied conditions are mutually exclusive. Approved, Denied, and Failed conditions cannot be removed once added.\n\nOnly one condition of a given type is allowed.",
           "type": "string"
         }
+-- Hecho
 
-
+-- Hecho
       "io.k8s.api.core.v1.ClaimSource": {
       "description": "ClaimSource describes a reference to a ResourceClaim.\n\nExactly one of these fields should be set.  Consumers of this type must treat an empty object as if it has an unknown value.",
       "properties": {
@@ -920,12 +927,23 @@ Otra:
       "type": "object"
     },
 
-        "imagePullPolicy": {
-          "description": "Image pull policy. One of Always, Never, IfNotPresent. Defaults to Always if :latest tag is specified, or IfNotPresent otherwise. Cannot be updated. More info: https://kubernetes.io/docs/concepts/containers/images#updating-images",
-          "type": "string"
-        },
-    
+      "imagePullPolicy": { 3 valores ya añadidos (Restric?)
+        "description": "Image pull policy. One of Always, Never, IfNotPresent. Defaults to Always if :latest tag is specified, or IfNotPresent otherwise. Cannot be updated. More info: https://kubernetes.io/docs/concepts/containers/images#updating-images",
+        "type": "string"
+      },
+-- Hecho
+
     Restricciones multiples de que solo uno de los 3 puede ser seleccionado
+
+-- Haciendo
+1º Restric compleja, objetivo:
+# Exclusividad: Solo un estado a la vez
+(featureWaiting => !featureRunning & !featureTerminated)
+& (featureRunning => !featureStateWaiting & !featureStateTerminated)
+& (featureTerminated => !featureStateWaiting & !featureStateRunning)
+
+# Valor por defecto: Si ninguno está seleccionado, se asume ContainerStateWaiting
+!ContainerStateRunning & !ContainerStateTerminated => ContainerStateWaiting
 
     "io.k8s.api.core.v1.ContainerState": {
       "description": "ContainerState holds a possible state of container. Only one of its members may be specified. If none of them is specified, the default one is ContainerStateWaiting.",
