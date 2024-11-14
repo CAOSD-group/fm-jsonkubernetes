@@ -935,7 +935,7 @@ Otra:
 
     Restricciones multiples de que solo uno de los 3 puede ser seleccionado
 
--- Haciendo
+-- Hecho
 1º Restric compleja, objetivo:
 # Exclusividad: Solo un estado a la vez
 (featureWaiting => !featureRunning & !featureTerminated)
@@ -946,13 +946,25 @@ Otra:
 !ContainerStateRunning & !ContainerStateTerminated => ContainerStateWaiting
 
     "io.k8s.api.core.v1.ContainerState": {
-      "description": "ContainerState holds a possible state of container. Only one of its members may be specified. If none of them is specified, the default one is ContainerStateWaiting.",
+        "description": "ContainerState holds a possible state of container. Only one of its members may be specified. If none of them is specified, the default one is ContainerStateWaiting.",
+-- Hecho
 
-Creo que no se puede aplicar una regla a la siguiente:
+-- Hecho -(pendiente comprobar...)
+Creo que no se puede aplicar una regla a la siguiente: // Se puede, hay un should be considered deprecated
     "io.k8s.api.core.v1.FlockerVolumeSource": {
       "description": "Represents a Flocker volume mounted by the Flocker agent. One and only one of datasetName and datasetUUID should be set. Flocker volumes do not support ownership management or SELinux relabeling.",
+-- Hecho (falta comprobar la sintaxis en el lab)
+## Hay un deprecated mostrado por compatibilidad => no se selecciona
+Objetivo:
+(feature_exec | feature_httpGet | feature_sleep) & (!feature_exec & !feature_httpGet & !feature_sleep) & !feature_tcpScket
+!feature_tcpScket: deprecated
+Nuevo obj:
+(feature_exec | feature_httpGet | feature_sleep) &
+!(feature_exec & feature_httpGet) &
+!(feature_exec & feature_sleep) &
+!(feature_httpGet & feature_sleep) &
+!feature_tcpSocket
 
-## Hay un deprecated mostrado por compatibilidad
     "io.k8s.api.core.v1.LifecycleHandler": {
       "description": "LifecycleHandler defines a specific action that should be taken in a lifecycle hook. One and only one of the fields, except TCPSocket must be specified.",
       "properties": {
@@ -973,7 +985,9 @@ Creo que no se puede aplicar una regla a la siguiente:
           "description": "Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept for the backward compatibility. There are no validation of this field and lifecycle hooks will fail in runtime when tcp handler is specified."
         }
       },
-
+-- Hecho
+**Revisar los Deprecated.**
+-- Haciendo
         "externalTrafficPolicy": {
           "description": "externalTrafficPolicy describes how nodes distribute service traffic they receive on one of the Service's \"externally-facing\" addresses (NodePorts, ExternalIPs, and LoadBalancer IPs). If set to \"Local\", the proxy will configure the service in a way that assumes that external load balancers will take care of balancing the service traffic between nodes, and so each node will deliver traffic only to the node-local endpoints of the service, without masquerading the client source IP. (Traffic mistakenly sent to a node with no endpoints will be dropped.) The default value, \"Cluster\", uses the standard behavior of routing to all endpoints evenly (possibly modified by topology and other features). Note that traffic sent to an External IP or LoadBalancer IP from within the cluster will always get \"Cluster\" semantics, but clients sending to a NodePort from within the cluster may need to take traffic policy into account when picking a node.",
           "type": "string"
@@ -991,12 +1005,13 @@ Creo que no se puede aplicar una regla a la siguiente:
             "type": "string"
         },
 
+-- Haciendo // Pendiente comprobar si ya esta hecha
         "resourceRules": {
           "description": "`resourceRules` is a slice of ResourcePolicyRules that identify matching requests according to their verb and the target resource. At least one of `resourceRules` and `nonResourceRules` has to be non-empty.",
           "items": {
             "$ref": "#/definitions/io.k8s.api.flowcontrol.v1.ResourcePolicyRule"
           },
-
+-- Probando
     "io.k8s.api.flowcontrol.v1.Subject": {
       "description": "Subject matches the originator of a request, as identified by the request authentication system. There are three ways of matching an originator; by user, group, or service account.",
       "properties": {

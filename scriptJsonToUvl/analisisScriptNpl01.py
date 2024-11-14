@@ -27,7 +27,7 @@ def extract_constraints_multiple_conditions(description, feature_key):
 
     conditions_pattern = re.compile(r'\b(Approved|Denied|Failed)\b')
     type_notbe_pattern = re.compile(r'(?<=conditions may not be\s)\"([A-Za-z]+)\"\s+or\s+\"([A-Za-z]+)\"')
-    
+
     uvl_rule = ""
     feature_without_lastProperty = feature_key.rsplit('_', 1)[0]
 
@@ -53,7 +53,22 @@ def extract_constraints_multiple_conditions(description, feature_key):
         f" & ({container_state01} => !{feature_key} & !{container_state02})" \
         f" & ({container_state02} => !{feature_key} & !{container_state01})"
         uvl_rule += f"& (!{container_state01} & !{container_state02} => {feature_key})" ### Regla por defecto, si no hay otro seleccionado, se selecciona por defecto waiting..
-
+    elif 'Sleep represents' in description: ## Restricciones sin patron, no viene definido en las descr de los sub-features involucrados (175)
+        """ Nuevo grupo basado en la descrip: sin patron, descripcion principal: lifecycleHandler defines a specific action that should be taken in a lifecycle hook. One and only one of the fields, except TCPSocket must be specified. """
+        action_lifecycle_exec = f"{feature_without_lastProperty}_exec"
+        action_lifecycle_httpGet =f"{feature_without_lastProperty}_httpGet"
+        action_lifecycle_tcpSocket_deprecated = f"{feature_without_lastProperty}_tcpSocket"
+        
+        uvl_rule += f"({action_lifecycle_exec} | {action_lifecycle_httpGet} | {feature_key})" \
+        f" & !({action_lifecycle_exec} & {action_lifecycle_httpGet})" \
+        f" & !({action_lifecycle_exec} & {feature_key})" \
+        f" & !({action_lifecycle_httpGet} & {feature_key})" \
+        f" & !{action_lifecycle_tcpSocket_deprecated}"
+        """(feature_exec | feature_httpGet | feature_sleep) &
+        !(feature_exec & feature_httpGet) &
+        !(feature_exec & feature_sleep) &
+        !(feature_httpGet & feature_sleep) &
+        !feature_tcpSocket"""
     if uvl_rule is not None:
         return uvl_rule.strip() ### Devolver restricciones y eliminar las lineas en blanco
     else:
@@ -79,17 +94,20 @@ def extract_constraints_primary_or(description, feature_key):
     elif 'ResourceClaim object in the same namespace as this pod' in description: ## Se convierte y asume que "ClaimSource describes a reference to a ResourceClaim.\n\nExactly one of these fields should be set.", se pasa a feature1 XOR feature2
         resourceAtr04 = f"{feature_without_lastProperty}_resourceClaimTemplateName" ## ()
         uvl_rule = f"({feature_key} | {resourceAtr04}) & !({feature_key} & {resourceAtr04})"
+    elif 'datasetUUID is' in description: ## Represents a Flocker volume mounted by the Flocker agent. One and only one of datasetName and datasetUUID should be set. (37)
+        flocker_volume_datasetName = f"{feature_without_lastProperty}_datasetName"
+        uvl_rule = f"({feature_key} | {flocker_volume_datasetName}) & !({feature_key} & {flocker_volume_datasetName})"
 
     if uvl_rule is not None:
         return uvl_rule
     else:
         return "El conjunto esta vacio"
 
-def extract_constraints_least_one(description, feature_key):  ### PENDIENTE AGREGAR RESTRICT: at least one of
+def extract_constraints_least_one(description, feature_key):
     """ Función que extrae las restricciones de las descripciones que contienen "Exactly one of, a least one of, at least one of", basadas en la constraint de que al menos un feature debe de ser seleccionado """
     least_one_pattern01 = re.compile(r'(?<=a least one of\s)(\w+)\s+or\s+(\w+)', re.IGNORECASE) #  Expresión regular para obtener los 2 valores precedidos por "a least one of" y separados por un "or"
     exactly_least_one_pattern02 = re.compile(r'(?<=Exactly one of\s)`(\w+)`\s+or\s+`(\w+)`', re.IGNORECASE) #  Expresión regular para los valores precedidos por "Exactly..." y que se encuentren bajo comillas invertidas separados por un "or"
-    at_least_one_pattern01 = re.compile(r'(?<=At least one of\s)`(\w+)`\s+and\s+`(\w+)`', re.IGNORECASE ) #  Expresión regular para los valores precedidos por "At..." y que se encuentran como en el anterior, bajo comillas invertidas y separadas por un "and"
+    at_least_one_pattern01 = re.compile(r'(?<=At least one of\s)`(\w+)`\s+and\s+`(\w+)`', re.IGNORECASE) #  Expresión regular para los valores precedidos por "At..." y que se encuentran como en el anterior, bajo comillas invertidas y separadas por un "and"
 
     uvl_rule = "" ### arreglar el `` = > String: Arreglado
 
@@ -108,7 +126,7 @@ def extract_constraints_least_one(description, feature_key):  ### PENDIENTE AGRE
         value01 = exactly_match01.group(1)
         value02 = exactly_match01.group(2)
 
-        uvl_rule = f"{feature_without_lastProperty}_{value01} | {feature_without_lastProperty}_{value02}"
+        uvl_rule = f"){feature_without_lastProperty}_{value01} | {feature_without_lastProperty}_{value02}) & (!{feature_without_lastProperty}_{value01} & !{feature_without_lastProperty}_{value02})"
     elif at_least_match01:
         value01 = at_least_match01.group(1)
         value02 = at_least_match01.group(2)
@@ -458,9 +476,9 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
             constraint = extract_constraints_least_one(description, feature_key)
             print("CONSTRAINT ES ", constraint)
             uvl_rule = constraint
-        elif "resource access request" in description or "succeededIndexes specifies" in description or "Represents the requirement on the container" in description or "ResourceClaim object in the same namespace as this pod" in description:
+        elif "resource access request" in description or "succeededIndexes specifies" in description or "Represents the requirement on the container" in description or "ResourceClaim object in the same namespace as this pod" in description or "datasetUUID is" in description:
             uvl_rule = extract_constraints_primary_or(description, feature_key)
-        elif "conditions may not be" in description or "Details about a waiting" in description:
+        elif "conditions may not be" in description or "Details about a waiting" in description or "Sleep represents" in description:
             constraint = extract_constraints_multiple_conditions(description, feature_key)
             print("FUNKA BIEN?")
             uvl_rule = constraint
