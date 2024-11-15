@@ -31,11 +31,11 @@ class SchemaProcessor:
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
         self.patterns = {
             'values': re.compile(r'^\b$', re.IGNORECASE), # values are|valid|supported|acceptable|can be
-            'restrictions': re.compile(r'Details about a waiting|Sleep represents|datasetUUID is|identify matching requests according', re.IGNORECASE),### If the operator is|must be between|   # \. Required when|required when scope  ## the currently supported values are allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
+            'restrictions': re.compile(r'indicates which one of|may be non-empty only if', re.IGNORECASE),### If the operator is|must be between|   # \. Required when|required when scope  ## the currently supported values are allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
             'dependencies': re.compile(r'^\b$', re.IGNORECASE) ## (requires|if[\s\S]*?only if|only if) # depends on ningun caso especial, quitar relies on: no hay casos, contingent upon: igual = related to
         }
-        ##### succeededIndexes specifies|Represents the requirement on the container|conditions may not be|ResourceClaim object in the same namespace as this pod|
-        ####  At least one of|a least one of|Exactly one of|resource access request|
+        ##### Details about a waiting|Sleep represents|datasetUUID is|succeededIndexes specifies|Represents the requirement on the container|conditions may not be|ResourceClaim object in the same namespace as this pod|
+        #### \. At least one of||a least one of|Exactly one of|resource access request|
         ###  |Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope
         # Lista de parte de nombres de features que se altera el tipo de dato a Boolean para la compatibilidad con las constraints y uvl. ### Los que se cambian para añadir un nivel mas que represente el String que se omite al cambiar el tipo a Boolean
         self.boolean_keywords = ['AppArmorProfile_localhostProfile', 'appArmorProfile_localhostProfile', 'seccompProfile_localhostProfile', 'SeccompProfile_localhostProfile', 'IngressClassList_items_spec_parameters_namespace',
@@ -106,7 +106,7 @@ class SchemaProcessor:
         """Extrae valores que están entre comillas u otros delimitadores, solo si se encuentran ciertas palabras clave"""
         palabras_patrones_minus = ['values are', 'possible values are', 'following states', '. must be', 'implicitly inferred to be', 'the currently supported reasons are', '. can be', 'it can be in any of following states',
                                    'valid options are', 'may be set to', 'a value of `', 'the supported types are', 'the currently supported values are', 'valid operators are', 'status of the condition,', 'status of the condition.',
-                                    'type of the condition.', 'status of the condition (', 'node address type', 'should be one of', 'will be one of'] ## , 'condition. known conditions are' # Probando para añadir 2 en vez de solo 1 descr
+                                    'type of the condition.', 'status of the condition (', 'node address type', 'should be one of', 'will be one of', 'means that requests that', 'only valid values'] ## , 'condition. known conditions are' # Probando para añadir 2 en vez de solo 1 descr
         ## . must be provoca muchas agregaciones de un solo valor ya que hay varias constraints que coinciden con esa expresion... definir mejor en un futuro si son necesarias los valores unitarios
         
         palabras_patrones_may = ['Supports', 'Type of job condition', 'Status of the condition for', 'Type of condition', '. One of'] ## 'values are', ## Type pendiente de sumar Healthy
@@ -160,8 +160,8 @@ class SchemaProcessor:
             re.compile(r'(?<=status of the condition \()([a-zA-Z\s,]+)(?=\))'), ## caso unico de valores (1 descr): (True, False, Unknown), expr: 'status of the condition (' (1)
             re.compile(r'(?<=Node address type, one of\s)([a-zA-Z\s,]+)(?=\.)'), ## Patron para una  descripcion: Hostname, ExternalIP or InternalIP 'node address type' (1)
             re.compile(r'(?<=. One of\s)([a-zA-Z\s,]+)(?=\.)'), ## Patron para una  descripcion: [Always, Never, IfNotPresent], Never, PreemptLowerPriority, [Always, OnFailure, Never], \"Success\" or \"Failure\" '. One of' (6)
-            ## Expresiones agregadas directamente por patrones genericos "[$value]":... 'should be one of', 'will be one of': \"ContainerResource\", \"External\", \"Object\", \"Pods\" or \"Resource\"
             
+            ## Expresiones agregadas directamente por patrones genericos "[$value]":... 'should be one of', 'will be one of': \"ContainerResource\", \"External\", \"Object\", \"Pods\" or \"Resource\", 'only valid values': 'Apply' and 'Update'
             ##. One of
             ## Node address type, one of 
             ## status of the condition (

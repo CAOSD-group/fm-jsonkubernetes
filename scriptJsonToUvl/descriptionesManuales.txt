@@ -1005,14 +1005,18 @@ Nuevo obj:
             "type": "string"
         },
 
--- Haciendo // Pendiente comprobar si ya esta hecha
+-- Hecho // ya estaba hecha
         "resourceRules": {
           "description": "`resourceRules` is a slice of ResourcePolicyRules that identify matching requests according to their verb and the target resource. At least one of `resourceRules` and `nonResourceRules` has to be non-empty.",
           "items": {
             "$ref": "#/definitions/io.k8s.api.flowcontrol.v1.ResourcePolicyRule"
           },
--- Probando
-    "io.k8s.api.flowcontrol.v1.Subject": {
+
+-- Hecho
+Objetivo restric:
+feature_kind == "Group" => feature_group | feature_kind == "ServiceAccount" => feature_serviceAccount | feature_kind == "User" => feature_user 
+& !(feature_group & feature_serviceAccount) & !(feature_group & feature_user) & !(feature_serviceAccount & feature_user)
+    "io.k8s.api.flowcontrol.v1.Subject": { ## Se podria añadir manualmente los valores posibles de kind {"Group","ServiceAccount","User"} pero lo hare direc con string por si hay algun valor mas que pueda haber
       "description": "Subject matches the originator of a request, as identified by the request authentication system. There are three ways of matching an originator; by user, group, or service account.",
       "properties": {
         "group": {
@@ -1045,24 +1049,7 @@ Nuevo obj:
             "user": "User"
           }
         }
-
-      "properties": {
-        "nonResourceRules": {
-          "description": "`nonResourceRules` is a list of NonResourcePolicyRules that identify matching requests according to their verb and the target non-resource URL.",
-          "items": {
-            "$ref": "#/definitions/io.k8s.api.flowcontrol.v1beta3.NonResourcePolicyRule"
-          },
-          "type": "array",
-          "x-kubernetes-list-type": "atomic"
-        },
-        "resourceRules": {
-          "description": "`resourceRules` is a slice of ResourcePolicyRules that identify matching requests according to their verb and the target resource. At least one of `resourceRules` and `nonResourceRules` has to be non-empty.",
-          "items": {
-            "$ref": "#/definitions/io.k8s.api.flowcontrol.v1beta3.ResourcePolicyRule"
-          },
-          "type": "array",
-          "x-kubernetes-list-type": "atomic"
-        },
+-- Hecho
 
 Se puede usar la cardinalidad para el numero posible de features que se pueden crear?
 
@@ -1072,19 +1059,22 @@ Se puede usar la cardinalidad para el numero posible de features que se pueden c
             "type": "string"
           },
 
+-- Hecho (valores)
         "preemptionPolicy": {
           "description": "preemptionPolicy is the Policy for preempting pods with lower priority. One of Never, PreemptLowerPriority. Defaults to PreemptLowerPriority if unset.",
           "type": "string"
         },
-      
+
 
           "description": "url gives the location of the webhook, in standard URL form (`scheme://host:port/path`). Exactly one of `url` or `service` must be specified.\n\nThe `host` should not refer to a service running in the cluster; use the `service` field instead. The host might be resolved via external DNS in some apiservers (e.g., `kube-apiserver` cannot resolve in-cluster DNS as that would be a layering violation). `host` may also be an IP address.\n\nPlease note that using `localhost` or `127.0.0.1` as a `host` is risky unless you take great care to run this webhook on all hosts which run an apiserver which might need to make calls to this webhook. Such installs are likely to be non-portable, i.e., not easy to turn up in a new cluster.\n\nThe scheme must be \"https\"; the URL must begin with \"https://\".\n\nA path is optional, and if present may be any string permissible in a URL. You may use the path to pass an arbitrary string to the webhook, for example, a cluster identifier.\n\nAttempting to use a user or basic auth e.g. \"user:password@\" is not allowed. Fragments (\"#...\") and query parameters (\"?...\") are not allowed, either.",
 
-        "status": {
+        "status": { 
           "description": "Status of the operation. One of: \"Success\" or \"Failure\". More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status",
           "type": "string"
         }
+-- Hecho(valores)
 
+-- Hecho
 ## Parecido al Exempt (por el type)
       "properties": {
         "queuing": {
@@ -1108,10 +1098,14 @@ Se puede usar la cardinalidad para el numero posible de features que se pueden c
           }
         }
       ]
-
+-- Hecho
 
 
 Hay features que dependiendo del contexto mencionan unos posibles valores u otros asociados a un sub-feature(template.spec.restartPolicy):
+
+Dependiendo del contexto de los esquemas se permiten un valor o varios dentro del .restartPolicy, si se usa ReplicationController solo se permite el Always:
+io_k8s_api_core_v1_ReplicationController_spec_template_spec_restartPolicy == ..._Always : se pone antes de introducir el template para que vaya con esa condicion dentro del esquema...
+ReplicationController => esquemaFeature_ReplicationController...Always & !Never & !OnFailure (probar restricciones)
 
         "template": {
           "$ref": "#/definitions/io.k8s.api.core.v1.PodTemplateSpec",
@@ -1131,5 +1125,10 @@ Hay features que dependiendo del contexto mencionan unos posibles valores u otro
           "description": "Describes the pod that will be created when executing a job. The only allowed template.spec.restartPolicy values are \"Never\" or \"OnFailure\". More info: https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/"
       },
 
-De reojo
-      "description": "Operation is the type of operation which lead to this ManagedFieldsEntry being created. The only valid values for this field are 'Apply' and 'Update'.",
+-- Hecho      
+"description": "Operation is the type of operation which lead to this ManagedFieldsEntry being created. The only valid values for this field are 'Apply' and 'Update'.", (444)
+
+
+
+
+PodSpec.nodeName

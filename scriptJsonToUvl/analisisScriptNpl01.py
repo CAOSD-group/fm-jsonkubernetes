@@ -22,6 +22,39 @@ def load_json_features(file_path):
 def convert_word_to_num(word):
     return word_to_num.get(word.lower(), None)
 
+
+
+
+def extract_constraints_string_oneOf(description, feature_key):
+    """ Función que trata restricciones de tipo String, en ellas: La primera obtiene restricciones en base al tipo del tipo de petición que defina el campo kind (String). Al no tener
+    definido los tipos en su descripción no se los ha insertado como Booleans pero si se usa para aplicar la coincidencia y activación de los otros campos, 10 constraints. """
+
+    uvl_rule = ""
+    feature_without_lastProperty = feature_key.rsplit('_', 1)[0]
+
+    if 'indicates which one of' in description: ## Se usa la descripción del kind para tener el feature string de los tipos que pueden ser los otros campos. Se interpreta como que solo uno de los campos puede ser seleccionado (10)
+        print("No SE EJECUTA?")
+        kind_authentication_group = f"{feature_without_lastProperty}_group"
+        kind_authentication_serviceAccount = f"{feature_without_lastProperty}_serviceAccount"
+        kind_authentication_User = f"{feature_without_lastProperty}_user"
+
+        uvl_rule += f"({feature_key} == 'Group' => {kind_authentication_group})" \
+        f" | ({feature_key} == 'ServiceAccount' => {kind_authentication_serviceAccount})" \
+        f" | ({feature_key} == 'User' => {kind_authentication_User})" \
+        f" & !({kind_authentication_group} & {kind_authentication_serviceAccount})" \
+        f" & !({kind_authentication_serviceAccount} & {kind_authentication_User})" \
+        f" & !({kind_authentication_group} & {kind_authentication_User})" 
+        ## Se agregan las condiciones para que solo pueda ser cogido uno a la vez. No esta del todo claro segun la descrip. Pero se puede presuponer
+
+        """ feature_kind == "Group" => feature_group 
+        | feature_kind == "ServiceAccount" => feature_serviceAccount 
+        | feature_kind == "User" => feature_user 
+        & !(feature_group & feature_serviceAccount) & !(feature_group & feature_user) & !(feature_serviceAccount & feature_user)"""
+
+    if uvl_rule is not None:
+        return uvl_rule.strip() ### Devolver restricciones y eliminar las lineas en blanco
+    else:
+        return "El conjunto esta vacio"
 def extract_constraints_multiple_conditions(description, feature_key):
     """ Función que trata restricciones 'complejas' con varias condiciones lógicas o featues involucrados. Primero se desarrollo una en la que se decían los valores que no debían de ser, por otro lado"""
 
@@ -106,7 +139,7 @@ def extract_constraints_primary_or(description, feature_key):
 def extract_constraints_least_one(description, feature_key):
     """ Función que extrae las restricciones de las descripciones que contienen "Exactly one of, a least one of, at least one of", basadas en la constraint de que al menos un feature debe de ser seleccionado """
     least_one_pattern01 = re.compile(r'(?<=a least one of\s)(\w+)\s+or\s+(\w+)', re.IGNORECASE) #  Expresión regular para obtener los 2 valores precedidos por "a least one of" y separados por un "or"
-    exactly_least_one_pattern02 = re.compile(r'(?<=Exactly one of\s)`(\w+)`\s+or\s+`(\w+)`', re.IGNORECASE) #  Expresión regular para los valores precedidos por "Exactly..." y que se encuentren bajo comillas invertidas separados por un "or"
+    exactly_least_one_pattern02 = re.compile(r'(?<=Exactly one of\s)`(\w+)`\s+or\s+`(\w+)`', re.IGNORECASE) #  Expresión regular para los valores precedidos por "Exactly..." y que se encuentren bajo comillas invertidas separados por un "or" (8, url, service)
     at_least_one_pattern01 = re.compile(r'(?<=At least one of\s)`(\w+)`\s+and\s+`(\w+)`', re.IGNORECASE) #  Expresión regular para los valores precedidos por "At..." y que se encuentran como en el anterior, bajo comillas invertidas y separadas por un "and"
 
     uvl_rule = "" ### arreglar el `` = > String: Arreglado
@@ -283,7 +316,7 @@ def extract_constraints_if(description, feature_key):
 
     if if_match and 'exempt' not in feature_key: ### Trata de las descipciones con el patrón "Must be set if type is"
         value_obtained = if_match.group(1) ## Obtener el valor del patron obtenido
-        if 'Must be set if type is' in description or 'Must be set if and only if type' in description:
+        if 'Must be set if type is' in description or 'Must be set if and only if type' in description or 'may be non-empty only if' in description: ## Agregado nuevo conjunto may be non-empty only if (10)
             uvl_rule = f"{feature_without_lastProperty}_type_{value_obtained} <=> {feature_key}"
         else:
             ## Division entre los tipos por si solo se puede acceder al feature si el tipo es el concretado
@@ -297,8 +330,8 @@ def extract_constraints_if(description, feature_key):
         exempt_match = only_if_pattern.findall(description)
         #exempt_match = set(exempt_match) ## hay valores repetidos pero solo se acceden a los 2 primeros
         print("Lo que captura el patron", exempt_match)
-        type_property01 = exempt_match[0]
-        type_property02 = exempt_match[1]
+        type_property01 = exempt_match[0] # Limited
+        type_property02 = exempt_match[1] # Exempt
         print("Valores exempt capturados", exempt_match)
         print(f"{type_property01}, tipo2: {type_property02}")
         uvl_rule = f"({feature_without_lastProperty}_type_{type_property01} => !{feature_key}) | ({feature_without_lastProperty}_type_{type_property02} => {feature_key})" ### Aqui se especifican los 2 casos
@@ -458,7 +491,7 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
         elif "required when" in description or 'Required when' in description:
             const = extract_constraints_required_when(description, feature_key)
             uvl_rule = const
-        elif "only if type" in description or "Must be set if type is" in description or "must be non-empty if and only if" in description or "field MUST be empty if" in description: ## 
+        elif "only if type" in description or "Must be set if type is" in description or "must be non-empty if and only if" in description or "field MUST be empty if" in description or "may be non-empty only if" in description: ## Agregado nuevo conjunto 15/11: Queue (10) 
             first_constraint = extract_constraints_if(description, feature_key)
             uvl_rule = first_constraint
         elif "selector can be used to match multiple param objects based on their labels" in description:
@@ -503,6 +536,10 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
         if 'conditions may not be' in description:
             constraint = extract_constraints_multiple_conditions(description, feature_key)
             print("FUNKA BIEN?")
+            uvl_rule = constraint
+        elif 'indicates which one of' in description:
+            constraint = extract_constraints_string_oneOf(description, feature_key)
+            print("SE EJECUTA??", constraint)
             uvl_rule = constraint
         #if "APIVersion" in description:
         #    uvl_rule = f"{feature_key} == 'v1' | {feature_key} == 'v1beta1' | {feature_key} == 'v2' | {feature_key} == 'v1alpha1'"
