@@ -182,6 +182,21 @@ En total se generaron 21 del segundo grupo:
 ** Nuevo conjunto agregado "Sleep represents" con 175 constraints nuevas. Basada en una descripción principal y que solo permite seleccionar un único feature de sus propiedades e ignora otra que esta en estado _deprecated_.
 	(io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_exec | io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_httpGet | io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_sleep) & !(io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_exec & io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_httpGet) & !(io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_exec & io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_sleep) & !(io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_httpGet & io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_sleep) & !io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_lifecycle_postStart_tcpSocket
 	
+
+
+### Agrupacion de restricciones de las politicas de reinicio que se permiten en relación a las plantillas que define un feature
+
+Genera restricciones UVL para template.spec.restartPolicy basadas en descripciones. Maneja dos casos: Un único valor permitido: "Always". Dos valores permitidos: "Never" o "OnFailure".
+En esta parte se agregan las restricciones de politicas de reinicio, se basan en la definición del valor que da "template.spec.restartPolicy". Se implementan en la función extract_constraints_template_onlyAllowed(). Esta agrupación se basa en las descripciones con palabras clave: _template.spec.restartPolicy_, las restricciones se dividen en dos casos por las palabras clave _value is_ y _values are_. Diferenciandose en que en el primer caso solo hay un valor permitido y en segundo 2 valores. 
+
+En el primer caso se usan patrones para obtener los diferentes valores de los features que se van a usar y el objetivo es definir los posibles valores que un feature no tiene que seleccionar. La descripciones que se analizan son: _"status of the condition, one of True, False, Unknown. Approved, Denied, and Failed conditions may not be \"False\" or \"Unknown\"."_. Siendo _False_ y _Unknown_ los estados que las condiciones de tipo _Approved_, _Denied_ y _Failed_ no pueden escogerse. En el otro caso se agregan los posibles valores de los features manualmente ya que no hay una descripción donde se mencionen, al ser los mismos en las descripciones no hay problema en agregarlos de esa manera. Aquí como en el anterior caso, se basa en definir los features que no se pueden seleccionar o seleccionar en relación con los otros features. En base a la siguiente descripción general: _Template describes the pods that will be created. The only allowed template.spec.restartPolicy value is \"Always\"._, se dedujo que... Las restricciones obtenidas son similares a las siguientes:
+
+	(io_k8s_api_apps_v1_StatefulSetSpec_template => io_k8s_api_apps_v1_StatefulSetSpec_template_spec_restartPolicy_web & !io_k8s_api_apps_v1_StatefulSetSpec_template_spec_restartPolicy_Never & !io_k8s_api_apps_v1_StatefulSetSpec_template_spec_restartPolicy_OnFailure)
+	(io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_template => io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_template_spec_restartPolicy_Never | io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_template_spec_restartPolicy_OnFailure) & !io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_template_spec_restartPolicy_Always
+
+En total se generaron 19 restricciones del siguiente grupo:
+
+
 ### Agrupación de restricciones $... :
 
 En desarrollo de más patrones y constraints...

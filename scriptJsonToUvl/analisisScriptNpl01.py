@@ -22,8 +22,47 @@ def load_json_features(file_path):
 def convert_word_to_num(word):
     return word_to_num.get(word.lower(), None)
 
+def extract_constraints_template_onlyAllowed(description, feature_key):
+    """
+    Genera restricciones UVL para template.spec.restartPolicy basadas en descripciones.
+    
+    Maneja dos casos:
+    1. Un único valor permitido: "Always".
+    2. Dos valores permitidos: "Never" o "OnFailure".
+    
+    Args:
+        description (str): Descripción de la característica.
+        feature_key (str): Nombre de la característica.
 
+    Returns:
+        str: Restricción UVL generada.
+    """
+    template_spec_policy_pattern = re.compile(r'\"([A-Za-z]+)\"') ## expresión que caputara los valores que vienen...
 
+    uvl_rule =""
+    feature_with_spec = f"{feature_key}_spec_restartPolicy"
+    
+    if 'value is' in description: ### Caso en el que solo hay un único valor posible para template.spec.restartPolicy: Always
+        policy_match = template_spec_policy_pattern.search(description)
+        if not policy_match:
+            raise ValueError(f"No se encontró un valor único en la descripción: {description}")
+        policy_Always = f"{feature_with_spec}_{policy_match.group(1)}"
+        ## Se definen los otros 2 casos posibles de valores. No estan presentes en las descripciones que se obtienen por lo que se agregan directamente
+        policy_OnFailure = f"{feature_with_spec}_OnFailure"
+        policy_Never = f"{feature_with_spec}_Never" 
+
+        return f"({feature_key} => {policy_Always} & !{policy_Never} & !{policy_OnFailure})"
+
+    elif 'values are' in description: ### Caso en el que hay 2 valores posibles para template.spec.restartPolicy: Never y OnFailure
+        policies_match = template_spec_policy_pattern.findall(description) # Se obtienen los valores del caso de las descripciones
+        policies_Always = f"{feature_with_spec}_Always"
+        if len(policies_match) < 2:
+            raise ValueError(f"Se esperaban al menos dos valores en la descripción: {description}")
+        allowed_policies = [f"{feature_with_spec}_{policy}" for policy in policies_match]
+        return f"({feature_key} => {' | '.join(allowed_policies)}) & !{policies_Always}"
+    
+    # Si no se cumple ninguno de los casos
+    raise ValueError(f"Descripción inesperada para {feature_key}: {description}")
 
 def extract_constraints_string_oneOf(description, feature_key):
     """ Función que trata restricciones de tipo String, en ellas: La primera obtiene restricciones en base al tipo del tipo de petición que defina el campo kind (String). Al no tener
@@ -515,6 +554,8 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
             constraint = extract_constraints_multiple_conditions(description, feature_key)
             print("FUNKA BIEN?")
             uvl_rule = constraint
+        elif "template.spec.restartPolicy" in description in description:
+            uvl_rule = extract_constraints_template_onlyAllowed(description, feature_key)
     elif type_data == "Integer" or type_data == "integer":
         if is_port_number:
             # Si es un número de puerto, asegurarse de usar los límites de puerto

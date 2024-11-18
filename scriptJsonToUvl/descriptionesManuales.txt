@@ -1100,9 +1100,11 @@ Se puede usar la cardinalidad para el numero posible de features que se pueden c
       ]
 -- Hecho
 
-
+-- Haciendo
 Hay features que dependiendo del contexto mencionan unos posibles valores u otros asociados a un sub-feature(template.spec.restartPolicy):
-
+_spec_restartPolicy...
+Objetivo:
+feature => feature_spec_restartPolicy_{valor} & !feature_spec_restartPolicy_{otrosValores}
 Dependiendo del contexto de los esquemas se permiten un valor o varios dentro del .restartPolicy, si se usa ReplicationController solo se permite el Always:
 io_k8s_api_core_v1_ReplicationController_spec_template_spec_restartPolicy == ..._Always : se pone antes de introducir el template para que vaya con esa condicion dentro del esquema...
 ReplicationController => esquemaFeature_ReplicationController...Always & !Never & !OnFailure (probar restricciones)
