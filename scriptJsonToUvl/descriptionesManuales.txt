@@ -69,8 +69,7 @@ Required
         },
 
 
-
-
+--x
 
 ### Descripcion con error de escritura: Aparte se extrae solo un valor pero pueden haber varios... complejo
 
@@ -84,7 +83,7 @@ Required
           "description": "TopologyKey is the key of node labels. Nodes that have a label with this key and identical values are considered to be in the same topology. We consider each <key, value> as a \"bucket\", and try to put balanced number of pods into each bucket. We define a domain as a particular instance of a topology. Also, we define an eligible domain as a domain whose nodes meet the requirements of nodeAffinityPolicy and nodeTaintsPolicy. e.g. If TopologyKey is \"kubernetes.io/hostname\", each Node is a domain of that topology. And, if TopologyKey is \"topology.kubernetes.io/zone\", each zone is a domain of that topology. It's a required field.",
           "type": "string"
         },
-
+--x
 Otra descripcion de la que se obtiene un unico valor// dejar por defecto
 -
         {
@@ -102,7 +101,8 @@ Otra descripcion de la que se obtiene un unico valor// dejar por defecto
           "description": "handler specifies the underlying runtime and configuration that the CRI implementation will use to handle pods of this class. The possible values are specific to the node & CRI configuration.  It is assumed that all handlers are available on every node, and handlers of the same name are equivalent on every node. For example, a handler called \"runc\" might specify that the runc OCI runtime (using native Linux containers) will be used to run the containers in a pod. The Handler must be lowercase, conform to the DNS Label (RFC 1123) requirements, and is immutable.",
           "type": "string"
         },
-
+--x
+---
         "allocatedResourceStatuses": {
           "additionalProperties": {
             "type": "string"
@@ -111,7 +111,7 @@ Otra descripcion de la que se obtiene un unico valor// dejar por defecto
           "type": "object",
           "x-kubernetes-map-type": "granular"
         },
-
+--
         {
             "feature_name": "io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_podFailurePolicy_rules_onExitCodes_operator",
             "description": "Represents the relationship between the container exit code(s) and the specified values. Containers completed with success (exit code 0) are excluded from the requirement check. Possible values are:\n\n- In: the requirement is satisfied if at least one container exit code\n  (might be multiple if there are multiple containers not restricted\n  by the 'containerName' field) is in the set of specified values.\n- NotIn: the requirement is satisfied if at least one container exit code\n  (might be multiple if there are multiple containers not restricted\n  by the 'containerName' field) is not in the set of specified values.\nAdditional values are considered to be added in the future. Clients should react to an unknown operator by assuming the requirement is not satisfied.",
@@ -125,6 +125,7 @@ Otra descripcion de la que se obtiene un unico valor// dejar por defecto
             "description": "Represents the relationship between the container exit code(s) and the specified values. Containers completed with success (exit code 0) are excluded from the requirement check. Possible values are:\n\n- In: the requirement is satisfied if at least one container exit code\n  (might be multiple if there are multiple containers not restricted\n  by the 'containerName' field) is in the set of specified values.\n- NotIn: the requirement is satisfied if at least one container exit code\n  (might be multiple if there are multiple containers not restricted\n  by the 'containerName' field) is not in the set of specified values.\nAdditional values are considered to be added in the future. Clients should react to an unknown operator by assuming the requirement is not satisfied.",
             "type_data": "string"
         },
+--
 
         {
             "feature_name": "io_k8s_api_storage_v1alpha1_VolumeAttributesClass_parameters",
@@ -134,6 +135,7 @@ Otra descripcion de la que se obtiene un unico valor// dejar por defecto
         \"Infeasible\" /// tamaño maximo de 512 o 256kb en total
 
 
+--
       "description": "DeploymentStrategy describes how to replace existing pods with new ones.",
       "properties": {
         "rollingUpdate": {
@@ -148,13 +150,13 @@ Otra descripcion de la que se obtiene un unico valor// dejar por defecto
       "type": "object"
 
       "Can be"
-
+-
         "JSONSchemaProps"
         "x-kubernetes-list-type": {
           "description": "x-kubernetes-list-type annotates an array to further describe its topology. This extension must only be used on lists and may have 3 possible values:\n\n1) `atomic`: the list is treated as a single entity, like a scalar.\n     Atomic lists will be entirely replaced when updated. This extension\n     may be used on any type of list (struct, scalar, ...).\n2) `set`:\n     Sets are lists that must not have multiple items with the same value. Each\n     value must be a scalar, an object with x-kubernetes-map-type `atomic` or an\n     array with x-kubernetes-list-type `atomic`.\n3) `map`:\n     These lists are like maps in that their elements have a non-index key\n     used to identify them. Order is preserved upon merge. The map tag\n     must only be used on a list with elements of type object.\nDefaults to atomic for arrays.",
           "type": "string"
         },
-
+-
                 "listKind": {
           "description": "listKind is the serialized kind of the list for this resource. Defaults to \"`kind`List\".",
           "type": "string"
@@ -1100,7 +1102,7 @@ Se puede usar la cardinalidad para el numero posible de features que se pueden c
       ]
 -- Hecho
 
--- Haciendo
+-- Hecho
 Hay features que dependiendo del contexto mencionan unos posibles valores u otros asociados a un sub-feature(template.spec.restartPolicy):
 _spec_restartPolicy...
 Objetivo:
@@ -1134,3 +1136,35 @@ ReplicationController => esquemaFeature_ReplicationController...Always & !Never 
 
 
 PodSpec.nodeName
+
+
+
+
+
+It's a required field
+
+
+may have 3 possible values:
+        "x-kubernetes-list-type": {
+          "description": "x-kubernetes-list-type annotates an array to further describe its topology. This extension must only be used on lists and may have 3 possible values:\n\n1) `atomic`: the list is treated as a single entity, like a scalar.\n     Atomic lists will be entirely replaced when updated. This extension\n     may be used on any type of list (struct, scalar, ...).\n2) `set`:\n     Sets are lists that must not have multiple items with the same value. Each\n     value must be a scalar, an object with x-kubernetes-map-type `atomic` or an\n     array with x-kubernetes-list-type `atomic`.\n3) `map`:\n     These lists are like maps in that their elements have a non-index key\n     used to identify them. Order is preserved upon merge. The map tag\n     must only be used on a list with elements of type object.\nDefaults to atomic for arrays.",
+          "type": "string"
+        },
+        "x-kubernetes-map-type": {
+          "description": "x-kubernetes-map-type annotates an object to further describe its topology. This extension must only be used when type is object and may have 2 possible values:\n\n1) `granular`:\n     These maps are actual maps (key-value pairs) and each fields are independent\n     from each other (they can each be manipulated by separate actors). This is\n     the default behaviour for all maps.\n2) `atomic`: the list is treated as a single entity, like a scalar.\n     Atomic maps will be entirely replaced when updated.",
+          "type": "string"
+        },
+
+
+
+Defaults to:
+
+            "listKind": {
+        "description": "listKind is the serialized kind of the list for this resource. Defaults to \"`kind`List\".",
+        "type": "string"
+      },
+
+
+        "singular": {
+          "description": "singular is the singular name of the resource. It must be all lowercase. Defaults to lowercased `kind`.",
+          "type": "string"
+        }

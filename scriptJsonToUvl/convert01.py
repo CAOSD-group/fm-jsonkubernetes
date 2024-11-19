@@ -7,7 +7,7 @@ from collections import deque
 # Importar el procesador de restricciones
 #from restrictions_processor import process_restrictions
 ##global feature_aux_original_type
-
+from analisisScriptNpl01conMain import generar_constraintsDef
 class SchemaProcessor:
     def __init__(self, definitions):
         self.definitions = definitions # Un diccionario que organiza las descripciones en tres categorías:
@@ -31,15 +31,16 @@ class SchemaProcessor:
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
         self.patterns = {
             'values': re.compile(r'^\b$', re.IGNORECASE), # values are|valid|supported|acceptable|can be
-            'restrictions': re.compile(r'indicates which one of|may be non-empty only if|template.spec.restartPolicy', re.IGNORECASE),### If the operator is|must be between|   # \. Required when|required when scope  ## the currently supported values are allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
+            'restrictions': re.compile(r'If the operator is|must be between|Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope|\. At least one of|a least one of|Exactly one of|resource access request|Details about a waiting|Sleep represents|datasetUUID is|succeededIndexes specifies|Represents the requirement on the container|conditions may not be|ResourceClaim object in the same namespace as this pod|indicates which one of|may be non-empty only if|template.spec.restartPolicy', re.IGNORECASE),### If the operator is|must be between|   # \. Required when|required when scope  ## the currently supported values are(valores) allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
             'dependencies': re.compile(r'^\b$', re.IGNORECASE) ## (requires|if[\s\S]*?only if|only if) # depends on ningun caso especial, quitar relies on: no hay casos, contingent upon: igual = related to
         }
+        ##### indicates which one of|may be non-empty only if|template.spec.restartPolicy
         ##### Details about a waiting|Sleep represents|datasetUUID is|succeededIndexes specifies|Represents the requirement on the container|conditions may not be|ResourceClaim object in the same namespace as this pod|
         #### \. At least one of||a least one of|Exactly one of|resource access request|
         ###  |Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope
         # Lista de parte de nombres de features que se altera el tipo de dato a Boolean para la compatibilidad con las constraints y uvl. ### Los que se cambian para añadir un nivel mas que represente el String que se omite al cambiar el tipo a Boolean
         self.boolean_keywords = ['AppArmorProfile_localhostProfile', 'appArmorProfile_localhostProfile', 'seccompProfile_localhostProfile', 'SeccompProfile_localhostProfile', 'IngressClassList_items_spec_parameters_namespace',
-                        'IngressClassParametersReference_namespace', 'IngressClassSpec_parameters_namespace',  'IngressClass_spec_parameters_namespace','_tolerations_value','_Toleration_value', '_clientConfig_url', '_WebhookClientConfig_url',
+                        'IngressClassParametersReference_namespace', 'IngressClassSpec_parameters_namespace', 'IngressClass_spec_parameters_namespace','_tolerations_value','_Toleration_value', '_clientConfig_url', '_WebhookClientConfig_url',
                         '_succeededIndexes', '_succeededCount', 'source_resourceClaimName', '_ClaimSource_resourceClaimName', '_resourceClaimTemplateName', '_datasetUUID', '_datasetName']  # Lista para modificar a otros posibles tipos de los features (Cambiado del original por la compatibilidad) ##
         #### probar porque no se cambian cosas de string en las descripciones pero si en el modelo:, 'conditions_status'
         # Lista de expresiones regulares para casos en que la lista anterior necesite de más precisión para solo alterar el tipo en los parametros requeridos
@@ -663,7 +664,7 @@ class SchemaProcessor:
 
         print(f"Saving constraints to {file_path}...")
         with open(file_path, 'a', encoding='utf-8') as f:
-            f.write("constraints\n" + "//Restricciones obtenidas de las referencias:\n") # Quitar para las pruebas con flamapy
+            f.write("constraints\n") # Quitar para las pruebas con flamapy. Quitado: Restricciones obtenidas de las referencias:
             for constraint in self.constraints:
                 f.write(f"\t{constraint}\n")
         print("Constraints saved successfully.")
@@ -712,7 +713,7 @@ def properties_to_uvl(feature_list, indent=1):
                 uvl_output += f"{indent_str}\toptional\n"
                 uvl_output += properties_to_uvl(sub_optional, indent + 2)
             if sub_alternative:
-                uvl_output += f"{indent_str}\talternative\n" ## 
+                uvl_output += f"{indent_str}\talternative\n"
                 uvl_output += properties_to_uvl(sub_alternative, indent + 2)
         else:
             uvl_output += f"{indent_str}{type_str}{feature['name']}\n"  # {type_str} opcional si se necesita {{abstract}} 
@@ -792,10 +793,9 @@ restrictions_output_file = './restrictions02.txt'
 generate_uvl_from_definitions(definitions_file, output_file, descriptions_file)
 
 
-"""
 # Generar las restricciones y agregarlas al archivo UVL generado
 # Este paso se hace después de la generación del modelo y descripciones
-process_restrictions(descriptions_file, restrictions_output_file)
+generar_constraintsDef(descriptions_file, restrictions_output_file)
 
 # Añadir las restricciones al archivo UVL generado
 with open(output_file, 'a', encoding='utf-8') as f_out, open(restrictions_output_file, 'r', encoding='utf-8') as f_restrictions:
@@ -805,4 +805,3 @@ with open(output_file, 'a', encoding='utf-8') as f_out, open(restrictions_output
         f_out.write(f"\t{restrict}")
 
 print(f"Modelo UVL y restricciones guardados en {output_file}")
-"""
