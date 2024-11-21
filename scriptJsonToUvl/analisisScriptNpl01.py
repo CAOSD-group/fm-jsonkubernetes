@@ -39,8 +39,6 @@ def extract_constraints_template_onlyAllowed(description, feature_key):
     """
     template_spec_policy_pattern01 = re.compile(r'(?<=The only allowed template.spec.restartPolicy value is\s)\"([A-Za-z]+)\"', re.IGNORECASE) ## Entre parentesis añade las comillas dobles tambien
     template_spec_policies_pattern02 = re.compile(r'\"([A-Za-z]+)\"') ## expresión que captura los valores que vienen entre comillas: caso 2
-
-    ## The only allowed template.spec.restartPolicy value is
     #uvl_rule =""
     feature_with_spec = f"{feature_key}_spec_restartPolicy"
     
@@ -180,6 +178,7 @@ def extract_constraints_primary_or(description, feature_key):
 def extract_constraints_least_one(description, feature_key):
     """ Función que extrae las restricciones de las descripciones que contienen "Exactly one of, a least one of, at least one of", basadas en la constraint de que al menos un feature debe de ser seleccionado """
     least_one_pattern01 = re.compile(r'(?<=a least one of\s)(\w+)\s+or\s+(\w+)', re.IGNORECASE) #  Expresión regular para obtener los 2 valores precedidos por "a least one of" y separados por un "or"
+    ## creo que falta el a minimun of one...
     exactly_least_one_pattern02 = re.compile(r'(?<=Exactly one of\s)`(\w+)`\s+or\s+`(\w+)`', re.IGNORECASE) #  Expresión regular para los valores precedidos por "Exactly..." y que se encuentren bajo comillas invertidas separados por un "or" (8, url, service)
     at_least_one_pattern01 = re.compile(r'(?<=At least one of\s)`(\w+)`\s+and\s+`(\w+)`', re.IGNORECASE) #  Expresión regular para los valores precedidos por "At..." y que se encuentran como en el anterior, bajo comillas invertidas y separadas por un "and"
 
@@ -424,10 +423,42 @@ def extract_constraints_required_when(description, feature_key):
         return uvl_rule
     else:
         return "El conjunto esta vacio"
-    
+
+
+def extract_minimum_value(description, feature_key):
+    """ Funcion para extraer las restricciones del valor minimo que expresan varios patrones en algunas descripciones. Se basa en usar los patrones y expresiones para capturar los enteros que delimitan y 
+    forman parte de un rango. También se ha añadido un rango por el momento**"""
+
+    value_minimum_pattern = re.compile(r'(?<=Minimum value is\s)(\d+)')
+    value_text_pattern = re.compile(r'(?<=minimum valid value for expirationSeconds is\s)(\d+)')
+    in_the_range_pattern = re.compile(r'(?<=in the range\s)(\d+)-(\d+)')
+
+    uvl_rule =""
+    minimum_match = value_minimum_pattern.search(description)
+    minimum_text_match = value_text_pattern.search(description)
+    range_match = in_the_range_pattern.search(description)
+
+
+    if minimum_match: ## (1295)
+        uvl_rule = f"{feature_key} > {minimum_match.group(1)}"
+    elif not minimum_match and "Value must be non-negative" in description: ## (36)
+        uvl_rule = f"{feature_key} > 0"
+    elif minimum_text_match: ## (3)
+        print(f"El minimo tiene que ser 600: ", minimum_text_match)
+        uvl_rule = f"{feature_key} > {minimum_text_match.group(1)}"
+    elif range_match: ## (92)
+        print(f"LOS RANGE MATCH SON: {range_match.group(2)}")
+        uvl_rule = f"{feature_key} > {range_match.group(1)} & {feature_key} < {range_match.group(2)}"
+        
+    if uvl_rule is not None:
+        return uvl_rule ## 1426
+    # Si no se cumple ninguno de los casos
+    raise ValueError(f"Descripción inesperada para {feature_key}: {description}")
+
+
 # Función para extraer límites si están presentes en la descripción
 def extract_bounds(description):
-    doc = nlp(description)
+    #doc = nlp(description)
     min_bound = None
     max_bound = None
     is_port_number = False
@@ -444,6 +475,8 @@ def extract_bounds(description):
 
     ### Adicion restriccion con palabras: must be between
     between_text_pattern = re.compile(r'must\s+be\s+between\s+(\d+)\s+and\s+(\d+)', re.IGNORECASE)
+
+    ## Minimum value is
 
     # Detectar si la descripción menciona puertos válidos
     if "valid port number" in description.lower():
@@ -570,6 +603,10 @@ def convert_to_uvl_with_nlp(feature_key, description, type_data):
             uvl_rule = f"{feature_key} > {min_bound}"
         elif max_bound is not None:
             uvl_rule = f"{feature_key} < {max_bound}"
+        elif "Minimum value is" in description or "Value must be non-negative" in description or "minimum valid value for" in description or "in the range" in description:
+            uvl_rule = extract_minimum_value(description, feature_key)
+            if "in the range" in description:
+                print("LA REGLA ES, ", uvl_rule)
         #if is_other_number:  ## posible uso para diferenciar casos especificos mas adelante
         #    # Si es un número de puerto, asegurarse de usar los límites de puerto
         #    min_bound = 0 if min_bound is None else min_bound

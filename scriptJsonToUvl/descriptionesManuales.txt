@@ -175,7 +175,7 @@ Otra descripcion de la que se obtiene un unico valor// dejar por defecto
           "description": "Path within the volume from which the container's volume should be mounted. Defaults to \"\" (volume's root).",
           "type": "string"
         },
-        "subPathExpr": {
+        "subPathExpr": { -- Haciendo
           "description": "Expanded path within the volume from which the container's volume should be mounted. Behaves similarly to SubPath but environment variable references $(VAR_NAME) are expanded using the container's environment. Defaults to \"\" (volume's root). SubPathExpr and SubPath are mutually exclusive.",
           "type": "string"
         }
@@ -190,13 +190,13 @@ Otra descripcion de la que se obtiene un unico valor// dejar por defecto
     "io.k8s.api.batch.v1.CronJobSpec": {
     }
 
-                "failedJobsHistoryLimit": {
+                "failedJobsHistoryLimit": { -- 
           "description": "The number of failed finished jobs to retain. Value must be non-negative integer. Defaults to 1.",
           "format": "int32",
           "type": "integer"
         },
 
-                "startingDeadlineSeconds": {
+                "startingDeadlineSeconds": { xx
           "description": "Optional deadline in seconds for starting the job if it misses scheduled time for any reason.  Missed jobs executions will be counted as failed ones.",
           "format": "int64",
           "type": "integer"
@@ -204,7 +204,7 @@ Otra descripcion de la que se obtiene un unico valor// dejar por defecto
 
         se repite mucho y tambien la muletilla "Defaults to":
 
-                "readOnly": {
+                "readOnly": { xx-
           "description": "readOnly value to pass to ControllerPublishVolumeRequest. Defaults to false (read/write).",
           "type": "boolean"
         },
@@ -217,11 +217,10 @@ este ya tendria propiedades optional y las obtenidas de las descripciones sería
 - Quizas error de interpretacion mio porque no es del feature en general
 Creo que solo ocurre en uno, es raro generar los valores y que tenga una referencia...
         
-        "template": {
+        "template": {--
           "$ref": "#/definitions/io.k8s.api.core.v1.PodTemplateSpec",
           "description": "Describes the pod that will be created when executing a job. The only allowed template.spec.restartPolicy values are \"Never\" or \"OnFailure\". More info: https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/"
         },
-
 
 
         "fsType": {
@@ -230,7 +229,7 @@ Creo que solo ocurre en uno, es raro generar los valores y que tenga una referen
         },
 
 
-          "periodSeconds": {
+          "periodSeconds": { -- Minimums...
           "description": "How often (in seconds) to perform the probe. Default to 10 seconds. Minimum value is 1.",
           "format": "int32",
           "type": "integer"
@@ -238,7 +237,7 @@ Creo que solo ocurre en uno, es raro generar los valores y que tenga una referen
 
 
 
-    "io.k8s.api.core.v1.DownwardAPIVolumeSource": {
+    "io.k8s.api.core.v1.DownwardAPIVolumeSource": { x-
       "description": "DownwardAPIVolumeSource represents a volume containing downward API info. Downward API volumes support ownership management and SELinux relabeling.",
       "properties": {
         "defaultMode": {
@@ -249,33 +248,33 @@ Creo que solo ocurre en uno, es raro generar los valores y que tenga una referen
 
 
                 },
-        "port": {
+        "port": {--
           "description": "port is an optional service port at which the webhook will be contacted. `port` should be a valid port number (1-65535, inclusive). Defaults to 443 for backward compatibility.",
           "format": "int32",
           "type": "integer"
         } ##port default, restriccion...
 
 
-                "successThreshold": {
+                "successThreshold": {-
           "description": "Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1. Must be 1 for liveness and startup. Minimum value is 1.",
           "format": "int32",
           "type": "integer"
         ### Para probar si hay valores por defecto
-                  "failureThreshold": {
+                  "failureThreshold": {-
           "description": "Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 3. Minimum value is 1.",
           "format": "int32",
           "type": "integer"
         },
         },
 
-        "backoffLimit": {
+        "backoffLimit": {--
           "description": "Specifies the number of retries before marking this job failed. Defaults to 6",
           "format": "int32",
           "type": "integer"
         }, ### Mas defaults to {Integer}
 
 
-        "kind": {
+        "kind": {-
           "description": "kind expected values are Shared: multiple blob disks per storage account  Dedicated: single blob disk per storage account  Managed: azure managed data disk (only in managed availability set). defaults to shared",
           "type": "string"
         }, ### No hay una separacion clara de los valores, solo el espacio y dos puntos...
@@ -285,8 +284,8 @@ Creo que solo ocurre en uno, es raro generar los valores y que tenga una referen
           "type": "string" ## por s
         },
 
-
-          "x-kubernetes-validations": {
+--
+          "x-kubernetes-validations": { -x
           "description": "x-kubernetes-validations describes a list of validation rules written in the CEL expression language. This field is an alpha-level. Using this field requires the feature gate `CustomResourceValidationExpressions` to be enabled.",
           "items": {
             "$ref": "#/definitions/io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1.ValidationRule"
@@ -300,6 +299,18 @@ Creo que solo ocurre en uno, es raro generar los valores y que tenga una referen
           "x-kubernetes-patch-strategy": "merge"
         }
       },
+Posible uso:
+
+Validation => expression & !expression.Unspecified
+
+expression.ContainsLineBreaks => message
+message => !message.ContainsLineBreaks
+
+(message & messageExpression) => MessageFrom = messageExpression
+messageExpression.Invalid => UseDefaultMessage
+
+reason = Unspecified => reason = StatusReasonInvalid
+reason => reason ∈ {"Unauthorized", "Forbidden", "Invalid", "RequestEntityTooLarge"}
 
     "io.k8s.api.admissionregistration.v1.Validation": { ### CEL-expression con muchos parametros ""
       "description": "Validation specifies the CEL expression which is used to apply the validation.",
@@ -326,7 +337,9 @@ Creo que solo ocurre en uno, es raro generar los valores y que tenga una referen
       ],
       "type": "object"
     },
-    "io.k8s.api.autoscaling.v2.HorizontalPodAutoscalerBehavior": { ### Expresiones un poco mas complejas para mapear pero posibles
+
+
+    "io.k8s.api.autoscaling.v2.HorizontalPodAutoscalerBehavior": { ### Expresiones un poco mas complejas para mapear pero posibles x-
       "description": "HorizontalPodAutoscalerBehavior configures the scaling behavior of the target in both Up and Down directions (scaleUp and scaleDown fields respectively).",
       "properties": {
         "scaleDown": {
@@ -344,7 +357,7 @@ Creo que solo ocurre en uno, es raro generar los valores y que tenga una referen
       dependences: requires
       "description": "volumeAttributesClassName may be used to set the VolumeAttributesClass used by this claim. If specified, the CSI driver will create or update the volume with the attributes defined in the corresponding VolumeAttributesClass. This has a different purpose than storageClassName, it can be changed after the claim is created. An empty string value means that no VolumeAttributesClass will be applied to the claim but it's not allowed to reset this field to empty string once it is set. If unspecified and the PersistentVolumeClaim is unbound, the default VolumeAttributesClass will be set by the persistentvolume controller if it exists. If the resource referred to by volumeAttributesClass does not exist, this PersistentVolumeClaim will be set to a Pending state, as reflected by the modifyVolumeStatus field, until such as a resource exists. More info: https://kubernetes.io/docs/concepts/storage/volume-attributes-classes/ (Alpha) Using this field requires the VolumeAttributesClass feature gate to be enabled.",
 
-      "restartPolicy": { # valores sin palabras clave
+      "restartPolicy": { # valores sin palabras clave --
         "description": "Restart policy for all containers within the pod. One of Always, OnFailure, Never. In some contexts, only a subset of those values may be permitted. Default to Always. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy",
         "type": "string"
       },
@@ -363,7 +376,7 @@ Creo que solo ocurre en uno, es raro generar los valores y que tenga una referen
           "type": "boolean"
         },
 This is an alpha field
-
+-x
 "description": "ResourceClaim describes which resources are needed by a resource consumer. Its status tracks whether the resource has been allocated and what the resulting attributes are.\n\nThis is an alpha type and requires enabling the DynamicResourceAllocation feature gate.",
 
 hay varias asi: si se automatiza el encontrar a donde apunta se puede poner un !require (to be false) y un require (to be set)
@@ -1132,15 +1145,39 @@ ReplicationController => esquemaFeature_ReplicationController...Always & !Never 
 -- Hecho      
 "description": "Operation is the type of operation which lead to this ManagedFieldsEntry being created. The only valid values for this field are 'Apply' and 'Update'.", (444)
 
-
-
-
 PodSpec.nodeName
 
+        "endpoints": { ## harian falta numerar los items o tener un control sobre objetos/listas
+          "description": "endpoints is a list of unique endpoints in this slice. Each slice may include a maximum of 1000 endpoints.",
+          "items": {
+            "$ref": "#/definitions/io.k8s.api.discovery.v1.Endpoint"
+          },
 
 
+        "selectableFields": { ## este es igual que el anterior, maximo de 8 selectableFields que se podrian crear
+          "description": "selectableFields specifies paths to fields that may be used as field selectors. A maximum of 8 selectable fields are allowed. See https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors",
+          "items": {
+            "$ref": "#/definitions/io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1.SelectableField"
+          },
+          "type": "array",
+          "x-kubernetes-list-type": "atomic"
+        },
 
+        ## Igual que los anteriores:
 
+                "matchConditions": {
+          "description": "MatchConditions is a list of conditions that must be met for a request to be sent to this webhook. Match conditions filter requests that have already been matched by the rules, namespaceSelector, and objectSelector. An empty list of matchConditions matches all requests. There are a maximum of 64 match conditions allowed.\n\nThe exact matching logic is (in order):\n  1. If ANY matchCondition evaluates to FALSE, the webhook is skipped.\n  2. If ALL matchConditions evaluate to TRUE, the webhook is called.\n  3. If any matchCondition evaluates to an error (but none are FALSE):\n     - If failurePolicy=Fail, reject the request\n     - If failurePolicy=Ignore, the error is ignored and the webhook is skipped",
+          "items": {
+            "$ref": "#/definitions/io.k8s.api.admissionregistration.v1.MatchCondition"
+          },
+          "type": "array",
+          "x-kubernetes-list-map-keys": [
+            "name"
+          ],
+          "x-kubernetes-list-type": "map",
+          "x-kubernetes-patch-merge-key": "name",
+          "x-kubernetes-patch-strategy": "merge"
+        },
 It's a required field
 
 
@@ -1168,3 +1205,86 @@ Defaults to:
           "description": "singular is the singular name of the resource. It must be all lowercase. Defaults to lowercased `kind`.",
           "type": "string"
         }
+
+minimum valid value
+"description": "expirationSeconds is the requested duration of validity of the issued certificate. The certificate signer may issue a certificate with a different validity duration so a client must check the delta between the notBefore and and notAfter fields in the issued certificate to determine the actual duration.\n\nThe v1.22+ in-tree implementations of the well-known Kubernetes signers will honor this field as long as the requested duration is not greater than the maximum duration they will honor per the --cluster-signing-duration CLI flag to the Kubernetes controller manager.\n\nCertificate signers may not honor this field for various reasons:\n\n  1. Old signer that is unaware of the field (such as the in-tree\n     implementations prior to v1.22)\n  2. Signer whose configured maximum is shorter than the requested duration\n  3. Signer whose configured minimum is longer than the requested duration\n\nThe minimum valid value for expirationSeconds is 600, i.e. 10 minutes.",
+
+Minimum_Max
+
+--Hecho
+1 - 1295 restricciones
+2 - (3)
+3 - (36)
+4 - (92)
+Mediante estos grupos de restricciones se generaron las siguientes:
+En total se generaron 4 restricciones del siguiente grupo:
+Objetivo:
+feature > 1 (1295)
+          "description": "How often (in seconds) to perform the probe. Default to 10 seconds. Minimum value is 1.",
+          "format": "int32",
+          "type": "integer"
+        }   ## quizas se pueda añadir una restriccion que comprenda entre 1 < X. default to 10, minimum 1
+Value must be non-negative (36)
+            "description": "The duration in seconds before the object should be deleted. Value must be non-negative integer. The value zero indicates delete immediately. If this value is nil, the default grace period for the specified type will be used. Defaults to a per object value if not specified. zero means delete immediately.",
+
+spec.terminationGracePeriodSeconds == PodSpec.terminationGracePeriodSeconds
+!feature_Probe_terminationGracePeriodSeconds => PodSpec.terminationGracePeriodSeconds
+
+!feature_Probe_terminationGracePeriodSeconds => feature_Probe_terminationGracePeriodSeconds = spec.terminationGracePeriodSeconds (PodSpec.terminationGracePeriodSeconds)
+
+        "terminationGracePeriodSeconds": { -x
+          "description": "Optional duration in seconds the pod needs to terminate gracefully upon probe failure. The grace period is the duration in seconds after the processes running in the pod are sent a termination signal and the time when the processes are forcibly halted with a kill signal. Set this value longer than the expected cleanup time for your process. If this value is nil, the pod's terminationGracePeriodSeconds will be used. Otherwise, this value overrides the value provided by the pod spec. Value must be non-negative integer. The value zero indicates stop immediately via the kill signal (no opportunity to shut down). This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate. Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.",
+          "format": "int64",
+          "type": "integer"
+        },
+
+
+
+The maximum size of this field is 16KiB: se define por un valor string y no por Integer...
+          "description": "Data contains the opaque data associated with this ResourceHandle. It is set by the controller component of the resource driver whose name matches the DriverName set in the ResourceClaimStatus this ResourceHandle is embedded in. It is set at allocation time and is intended for processing by the kubelet plugin whose name matches the DriverName set in this ResourceHandle.\n\nThe maximum size of this field is 16KiB. This may get increased in the future, but not reduced.",
+
+. The keys cannot be empty, and the maximum number of parameters is 512, with a cumulative max size of 256K. If the CSI driver rejects invalid parameters,
+Valores:
+-x
+
+-- Hecho
+"description": "cachingMode is the Host Caching mode: None, Read Only, Read Write.",
+
+        "kind": {
+          "description": "kind expected values are Shared: multiple blob disks per storage account  Dedicated: single blob disk per storage account  Managed: azure managed data disk (only in managed availability set). defaults to shared",
+          "type": "string"
+        },
+-- Hecho
+
+range: -- Hecho
+            "weight": {
+          "description": "Weight associated with matching the corresponding nodeSelectorTerm, in the range 1-100.", (92)
+          "format": "int32",
+          "type": "integer"
+        }
+        
+Se podrian obtener las siguientes conclusiones de la descripcion (si se pudiese referenciar al valor del feature):
+
+  (spec.ordinals.start, .spec.ordinals.start + .spec.replicas).\nIf unset, defaults to 0. 
+  
+  Replica indices will be in the range:\n  [0, .spec.replicas).
+  
+  spec_ordinals_start // _StatefulSetList_items_spec_ordinals_start -- _StatefulSetList_items_spec_replicas
+  
+La sintaxis uvl no esta preparada para realizar este tipo de restricciones y obtención de los valores:
+(io_k8s_api_apps_v1_StatefulSetList_items_spec_ordinals_start < (io_k8s_api_apps_v1_StatefulSetList_items_spec_ordinals_start + io_k8s_api_apps_v1_StatefulSetList_items_spec_replicas))
+
+
+        "start": {
+          "description": "start is the number representing the first replica's index. It may be used to number replicas from an alternate index (eg: 1-indexed) over the default 0-indexed names, or to orchestrate progressive movement of replicas from one StatefulSet to another. If set, replica indices will be in the range:\n  [.spec.ordinals.start, .spec.ordinals.start + .spec.replicas).\nIf unset, defaults to 0. Replica indices will be in the range:\n  [0, .spec.replicas).",
+          "format": "int32",
+          "type": "integer"
+        }
+
+-x
+
+Otros:
+        "failurePolicy": {
+          "description": "failurePolicy defines how to handle failures for the admission policy. Failures can occur from CEL expression parse errors, type check errors, runtime errors and invalid or mis-configured policy definitions or bindings.\n\nA policy is invalid if spec.paramKind refers to a non-existent Kind. A binding is invalid if spec.paramRef.name refers to a non-existent resource.\n\nfailurePolicy does not define how validations that evaluate to false are handled.\n\nWhen failurePolicy is set to Fail, ValidatingAdmissionPolicyBinding validationActions define how failures are enforced.\n\nAllowed values are Ignore or Fail. Defaults to Fail.",
+          "type": "string"
+        },

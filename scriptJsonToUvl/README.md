@@ -184,9 +184,9 @@ En total se generaron 21 del segundo grupo:
 	
 
 
-### Agrupacion de restricciones de las politicas de reinicio que se permiten en relación a las plantillas que define un feature
+### Agrupacion de restricciones de las politicas de reinicio que se permiten en las plantillas que define un feature
 
-Genera restricciones UVL para template.spec.restartPolicy basadas basadas en los valores que se permiten segun las descripciones. Se agregan las restricciones de politicas de reinicio, se basan en la definición del valor que da "template.spec.restartPolicy". Maneja dos casos: Un único valor permitido: "Always". Dos valores permitidos: "Never" o "OnFailure". Se implementan en la función extract_constraints_template_onlyAllowed(). Las restricciones se dividen en dos casos por las palabras clave _value is_ y _values are_. Diferenciandose en que en el primer caso solo hay un valor permitido y en el segundo 2 valores. En base a las siguientes descripciones: _... The only allowed template.spec.restartPolicy value is \"Always\"._, siendo el primer caso y dando por hecho que el único valor posible es Always (evitando seleccionar los otros 2). Por otro lado, la otra descripción: _...The only allowed template.spec.restartPolicy values are \"Never\" or \"OnFailure\"_, deduciendo que los valores posibles son _Never_ y _OnFailure_ y el que no se puede coger _Always_. 
+Genera restricciones UVL basadas en los valores que se permiten según la expresión _template.spec.restartPolicy_, la cual define templates o plantillas que se pueden usar en un determinado esquema/feature que se permiten segun el valor obtenido de las descripciones. Se mencionan restricciones de politicas de reinicio. Maneja varios casos: El primero, un único valor permitido: "Always". El segundo, dos valores permitidos: "Never" o "OnFailure". Se implementan en la función extract_constraints_template_onlyAllowed(). Las restricciones se dividen por las palabras clave _value is_ y _values are_. *Diferenciandose en que en el primer caso solo hay un valor permitido y en el segundo 2 valores*. En base a las siguientes descripciones: _... The only allowed template.spec.restartPolicy value is \"Always\"._, siendo el primer caso y dando por hecho que el único valor posible es Always (evitando seleccionar los otros 2) y, por otro lado: _...The only allowed template.spec.restartPolicy values are \"Never\" or \"OnFailure\"_, de aquí se puede deducir que los valores posibles son _Never_ y _OnFailure_ y el que no se puede coger _Always_. Como ejemplo de la restricciones resultantes son las siguientes:
 
 	(io_k8s_api_apps_v1_StatefulSetSpec_template => io_k8s_api_apps_v1_StatefulSetSpec_template_spec_restartPolicy_Always & !io_k8s_api_apps_v1_StatefulSetSpec_template_spec_restartPolicy_Never & !io_k8s_api_apps_v1_StatefulSetSpec_template_spec_restartPolicy_OnFailure)
 	(io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_template => io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_template_spec_restartPolicy_Never | io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_template_spec_restartPolicy_OnFailure) & !io_k8s_api_batch_v1_CronJob_spec_jobTemplate_spec_template_spec_restartPolicy_Always
@@ -194,10 +194,37 @@ Genera restricciones UVL para template.spec.restartPolicy basadas basadas en los
 En total se generaron 19 restricciones.
 
 
+
+### Agrupación de valores minimos
+
+En esta parte se vuelven a agregar restricciones que mencionan minimos con varias expresiones y un rango de enteros. Se implementan en la función extract_minimum_value(). Esta agrupación se basa en las descripciones con palabras clave: _Minimum value is_, _minimum valid value for expirationSeconds is_ y _in the range_. Las restricciones se dividen en diferentes casos por las palabras clave mencionadas. En el primer caso se usa la expresión para obtener el valor que se encuentra justo después de la expresión, siendo una de las descripciones capturadas: _Minimum consecutive failures for the probe to be considered failed after having succeeded. Defaults to 3. Minimum value is 1._, en el segundo caso la descripción que se captura es: _expirationSeconds is the requested duration of validity of the issued certificate...\n\nCertificate signers may not honor this field for various reasons:\n\n  1. Old signer that is unaware of the field (such as the in-tree\n implementations prior to v1.22)\n  2. Signer whose configured maximum is shorter than the requested duration\n  3. Signer whose configured minimum is longer than the requested duration\n\nThe minimum valid value for expirationSeconds is 600, i.e. 10 minutes."_ obteniendose el valor de 600 como valor mínimo de los segundos de expiración. El tercer caso con uso de patrón es el relacionado con un rango, se agrego la obtención aquí ya que se detecto mientras se implementaban las otras. Sin embargo, se podría agrupar en un conjunto similar pero por el momento queda anotada aquí. Esta expresión obtiene los valores que se comprenden entre 2 valores separados por un guión, siendo la descripción captada: _Weight associated with matching the corresponding nodeSelectorTerm, in the range 1-100._, se obtiene como mínimo el 1 y como máximo el 100. En un caso aparte: mediante las palabras _Value must be non-negative_ se usan directamente para definir una regla y que el valor minimo posible del feature sea mayor que 0.
+
+Se generaron 1295 restricciones del primer caso:
+	io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_startupProbe_periodSeconds > 1
+	io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_startupProbe_successThreshold > 1
+	io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_startupProbe_terminationGracePeriodSeconds > 1
+	io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_startupProbe_timeoutSeconds > 1
+	io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_livenessProbe_failureThreshold > 1
+
+ Del segundo caso se generaron 3 restricciones:
+	io_k8s_api_certificates_v1_CertificateSigningRequest_spec_expirationSeconds > 600
+	io_k8s_api_certificates_v1_CertificateSigningRequestList_items_spec_expirationSeconds > 600
+	io_k8s_api_certificates_v1_CertificateSigningRequestSpec_expirationSeconds > 600
+
+Del tercer caso (rango) se generaron 92 restricciones:
+	io_k8s_api_core_v1_Affinity_nodeAffinity_preferredDuringSchedulingIgnoredDuringExecution_weight > 1 & io_k8s_api_core_v1_Affinity_nodeAffinity_preferredDuringSchedulingIgnoredDuringExecution_weight < 100
+	io_k8s_api_core_v1_Affinity_podAffinity_preferredDuringSchedulingIgnoredDuringExecution_weight > 1 & io_k8s_api_core_v1_Affinity_podAffinity_preferredDuringSchedulingIgnoredDuringExecution_weight < 100
+
+Del caso aparte se generaron 36 restricciones:
+	io_k8s_api_core_v1_PodTemplateList_items_template_spec_terminationGracePeriodSeconds > 0
+	io_k8s_api_core_v1_PodTemplateSpec_spec_terminationGracePeriodSeconds > 0
+
+En total, en esta función, se generaron 1426 constraints nuevas.
+
+
+
 ### Agrupación de restricciones $... :
 
 En desarrollo de más patrones y constraints...
-
-
 
 ### Archivo en Agrupaciones.md
