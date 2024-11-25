@@ -205,7 +205,7 @@ Se generaron 1295 restricciones del primer caso:
 	io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_startupProbe_terminationGracePeriodSeconds > 1
 	io_k8s_api_apps_v1_DaemonSet_spec_template_spec_containers_startupProbe_timeoutSeconds > 1
 	io_k8s_api_apps_v1_DaemonSet_spec_template_spec_ephemeralContainers_livenessProbe_failureThreshold > 1
-
+	
  Del segundo caso se generaron 3 restricciones:
 	io_k8s_api_certificates_v1_CertificateSigningRequest_spec_expirationSeconds > 600
 	io_k8s_api_certificates_v1_CertificateSigningRequestList_items_spec_expirationSeconds > 600

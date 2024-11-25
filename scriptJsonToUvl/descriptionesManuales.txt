@@ -1288,3 +1288,17 @@ Otros:
           "description": "failurePolicy defines how to handle failures for the admission policy. Failures can occur from CEL expression parse errors, type check errors, runtime errors and invalid or mis-configured policy definitions or bindings.\n\nA policy is invalid if spec.paramKind refers to a non-existent Kind. A binding is invalid if spec.paramRef.name refers to a non-existent resource.\n\nfailurePolicy does not define how validations that evaluate to false are handled.\n\nWhen failurePolicy is set to Fail, ValidatingAdmissionPolicyBinding validationActions define how failures are enforced.\n\nAllowed values are Ignore or Fail. Defaults to Fail.",
           "type": "string"
         },
+
+
+Ajustes analizando Dead Features:
+    io_k8s_api_admissionregistration_v1_ParamRef_name: deberia de tener un sub nivel con mandatory y string
+    error detectado en mala sintaxis con el segundo feature...
+
+Segundo tramo de features Always, OnFailure y Never:
+Hay Dead Features porque nunca se seleccionan las que no se usan, OnFailure y Never => Dead Features. Always en segundo tramo
+Quizas simplificar mas al tenerlo como alternative: (io_k8s_api_apps_v1_DaemonSet_spec_template => io_k8s_api_apps_v1_DaemonSet_spec_template_spec_restartPolicy_Always)
+
+Tercer grupo de deads:
+
+feature_Approved => not (feature_False or feature_Unknown)
+Se forman dead features porque limitamos la seleccion de las opciones a las que no se pueden...

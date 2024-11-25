@@ -404,7 +404,7 @@ class SchemaProcessor:
 
             # Verificar coincidencias con expresiones regulares
         for pattern in self.boolean_keywords_regex:
-            if re.search(pattern, full_name):
+            if re.search(pattern, full_name) and not full_name.endswith('nameStr') and not full_name.endswith('valueInt'): ## Para mantener el tipo original del feature
                 #print(f"Coincidencia de expresión regular encontrada: {full_name}")
                 feature_type_data = 'Boolean'
             
@@ -626,7 +626,8 @@ class SchemaProcessor:
                             'type_data': ''  # Boolean por defecto: se cambia a vacio
                         })
                 
-                if any(keyword in full_name for keyword in self.boolean_keywords): ## and not full_name.endswith('_name')
+                if any(keyword in full_name for keyword in self.boolean_keywords) or any(re.search(keyword, full_name) for keyword in self.boolean_keywords_regex): ## and not full_name.endswith('_name')
+                    ## FALTA AGREGAR self.regex...
                 #return 'Boolean'
                     print("El tipo de dato es: ", self.feature_aux_original_type)
     
@@ -644,7 +645,7 @@ class SchemaProcessor:
                         'type': 'mandatory', # Todos los valores suelen ser alternatives (Elección de solo uno)
                         'description': f"Added Integer mandatory for changing booleans of boolean_keywords: Integer *_name",
                         'sub_features': [],
-                        'type_data': 'Integer'  # String por defecto: se necesita un feature abierto para poder introducir un campo de texto
+                        'type_data': 'Integer'  # Integer por defecto: se necesita un feature abierto para poder introducir un entero positivo
                     })
 
                 # Procesar propiedades anidadas
