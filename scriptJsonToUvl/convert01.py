@@ -31,9 +31,16 @@ class SchemaProcessor:
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
         self.patterns = {
             'values': re.compile(r'^\b$', re.IGNORECASE), # values are|valid|supported|acceptable|can be
-            'restrictions': re.compile(r'If the operator is|must be between|Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope|\. At least one of|a least one of|Exactly one of|resource access request|Details about a waiting|Sleep represents|datasetUUID is|succeededIndexes specifies|Represents the requirement on the container|conditions may not be|ResourceClaim object in the same namespace as this pod|indicates which one of|may be non-empty only if|template.spec.restartPolicy|Minimum value is|Value must be non-negative|minimum valid value for|in the range 1-', re.IGNORECASE),### If the operator is|must be between|   # \. Required when|required when scope  ## the currently supported values are(valores) allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
+            'restrictions': re.compile(r'If the operator is|template.spec.restartPolicy|conditions may not be|Details about a waiting|TCPSocket is NOT|must be between|Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope|\. At least one of|a least one of|Exactly one of|resource access request|datasetUUID is|succeededIndexes specifies|Represents the requirement on the container|ResourceClaim object in the same namespace as this pod|indicates which one of|may be non-empty only if|Minimum value is|Value must be non-negative|minimum valid value for|in the range 1-', re.IGNORECASE),### If the operator is|must be between|   # \. Required when|required when scope  ## the currently supported values are(valores) allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed            'dependencies': re.compile(r'^\b$', re.IGNORECASE) ## (requires|if[\s\S]*?only if|only if) # depends on ningun caso especial, quitar relies on: no hay casos, contingent upon: igual = related to
             'dependencies': re.compile(r'^\b$', re.IGNORECASE) ## (requires|if[\s\S]*?only if|only if) # depends on ningun caso especial, quitar relies on: no hay casos, contingent upon: igual = related to
+
         }
+
+##             'restrictions': re.compile(r'If the operator is|template.spec.restartPolicy|conditions may not be|Details about a waiting|Sleep represents|must be between|Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope|\. At least one of|a least one of|Exactly one of|resource access request|datasetUUID is|succeededIndexes specifies|Represents the requirement on the container|ResourceClaim object in the same namespace as this pod|indicates which one of|may be non-empty only if|Minimum value is|Value must be non-negative|minimum valid value for|in the range 1-', re.IGNORECASE),### If the operator is|must be between|   # \. Required when|required when scope  ## the currently supported values are(valores) allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
+
+### Quitados: |conditions may not be, Details about a waiting|Sleep represents| => extract_constraints_multiple_conditions, |template.spec.restartPolicy => extract_constraints_template_onlyAllowed
+## con error encontrado:             'restrictions': re.compile(r'If the operator is|must be between|Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope|\. At least one of|a least one of|Exactly one of|resource access request|Details about a waiting|Sleep represents|datasetUUID is|succeededIndexes specifies|Represents the requirement on the container|conditions may not be|ResourceClaim object in the same namespace as this pod|indicates which one of|may be non-empty only if|template.spec.restartPolicy|Minimum value is|Value must be non-negative|minimum valid value for|in the range 1-', re.IGNORECASE),### If the operator is|must be between|   # \. Required when|required when scope  ## the currently supported values are(valores) allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
+
         # 'restrictions': re.compile(r'Minimum value is|Value must be non-negative|minimum valid value for|in the range 1-', re.IGNORECASE),### If the operator is|must be between|   # \. Required when|required when scope  ## the currently supported values are(valores) allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
 
         ### Uso con todas las restricciones: If the operator is|must be between|Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope|\. At least one of|a least one of|Exactly one of|resource access request|Details about a waiting|Sleep represents|datasetUUID is|succeededIndexes specifies|Represents the requirement on the container|conditions may not be|ResourceClaim object in the same namespace as this pod|indicates which one of|may be non-empty only if|template.spec.restartPolicy
@@ -800,11 +807,15 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
 
 # Rutas de archivo relativas
 #definitions_file = '../kubernetes-json-schema/v1.30.4/_definitions.json'
-definitions_file = '../kubernetes-json-v1.30.2/v1.30.2/_definitions.json'
-output_file = './kubernetes_combined_02.uvl'
-descriptions_file = './descriptions_01.json'
+#definitions_file = '../kubernetes-json-v1.30.2/v1.30.2/_definitions.json'
+definitions_file = '../kubernetes-json-v1.30.0/v1.30.0/_definitions.json'
 
-restrictions_output_file = './restrictions02.txt'
+#output_file = './kubernetes_combined_02.uvl'
+output_file = './Modelo-v.1.30.0/kubernetes_combined_02_30_0.uvl'
+
+descriptions_file = './Modelo-v.1.30.0/descriptions_01_v30_0.json'
+
+restrictions_output_file = './Modelo-v.1.30.0/restrictions02_30_0.txt'
 
 # Generar archivo UVL y guardar descripciones
 generate_uvl_from_definitions(definitions_file, output_file, descriptions_file)

@@ -1302,3 +1302,60 @@ Tercer grupo de deads:
 
 feature_Approved => not (feature_False or feature_Unknown)
 Se forman dead features porque limitamos la seleccion de las opciones a las que no se pueden...
+
+Sleep Represents: Causaba varios dead features y falses por generallizar el que no se use en LifecycleHandler. Lo aplicaba a todos y eso causaba el conflicto con otras restricciones de rangos etc
+Error solucionado añadiendo el condicional para que solo se agregue en el caso especifico
+
+        """(feature_exec | feature_httpGet | feature_sleep) &
+        !(feature_exec & feature_httpGet) &
+        !(feature_exec & feature_sleep) &
+        !(feature_httpGet & feature_sleep) &
+        !feature_tcpSocket"""
+
+
+        "conditions may not be"
+
+            ##uvl_rule = uvl_rule.strip()
+        """ feature_Approved => not (feature_False or feature_Unknown) ## objetivo # Nota añadida: generan Dead Features
+            feature_Denied => not (feature_False or feature_Unknown)
+            feature_Failed => not (feature_False or feature_Unknown)"""
+
+""" for condition in conditions_match: # como antes
+        print("Valor condition", condition)
+        uvl_rule += f"{feature_without_lastProperty} => ({feature_without_lastProperty}_type_{condition} => {types_notbe})\n"""
+        
+
+""oneOf()
+
+        """ feature_kind == "Group" => feature_group 
+        | feature_kind == "ServiceAccount" => feature_serviceAccount 
+        | feature_kind == "User" => feature_user 
+        & !(feature_group & feature_serviceAccount) & !(feature_group & feature_user) & !(feature_serviceAccount & feature_user)"""
+"conditions may not be"
+: Modificado: de 12 a 4 constraints involucradas. Se ignora el tpSocket de esta propiedad del feature por derpecated
+
+
+
+
+
+COMPARACIÓN MODELO GENERADO AUTO. CON MODELO MANUAL DESDE LA DOC..(Enrique)
+
+Core features auto: 0
+
+"group": "admission.k8s.io": objetos donde se definen los grupos y versiones... vienen en el nombre inhibidas
+
+
+Core features manifes: 2 (apiVersion y kind)
+
+
+Comprobando las versiones de objetos donde se definen varias, hay versiones que no estan en la doc o no se mencionan...
+        {
+          "group": "storage.k8s.io",
+          "kind": "DeleteOptions",
+          "version": "v1beta1"
+        },
+
+Diferencias con el modelo de Enrique:
+Definicion de ApiVersion y kind como features con los valores posibles. "Creo" que en mi versión no hace falta porque los grupos y las versiones a los que pertenecen los features vienen inhibidos en el nombre del feature tambien
+
+features de tipo Array como cardinatility // en el mio se usa como Boolean
