@@ -1358,4 +1358,94 @@ Comprobando las versiones de objetos donde se definen varias, hay versiones que 
 Diferencias con el modelo de Enrique:
 Definicion de ApiVersion y kind como features con los valores posibles. "Creo" que en mi versión no hace falta porque los grupos y las versiones a los que pertenecen los features vienen inhibidos en el nombre del feature tambien
 
-features de tipo Array como cardinatility // en el mio se usa como Boolean
+features de tipo Array como cardinatility // en el mio se usa como un Boolean normal
+
+Boolean como true, false? => parece que se puede definir igualmente
+Se Podria completar mas el modelo añadiendo default true, false. Palabras que buscar:
+default to false(5) /true(1)
+defaults to false(33) / defaults to true(4)
+default false (3)
+Default is false (8)
+
+
+
+
+Descripciones interesantes:
+
+Creo que feature padre al que se refieren: CustomResourceDefinition -- spec_preserveUnknownFields // spec_conversion_webhook
+    "io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1.CustomResourceDefinition": {
+      "description": "CustomResourceDefinition represents a resource that should be exposed on the API server.  Its name MUST be in the format <.spec.name>.<.spec.group>.",
+      "properties": {
+        "spec": {
+          "$ref": "#/definitions/io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1.CustomResourceDefinitionSpec",
+          "description": "spec describes how the user wants the resources to appear"
+        }, 
+
+This requires spec.preserveUnknownFields to be false, and spec.conversion.webhook to be set.
+"description": "strategy specifies how custom resources are converted between versions. Allowed values are: - `\"None\"`: The converter only change the apiVersion and would not touch any other field in the custom resource. - `\"Webhook\"`: API Server will call to an external webhook to do the conversion. Additional information\n  is needed for this option. This requires spec.preserveUnknownFields to be false, and spec.conversion.webhook to be set.",
+
+        "preserveUnknownFields": {
+          "description": "preserveUnknownFields indicates that object fields which are not specified in the OpenAPI schema should be preserved when persisting to storage. apiVersion, kind, metadata and known fields inside metadata are always preserved. This field is deprecated in favor of setting `x-preserve-unknown-fields` to true in `spec.versions[*].schema.openAPIV3Schema`. See https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#field-pruning for details.",
+          "type": "boolean"
+        },        
+        
+        "webhook": {
+          "$ref": "#/definitions/io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1.WebhookConversion",
+          "description": "webhook describes how to call the conversion webhook. Required when `strategy` is set to `\"Webhook\"`."
+        }
+
+Puede ser que haya que ajustar la siguiente regla tambien, para definir q ue solo esta activa si strategy se define como webhook...
+"description": "webhook describes how to call the conversion webhook. Required when `strategy` is set to `\"Webhook\"`."
+io_k8s_apiextensions_apiserver_pkg_apis_apiextensions_v1_CustomResourceDefinition_spec_conversion_strategy_Webhook
+
+
+Regla entre clusterScope y namespaces: si clusterScope es false => namespaces true, si clusterScope es false, namespaces no debe de ser vacio
+    "io.k8s.api.flowcontrol.v1beta3.ResourcePolicyRule": {
+
+        "clusterScope": {
+          "description": "`clusterScope` indicates whether to match requests that do not specify a namespace (which happens either because the resource is not namespaced or the request targets all namespaces). If this field is omitted or false then the `namespaces` field must contain a non-empty list.",
+          "type": "boolean"
+        },
+        "namespaces": {
+          "description": "`namespaces` is a list of target namespaces that restricts matches.  A request that specifies a target namespace matches only if either (a) this list contains that target namespace or (b) this list contains \"*\".  Note that \"*\" matches any specified namespace but does not match a request that _does not specify_ a namespace (see the `clusterScope` field for that). This list may be empty, but only if `clusterScope` is true.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "x-kubernetes-list-type": "set"
+        },
+
+
+Pendientes **
+spec.paramRef.name
+spec.host
+spec.minReadySeconds
+spec.audiences
+spec.namespace
+template.spec.restartPolicy
+.spec.completions
+.spec.completionMode = \"Indexed\"
+when spec.backoffLimitPerIndex is set
+.status.succeeded
+.spec.completions
+spec.signerName 
+`spec.signerName=NAME`
+spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+`PodSpec.Volumes`
+Node.Spec.ConfigSource is updated
+PVC.spec.resources
+pod.spec.resourceClaims
+
+Ya hecho pero para tener en cuenta... \n\nIf the OS field is set to linux, the following fields must be unset: -securityContext.windowsOptions\n\nIf the OS field is set to windows, following fields must be unset: - spec.hostPID - spec.hostIPC - spec.hostUsers - spec.securityContext.appArmorProfile - spec.securityContext.seLinuxOptions - spec.securityContext.seccompProfile - spec.securityContext.fsGroup - spec.securityContext.fsGroupChangePolicy - spec.securityContext.sysctls - spec.shareProcessNamespace - spec.securityContext.runAsUser - spec.securityContext.runAsGroup - spec.securityContext.supplementalGroups - spec.containers[*].securityContext.appArmorProfile - spec.containers[*].securityContext.seLinuxOptions - spec.containers[*].securityContext.seccompProfile - spec.containers[*].securityContext.capabilities - spec.containers[*].securityContext.readOnlyRootFilesystem - spec.containers[*].securityContext.privileged - spec.containers[*].securityContext.allowPrivilegeEscalation - spec.containers[*].securityContext.procMount - spec.containers[*].securityContext.runAsUser - spec.containers[*].securityContext.runAsGroup"
+pod spec. Value must be non-negative integer.
+
+spec.terminationGracePeriodSeconds
+in pod.spec.resourceClaims
+spec.resourceClaims
+PodSchedulingSpec.PotentialNodes
+CSIDriverSpec.StorageCapacity
+`spec.versions`
+`spec.replicas`
+oldSelf.value()
+self.status.actual <= self.spec.maxDesired
+spec.paramKind
