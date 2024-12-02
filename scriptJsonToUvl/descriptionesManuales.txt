@@ -946,6 +946,68 @@ Otra:
         "description": "Image pull policy. One of Always, Never, IfNotPresent. Defaults to Always if :latest tag is specified, or IfNotPresent otherwise. Cannot be updated. More info: https://kubernetes.io/docs/concepts/containers/images#updating-images",
         "type": "string"
       },
+
+Descripciones:
+
+"properties": {
+  "postStart": {
+    "$ref": "#/definitions/io.k8s.api.core.v1.LifecycleHandler",
+    "description": "PostStart is called immediately after a container is created. If the handler fails, the container is terminated and restarted according to its restart policy. Other management of the container blocks until the hook completes. More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks"
+  },
+      "io.k8s.api.core.v1.LifecycleHandler": {
+        "description": "LifecycleHandler defines a specific action that should be taken in a lifecycle hook. One and only one of the fields, except TCPSocket must be specified.",
+        "properties": {
+          "exec": {
+            "$ref": "#/definitions/io.k8s.api.core.v1.ExecAction",
+            "description": "Exec specifies the action to take."
+          },
+Comparado con mi modelo:
+
+      io_k8s_api_core_v1_PodSpec_containers_lifecycle
+        optional
+          io_k8s_api_core_v1_PodSpec_containers_lifecycle_postStart
+            optional
+              io_k8s_api_core_v1_PodSpec_containers_lifecycle_postStart_exec
+                optional
+                  io_k8s_api_core_v1_PodSpec_containers_lifecycle_postStart_exec_command
+
+Cuando usa cardinality? No es solo para arrays y objects?
+
+              Boolean CONTAINERS_lifecycle {doc 'Actions that the management system should take in response to container lifecycle events. Cannot be updated.'}
+                  optional
+                      Boolean LIFECYCLE_postStart {doc 'PostStart is called immediately after a container is created. If the handler fails, the container is terminated and restarted according to its restart policy. Other management of the container blocks until the hook completes. More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'}
+                          optional   
+                              Boolean POSTSTART_exec cardinality [1..*] {doc 'Exec specifies the action to take.'}
+                                  mandatory   
+                                      String POSTSTART_EXEC_command {doc 'Command is the command line to execute inside the container, the working directory for the command is root ("/") in the container`s filesystem. The command is simply exec`d, it is not run inside a shell, so traditional shell instructions ("|", etc) won`t work. To use a shell, you need to explicitly call out to that shell. Exit status of 0 is treated as live/healthy and non-zero is unhealthy.'}
+                              Boolean POSTSTART_httpGet {doc 'HTTPGet specifies the http request to perform.'}
+                                  mandatory 
+
+En Probe tampoco hay mandatory en exec y se pone como... Dudoso(Preguntar)
+
+ExecAction igual::
+definido como object en esquema pero en doc es el command el que esta como array igual que en esquema
+
+    "io.k8s.api.core.v1.ExecAction": {
+      "description": "ExecAction describes a \"run in container\" action.",
+      "properties": {
+        "command": {
+          "description": "Command is the command line to execute inside the container, the working directory for the command  is root ('/') in the container's filesystem. The command is simply exec'd, it is not run inside a shell, so traditional shell instructions ('|', etc) won't work. To use a shell, you need to explicitly call out to that shell. Exit status of 0 is treated as live/healthy and non-zero is unhealthy.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "x-kubernetes-list-type": "atomic"
+        }
+      },
+      "type": "object"
+    },
+
+** PENDIENTES: Añadir cardinality a tipos de dato array -- typeData == or "array": add cardinality...cardinality [1..*]
+- Apuntar restricciones que no se pudieron definir por la complejidad (elementos en arrays...)
+- Agregar abstract a los ya creados...  
+- array suele ir con items: **clasificar las caract**
+- Añadir definicion de atributos (doc => descripcion)
 -- Hecho
 
     Restricciones multiples de que solo uno de los 3 puede ser seleccionado
@@ -1359,7 +1421,60 @@ Diferencias con el modelo de Enrique:
 Definicion de ApiVersion y kind como features con los valores posibles. "Creo" que en mi versión no hace falta porque los grupos y las versiones a los que pertenecen los features vienen inhibidos en el nombre del feature tambien
 
 features de tipo Array como cardinatility // en el mio se usa como un Boolean normal
+Tambien define object con una cardinilidad... Boolean METADATA_labels cardinality [1..*], Boolean METADATA_annotations cardinality [1..*]
+metadata --     "io.k8s.apimachinery.pkg.apis.meta.v1.ObjectMeta": {
 
+
+          Boolean CONTAINERS_args cardinality [1..*] {doc 'Arguments to the entrypoint. The container image`s CMD is used if this is not provided. Variable references $(VAR_NAME) are expanded using the container`s environment. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'}
+              mandatory   
+                  String CONTAINERS_ARGS_value 
+          Boolean CONTAINERS_command cardinality [1..*] {doc 'Entrypoint array. Not executed within a shell. The container image`s ENTRYPOINT is used if this is not provided. Variable references $(VAR_NAME) are expanded using the container`s environment. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'}
+              mandatory   
+                  String CONTAINERS_COMMAND_value 
+          Boolean CONTAINERS_env cardinality [1..*] {doc 'List of environment variables to set in the container. Cannot be updated.'}
+              mandatory
+                  String CONTAINERS_ENV_name {doc 'Name of the environment variable. Must be a C_IDENTIFIER.'}
+                  String CONTAINERS_ENV_value {default ' ',doc 'Variable references $(VAR_NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".'}
+              optional
+                Boolean CONTAINERS_ENV_valueFrom {doc 'Source for the environment variable`s value. Cannot be used if value is not empty.'}
+                  alternative   
+                      Boolean configMapKeyRef {doc 'Selects a key of a ConfigMap.'}
+                          mandatory
+                              String CONFIGMAPKEYREF_key {doc 'The key to select.'}
+                              String CONFIGMAPKEYREF_name {doc 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'}
+                          optional
+                              Boolean CONFIGMAPKEYREF_optional {doc 'Specify whether the ConfigMap or its key must be defined'}
+                      Boolean fieldRef
+
+
+Ademas: agrega value como mandatory y no tiene nada que lo defina como obligatorio...
+        "env": {
+          "description": "List of environment variables to set in the container. Cannot be updated.",
+          "items": {
+            "$ref": "#/definitions/io.k8s.api.core.v1.EnvVar"
+          },
+          "type": "array",
+          "x-kubernetes-list-map-keys": [
+            "name"
+          ],
+          "x-kubernetes-list-type": "map",
+          "x-kubernetes-patch-merge-key": "name",
+          "x-kubernetes-patch-strategy": "merge"
+        },
+
+Me parece que ademas se fija en el "name" para definirlo como propiedad del feature
+
+
+  "containerName": {
+    "description": "Container name: required for volumes, optional for env vars",
+    "type": "string"
+  }, ##  "Container name: required for volumes, optional for env vars" = restricc "compleja"
+
+  },
+  "divisor": {
+    "$ref": "#/definitions/io.k8s.apimachinery.pkg.api.resource.Quantity",
+    "description": "Specifies the output format of the exposed resources, defaults to \"1\""
+  }, ## Modificado con las 2 opciones de Quality String/Integer, se podria agregar default 1 en los 2? 
 Boolean como true, false? => parece que se puede definir igualmente
 Se Podria completar mas el modelo añadiendo default true, false. Palabras que buscar:
 default to false(5) /true(1)
