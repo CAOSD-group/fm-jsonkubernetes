@@ -947,67 +947,7 @@ Otra:
         "type": "string"
       },
 
-Descripciones:
 
-"properties": {
-  "postStart": {
-    "$ref": "#/definitions/io.k8s.api.core.v1.LifecycleHandler",
-    "description": "PostStart is called immediately after a container is created. If the handler fails, the container is terminated and restarted according to its restart policy. Other management of the container blocks until the hook completes. More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks"
-  },
-      "io.k8s.api.core.v1.LifecycleHandler": {
-        "description": "LifecycleHandler defines a specific action that should be taken in a lifecycle hook. One and only one of the fields, except TCPSocket must be specified.",
-        "properties": {
-          "exec": {
-            "$ref": "#/definitions/io.k8s.api.core.v1.ExecAction",
-            "description": "Exec specifies the action to take."
-          },
-Comparado con mi modelo:
-
-      io_k8s_api_core_v1_PodSpec_containers_lifecycle
-        optional
-          io_k8s_api_core_v1_PodSpec_containers_lifecycle_postStart
-            optional
-              io_k8s_api_core_v1_PodSpec_containers_lifecycle_postStart_exec
-                optional
-                  io_k8s_api_core_v1_PodSpec_containers_lifecycle_postStart_exec_command
-
-Cuando usa cardinality? No es solo para arrays y objects?
-
-              Boolean CONTAINERS_lifecycle {doc 'Actions that the management system should take in response to container lifecycle events. Cannot be updated.'}
-                  optional
-                      Boolean LIFECYCLE_postStart {doc 'PostStart is called immediately after a container is created. If the handler fails, the container is terminated and restarted according to its restart policy. Other management of the container blocks until the hook completes. More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'}
-                          optional   
-                              Boolean POSTSTART_exec cardinality [1..*] {doc 'Exec specifies the action to take.'}
-                                  mandatory   
-                                      String POSTSTART_EXEC_command {doc 'Command is the command line to execute inside the container, the working directory for the command is root ("/") in the container`s filesystem. The command is simply exec`d, it is not run inside a shell, so traditional shell instructions ("|", etc) won`t work. To use a shell, you need to explicitly call out to that shell. Exit status of 0 is treated as live/healthy and non-zero is unhealthy.'}
-                              Boolean POSTSTART_httpGet {doc 'HTTPGet specifies the http request to perform.'}
-                                  mandatory 
-
-En Probe tampoco hay mandatory en exec y se pone como... Dudoso(Preguntar)
-
-ExecAction igual::
-definido como object en esquema pero en doc es el command el que esta como array igual que en esquema
-
-    "io.k8s.api.core.v1.ExecAction": {
-      "description": "ExecAction describes a \"run in container\" action.",
-      "properties": {
-        "command": {
-          "description": "Command is the command line to execute inside the container, the working directory for the command  is root ('/') in the container's filesystem. The command is simply exec'd, it is not run inside a shell, so traditional shell instructions ('|', etc) won't work. To use a shell, you need to explicitly call out to that shell. Exit status of 0 is treated as live/healthy and non-zero is unhealthy.",
-          "items": {
-            "type": "string"
-          },
-          "type": "array",
-          "x-kubernetes-list-type": "atomic"
-        }
-      },
-      "type": "object"
-    },
-
-** PENDIENTES: Añadir cardinality a tipos de dato array -- typeData == or "array": add cardinality...cardinality [1..*]
-- Apuntar restricciones que no se pudieron definir por la complejidad (elementos en arrays...)
-- Agregar abstract a los ya creados...  
-- array suele ir con items: **clasificar las caract**
-- Añadir definicion de atributos (doc => descripcion)
 -- Hecho
 
     Restricciones multiples de que solo uno de los 3 puede ser seleccionado
@@ -1530,6 +1470,68 @@ Regla entre clusterScope y namespaces: si clusterScope es false => namespaces tr
           "x-kubernetes-list-type": "set"
         },
 
+Descripciones:
+
+"properties": {
+  "postStart": {
+    "$ref": "#/definitions/io.k8s.api.core.v1.LifecycleHandler",
+    "description": "PostStart is called immediately after a container is created. If the handler fails, the container is terminated and restarted according to its restart policy. Other management of the container blocks until the hook completes. More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks"
+  },
+      "io.k8s.api.core.v1.LifecycleHandler": {
+        "description": "LifecycleHandler defines a specific action that should be taken in a lifecycle hook. One and only one of the fields, except TCPSocket must be specified.",
+        "properties": {
+          "exec": {
+            "$ref": "#/definitions/io.k8s.api.core.v1.ExecAction",
+            "description": "Exec specifies the action to take."
+          },
+Comparado con mi modelo:
+
+      io_k8s_api_core_v1_PodSpec_containers_lifecycle
+        optional
+          io_k8s_api_core_v1_PodSpec_containers_lifecycle_postStart
+            optional
+              io_k8s_api_core_v1_PodSpec_containers_lifecycle_postStart_exec
+                optional
+                  io_k8s_api_core_v1_PodSpec_containers_lifecycle_postStart_exec_command
+
+Cuando usa cardinality? No es solo para arrays y objects? // En el ejemplo puesto si se sigue la propiedad array como cardinality se define en la propiedad command y no en exec.. // Exec specifies the action to take
+
+              Boolean CONTAINERS_lifecycle {doc 'Actions that the management system should take in response to container lifecycle events. Cannot be updated.'}
+                  optional
+                      Boolean LIFECYCLE_postStart {doc 'PostStart is called immediately after a container is created. If the handler fails, the container is terminated and restarted according to its restart policy. Other management of the container blocks until the hook completes. More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'}
+                          optional   
+                              Boolean POSTSTART_exec cardinality [1..*] {doc 'Exec specifies the action to take.'}
+                                  mandatory   
+                                      String POSTSTART_EXEC_command {doc 'Command is the command line to execute inside the container, the working directory for the command is root ("/") in the container`s filesystem. The command is simply exec`d, it is not run inside a shell, so traditional shell instructions ("|", etc) won`t work. To use a shell, you need to explicitly call out to that shell. Exit status of 0 is treated as live/healthy and non-zero is unhealthy.'}
+                              Boolean POSTSTART_httpGet {doc 'HTTPGet specifies the http request to perform.'}
+                                  mandatory 
+
+En Probe tampoco hay mandatory en exec y se pone como... Dudoso(Preguntar)
+
+ExecAction igual::
+definido como object en esquema pero en doc es el command el que esta como array igual que en esquema
+
+    "io.k8s.api.core.v1.ExecAction": {
+      "description": "ExecAction describes a \"run in container\" action.",
+      "properties": {
+        "command": {
+          "description": "Command is the command line to execute inside the container, the working directory for the command  is root ('/') in the container's filesystem. The command is simply exec'd, it is not run inside a shell, so traditional shell instructions ('|', etc) won't work. To use a shell, you need to explicitly call out to that shell. Exit status of 0 is treated as live/healthy and non-zero is unhealthy.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "x-kubernetes-list-type": "atomic"
+        }
+      },
+      "type": "object"
+    },
+
+** PENDIENTES: Añadir cardinality a tipos de dato array -- typeData == or "array": add cardinality...cardinality [1..*]
+- Apuntar restricciones que no se pudieron definir por la complejidad (elementos en arrays..., rangos con features etc)
+- Agregar abstract a los ya creados... a los que se añaden de un subnivel etc
+- array suele ir con items: **clasificar las caract**
+- Añadir definicion de atributos (doc => descripcion) u otros que me puedan hacer falta
+- Compararlo del todo (?)
 
 Pendientes **
 spec.paramRef.name
@@ -1564,3 +1566,73 @@ CSIDriverSpec.StorageCapacity
 oldSelf.value()
 self.status.actual <= self.spec.maxDesired
 spec.paramKind
+
+
+
+## modificaciones:
+
+        "runAsGroup": {
+          "description": "The GID to run the entrypoint of the container process. Uses runtime default if unset. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is windows.",
+          "format": "int64",
+          "type": "integer"
+        },
+
+
+
+### Revisar despues: como insertar el tener 2 propiedades y tipos de dato diferentes en un esquema... interesante el si es map añadir key, value tambien. Que seria lo optimo?
+
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects. May match selectors of replication controllers and services. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels",
+          "type": "object"
+        },
+        "managedFields": {
+          "description": "ManagedFields maps workflow-id and version to the set of fields that are managed by that workflow. This is mostly for internal housekeeping, and users typically shouldn't need to set or understand this field. A workflow can be the user's name, a controller's name, or the name of a specific apply path like \"ci-cd\". The set of fields is always in the version that the workflow used when modifying the object.",
+          "items": {
+            "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.ManagedFieldsEntry"
+          },
+
+io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy
+
+					io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy {abstract}
+						mandatory
+							String io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy_nameStr
+						alternative
+							io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy_OnRootMismatch
+							io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy_Always
+Adición para solucionar la incoherencia en el modelo: 
+
+and not extracted_values:
+## se agrega "not extracted_values" para no sobreescribir el tipo alternativo con la adición de un hijo String abierto. Ya que si hay valores que lo definen, solo se puede seleccionar entre los predefinidos
+
+
+					io_k8s_api_core_v1_PodSecurityContext_seccompProfile
+						mandatory
+							io_k8s_api_core_v1_PodSecurityContext_seccompProfile_type
+								alternative
+									io_k8s_api_core_v1_PodSecurityContext_seccompProfile_type_RuntimeDefault
+									io_k8s_api_core_v1_PodSecurityContext_seccompProfile_type_Localhost
+									io_k8s_api_core_v1_PodSecurityContext_seccompProfile_type_Unconfined
+							String io_k8s_api_core_v1_PodSecurityContext_seccompProfile_nameStr
+						optional
+							io_k8s_api_core_v1_PodSecurityContext_seccompProfile_localhostProfile {abstract}
+								mandatory
+									String io_k8s_api_core_v1_PodSecurityContext_seccompProfile_localhostProfile_nameStr
+No deberia de haber nameStr en seccompProfile
+					io_k8s_api_core_v1_PodSecurityContext_seccompProfile
+						mandatory
+							io_k8s_api_core_v1_PodSecurityContext_seccompProfile_type
+								alternative
+									io_k8s_api_core_v1_PodSecurityContext_seccompProfile_type_Unconfined
+									io_k8s_api_core_v1_PodSecurityContext_seccompProfile_type_RuntimeDefault
+									io_k8s_api_core_v1_PodSecurityContext_seccompProfile_type_Localhost
+							String io_k8s_api_core_v1_PodSecurityContext_seccompProfile_nameStr
+						optional
+							io_k8s_api_core_v1_PodSecurityContext_seccompProfile_localhostProfile {abstract}
+								mandatory
+									String io_k8s_api_core_v1_PodSecurityContext_seccompProfile_localhostProfile_nameStr
+
+** Arreglado ** 
+Al no usar el self.auxiliar con los tipos de datos en otro punto que no fuese el de boolean... Se agregaba correctamente en los elementos correspondientes y reescribiendo encima de los que capturaba, al agregar otra variable que los usa y modifica podia alterar su valor real a la hora de comprobarlo con su variable self.

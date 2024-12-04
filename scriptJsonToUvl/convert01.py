@@ -26,6 +26,7 @@ class SchemaProcessor:
             'dependencies': []
 
         }
+        self.abstract_bool = False
         self.seen_descriptions = set()
 
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
@@ -36,20 +37,7 @@ class SchemaProcessor:
 
         }
 
-##             'restrictions': re.compile(r'If the operator is|template.spec.restartPolicy|conditions may not be|Details about a waiting|Sleep represents|must be between|Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope|\. At least one of|a least one of|Exactly one of|resource access request|datasetUUID is|succeededIndexes specifies|Represents the requirement on the container|ResourceClaim object in the same namespace as this pod|indicates which one of|may be non-empty only if|Minimum value is|Value must be non-negative|minimum valid value for|in the range 1-', re.IGNORECASE),### If the operator is|must be between|   # \. Required when|required when scope  ## the currently supported values are(valores) allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
-
-### Quitados: |conditions may not be, Details about a waiting|Sleep represents| => extract_constraints_multiple_conditions, |template.spec.restartPolicy => extract_constraints_template_onlyAllowed
-## con error encontrado:             'restrictions': re.compile(r'If the operator is|must be between|Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope|\. At least one of|a least one of|Exactly one of|resource access request|Details about a waiting|Sleep represents|datasetUUID is|succeededIndexes specifies|Represents the requirement on the container|conditions may not be|ResourceClaim object in the same namespace as this pod|indicates which one of|may be non-empty only if|template.spec.restartPolicy|Minimum value is|Value must be non-negative|minimum valid value for|in the range 1-', re.IGNORECASE),### If the operator is|must be between|   # \. Required when|required when scope  ## the currently supported values are(valores) allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
-
-        # 'restrictions': re.compile(r'Minimum value is|Value must be non-negative|minimum valid value for|in the range 1-', re.IGNORECASE),### If the operator is|must be between|   # \. Required when|required when scope  ## the currently supported values are(valores) allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
-
-        ### Uso con todas las restricciones: If the operator is|must be between|Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope|\. At least one of|a least one of|Exactly one of|resource access request|Details about a waiting|Sleep represents|datasetUUID is|succeededIndexes specifies|Represents the requirement on the container|conditions may not be|ResourceClaim object in the same namespace as this pod|indicates which one of|may be non-empty only if|template.spec.restartPolicy
-        ### 'restrictions': re.compile(r'If the operator is|must be between|Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope|\. At least one of|a least one of|Exactly one of|resource access request|Details about a waiting|Sleep represents|datasetUUID is|succeededIndexes specifies|Represents the requirement on the container|conditions may not be|ResourceClaim object in the same namespace as this pod|indicates which one of|may be non-empty only if|template.spec.restartPolicy', re.IGNORECASE),### If the operator is|must be between|   # \. Required when|required when scope  ## the currently supported values are(valores) allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
-
-        ##### indicates which one of|may be non-empty only if|template.spec.restartPolicy (ultimas agrupaciones agregadas)
-        ##### Details about a waiting|Sleep represents|datasetUUID is|succeededIndexes specifies|Represents the requirement on the container|conditions may not be|ResourceClaim object in the same namespace as this pod|
-        #### \. At least one of||a least one of|Exactly one of|resource access request|
-        ###  |Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope
+        ## 'restrictions': re.compile(r'If the operator is|template.spec.restartPolicy|conditions may not be|Details about a waiting|Sleep represents|must be between|Note that this field cannot be set when|valid port number|must be in the range|must be greater than|are mutually exclusive properties|Must be set if type is|field MUST be empty if|must be non-empty if and only if|only if type|\. Required when|required when scope|\. At least one of|a least one of|Exactly one of|resource access request|datasetUUID is|succeededIndexes specifies|Represents the requirement on the container|ResourceClaim object in the same namespace as this pod|indicates which one of|may be non-empty only if|Minimum value is|Value must be non-negative|minimum valid value for|in the range 1-', re.IGNORECASE),### If the operator is|must be between|   # \. Required when|required when scope  ## the currently supported values are(valores) allowed||conditions|should|must be|cannot be|if[\s\S]*?then|only|never|forbidden|disallowed
 
         # Lista de parte de nombres de features que se altera el tipo de dato a Boolean para la compatibilidad con las constraints y uvl. ### Los que se cambian para añadir un nivel mas que represente el String que se omite al cambiar el tipo a Boolean
         self.boolean_keywords = ['AppArmorProfile_localhostProfile', 'appArmorProfile_localhostProfile', 'seccompProfile_localhostProfile', 'SeccompProfile_localhostProfile', 'IngressClassList_items_spec_parameters_namespace',
@@ -71,7 +59,7 @@ class SchemaProcessor:
         return name.replace("-", "_").replace(".", "_").replace("$", "")
 
     def sanitize_type_data(self, type_data):
-        if type_data in ['array', 'object']:
+        if type_data in ['array', 'object']: ## modificar para que en array se guarde un estado diferente a tener en cuenta => cardinality
             type_data = 'Boolean'
         elif type_data in ['number', 'Number']:
             type_data = 'Integer'
@@ -308,8 +296,8 @@ class SchemaProcessor:
             return False
         
         # Verificar si el feature_name tiene configuración especial y ajustar type_data
-        if any(special_name in feature_name for special_name in self.special_features_config) and 'Note that this field cannot be set when' in description or 'Exactly one of' in description:
-            type_data = 'Boolean' ## Descripciones unicamente
+        #if any(special_name in feature_name for special_name in self.special_features_config) and ('Note that this field cannot be set when' in description or 'Exactly one of' in description):
+        #    type_data = 'Boolean' ## Descripciones unicamente
     
             #if special_name in feature_name:
         if ' {default ' in feature_name: ### Parte añadida para evitar que se agregue el {default X} como parte del nombre en la descripcion y mantener el original (Mantener formato por las comprobaciones de nombres)
@@ -401,21 +389,40 @@ class SchemaProcessor:
                 
         return full_name
 
-    def update_type_data(self, full_name, feature_type_data): ## sino probar con full_name
+    def update_type_data(self, full_name, feature_type_data, description): ## sino probar con full_name
     # Cambia el tipo de dato a 'Boolean' si el nombre del feature o sub_feature contiene algún fragmento en boolean_keywords
+        abstract_bool = False
+        self.feature_aux_original_type = ''
         if any(keyword in full_name for keyword in self.boolean_keywords) and not full_name.endswith('nameStr') and not full_name.endswith('valueInt'): ### and not '_name' in full_name
             self.feature_aux_original_type = feature_type_data
-            print ("Tipo de dato original: ", self.feature_aux_original_type)
+            ## io_k8s_api_core_v1_PodSecurityContext_seccompProfile
+            #print ("Tipo de dato original: ", self.feature_aux_original_type) ## DEBERIA SER AQUI LAS MAS MOD DE CARDINALITY
             feature_type_data = 'Boolean'
-            #return 'Boolean'
+            #full_name = f"{full_name} {{abstract}}"
+            abstract_bool = True
 
-            # Verificar coincidencias con expresiones regulares
+        ## Adición de una comprobación necesaria para el uso de las adiciones String/integer correctamente
+        if any(special_name in full_name for special_name in self.special_features_config) and 'Note that this field cannot be set when' in description and not full_name.endswith('nameStr') and not full_name.endswith('valueInt'):
+            self.feature_aux_original_type = feature_type_data ## Se aplica una logica similar al primer if para guardar el aux y luego comprobar si es distinto de bool 
+            #print ("Tipo de dato original en SPECIAL List: ", self.feature_aux_original_type)
+            feature_type_data = 'Boolean'
+            if self.feature_aux_original_type != 'boolean' and self.feature_aux_original_type != feature_type_data and self.feature_aux_original_type != '': ## hay tipos que son vacios y luego se definen por defecto como bool
+                abstract_bool = True
+
+            #    print(f"EL TIPO DE DATO DEL AUXILIAR ES: {self.feature_aux_original_type}")
+
+        # Verificar coincidencias con expresiones regulares
         for pattern in self.boolean_keywords_regex:
             if re.search(pattern, full_name) and not full_name.endswith('nameStr') and not full_name.endswith('valueInt'): ## Para mantener el tipo original del feature
-                #print(f"Coincidencia de expresión regular encontrada: {full_name}")
+                self.feature_aux_original_type = feature_type_data
                 feature_type_data = 'Boolean'
-            
-        return feature_type_data
+                abstract_bool = True
+                print("LOS TIPOS DEL REGEX SON",self.feature_aux_original_type)
+
+                #print(f"Coincidencia de expresión regular encontrada: {full_name}")
+        if full_name == 'io_k8s_api_core_v1_PodSecurityContext_seccompProfile':
+            print(f"PRUEBA FINAL DE CON QUE SALE DE CARA A VALUES {self.feature_aux_original_type}")    
+        return feature_type_data, abstract_bool
                 
 
     def parse_properties(self, properties, required, parent_name="", depth=0, local_stack_refs=None):
@@ -424,6 +431,7 @@ class SchemaProcessor:
 
         mandatory_features = [] # Grupo de propiedades obligatorias
         optional_features = [] # Grupo de propiedades opcionales
+        abstract_bool = False ## Propiedad que define si un feature es abstracto o no
         queue = deque([(properties, required, parent_name, depth)])
 
         while queue:
@@ -449,16 +457,21 @@ class SchemaProcessor:
 
                 #description = details.get('description', '')
                 if description:
-                    feature_type_data = self.update_type_data(full_name, feature_type_data) ### Modificion para que en descriptions_01.json se cambie de String a Boolean si coincide con el nombre
-                    categorized = self.categorize_description(description, full_name, feature_type_data)
-                    
-                    if categorized:
-                        if any(special_name in full_name for special_name in self.special_features_config) and 'Note that this field cannot be set when' in description:
-                            feature_type_data = 'Boolean' ### Omision de los Boolen en special_name
+                    feature_type_data, abstract_bool = self.update_type_data(full_name, feature_type_data, description) ### Modificion para que en descriptions_01.json se cambie de String a Boolean si coincide con el nombre
+                    self.categorize_description(description, full_name, feature_type_data) # categorized = 
+                    #print(abstract_bool)
+
+                            #if feature_type_data is not 'Boolean' or feature_type_data is not 'boolean':
+                            #    print(full_name)
+                            #    self.boolean_keywords.append(full_name)
+                                #feature_type_data, abstract_bool = self.update_type_data(full_name, feature_type_data) ### Modificion para que en descriptions_01.json se cambie de String a Boolean si coincide con el nombre
+
+                             ### Omision de los Boolen en special_name
+
                 #if feature_type_data == 'Boolean':
                 #    feature_type_data = ''
                 feature = {
-                    'name': full_name,
+                    'name': full_name if not abstract_bool else f"{full_name} {{abstract}}", ## Añadir {abstract} a los features creados para tener mejor definición de las constraints
                     'type': feature_type,
                     'description': description,
                     'sub_features': [],
@@ -632,28 +645,32 @@ class SchemaProcessor:
                             'sub_features': [],
                             'type_data': ''  # Boolean por defecto: se cambia a vacio
                         })
-                
-                if any(keyword in full_name for keyword in self.boolean_keywords) or any(re.search(keyword, full_name) for keyword in self.boolean_keywords_regex): ## and not full_name.endswith('_name')
-                    ## FALTA AGREGAR self.regex...
-                #return 'Boolean'
-                    print("El tipo de dato es: ", self.feature_aux_original_type)
-    
-                    if self.feature_aux_original_type == 'String' or self.feature_aux_original_type == 'string': ## Se comprueba con el valor original del feature. Para añadir el sub-feature como String o Integer
-                        feature['sub_features'].append({
-                        'name': f"{full_name}_nameStr",
-                        'type': 'mandatory', # Todos los valores suelen ser alternatives (Elección de solo uno)
-                        'description': f"Added String mandatory for changing booleans of boolean_keywords: String *_name",
-                        'sub_features': [],
-                        'type_data': 'String'  # String por defecto: se necesita un feature abierto para poder introducir un campo de texto
-                    })
-                    elif self.feature_aux_original_type == 'Integer' or self.feature_aux_original_type == 'integer':
-                        feature['sub_features'].append({
-                        'name': f"{full_name}_valueInt",
-                        'type': 'mandatory', # Todos los valores suelen ser alternatives (Elección de solo uno)
-                        'description': f"Added Integer mandatory for changing booleans of boolean_keywords: Integer *_name",
-                        'sub_features': [],
-                        'type_data': 'Integer'  # Integer por defecto: se necesita un feature abierto para poder introducir un entero positivo
-                    })
+                else:
+                    if (any(keyword in full_name for keyword in self.boolean_keywords) or any(re.search(keyword, full_name) for keyword in self.boolean_keywords_regex) or any(special_name in full_name for special_name in self.special_features_config) and 'Note that this field cannot be set when' in description): ## and not full_name.endswith('_name')
+                    ## se agrega "not extracted_values" para no sobreescribir el tipo alternativo con la adición de un hijo String abierto. Ya que si hay valores que lo definen, solo se puede seleccionar entre los predefinidos
+                    #return 'Boolean'  and not extracted_values
+                        #print("El tipo de dato es: ", self.feature_aux_original_type)
+                        full_name = full_name.replace(" {abstract}", "")
+                        if full_name == 'io_k8s_api_core_v1_PodSecurityContext_seccompProfile':
+                            print(f"EL NOMBRE Y TIPO DEL FEATURE AUXILIAR EN COINCIDENCIA ES: {self.feature_aux_original_type}")
+                        if self.feature_aux_original_type == 'String' or self.feature_aux_original_type == 'string': ## Se comprueba con el valor original del feature. Para añadir el sub-feature como String o Integer
+                            feature['sub_features'].append({
+                            'name': f"{full_name}_nameStr",
+                            'type': 'mandatory', # Todos los valores suelen ser alternatives (Elección de solo uno)
+                            'description': f"Added String mandatory for changing booleans of boolean_keywords: String *_name",
+                            'sub_features': [],
+                            'type_data': 'String'  # String por defecto: se necesita un feature abierto para poder introducir un campo de texto
+                        })
+                        elif self.feature_aux_original_type == 'Integer' or self.feature_aux_original_type == 'integer':
+                            feature['sub_features'].append({
+                            'name': f"{full_name}_valueInt",
+                            'type': 'mandatory', # Todos los valores suelen ser alternatives (Elección de solo uno)
+                            'description': f"Added Integer mandatory for changing booleans of boolean_keywords: Integer *_name",
+                            'sub_features': [],
+                            'type_data': 'Integer'  # Integer por defecto: se necesita un feature abierto para poder introducir un entero positivo
+                        })
+                        elif self.feature_aux_original_type == '' or self.feature_aux_original_type == 'Boolean' or self.feature_aux_original_type == 'boolean':
+                            print("continue")
 
                 # Procesar propiedades anidadas
                 if 'properties' in details:
@@ -807,15 +824,15 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
 
 # Rutas de archivo relativas
 #definitions_file = '../kubernetes-json-schema/v1.30.4/_definitions.json'
-#definitions_file = '../kubernetes-json-v1.30.2/v1.30.2/_definitions.json'
-definitions_file = '../kubernetes-json-v1.30.0/v1.30.0/_definitions.json'
+definitions_file = '../kubernetes-json-v1.30.2/v1.30.2/_definitions.json'
+#definitions_file = '../kubernetes-json-v1.30.0/v1.30.0/_definitions.json'
 
-#output_file = './kubernetes_combined_02.uvl'
-output_file = './Modelo-v.1.30.0/kubernetes_combined_02_30_0.uvl'
+output_file = './kubernetes_combined_02.uvl'
+#output_file = './Modelo-v.1.30.0/kubernetes_combined_02_30_0.uvl'
 
-descriptions_file = './Modelo-v.1.30.0/descriptions_01_v30_0.json'
-
-restrictions_output_file = './Modelo-v.1.30.0/restrictions02_30_0.txt'
+descriptions_file = './descriptions_01.json'
+# descriptions_file = './Modelo-v.1.30.0/descriptions_01_v30_0.json'
+#restrictions_output_file = './Modelo-v.1.30.0/restrictions02_30_0.txt'
 
 # Generar archivo UVL y guardar descripciones
 generate_uvl_from_definitions(definitions_file, output_file, descriptions_file)
