@@ -27,6 +27,7 @@ class SchemaProcessor:
 
         }
         self.abstract_bool = False
+        self.is_cardinality = False
         self.seen_descriptions = set()
 
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
@@ -59,7 +60,10 @@ class SchemaProcessor:
         return name.replace("-", "_").replace(".", "_").replace("$", "")
 
     def sanitize_type_data(self, type_data):
-        if type_data in ['array', 'object']: ## modificar para que en array se guarde un estado diferente a tener en cuenta => cardinality
+        if type_data in ['array']: ## modificar para que en array se guarde un estado diferente a tener en cuenta => cardinality ## SEGUIR PROBANDO
+            self.is_cardinality = True ## Etiqueta para saber que hay que agregar cardinality [1..*]
+            type_data = 'Boolean'
+        elif type_data in ['Object', 'object']: ## Boolean por defecto
             type_data = 'Boolean'
         elif type_data in ['number', 'Number']:
             type_data = 'Integer'
@@ -336,6 +340,8 @@ class SchemaProcessor:
         for option in oneOf:
             if 'type' in option: # 'type' in option:
                 option_type_data = option['type'].capitalize()  # Captura el tipo (por ejemplo: string, number, integer)
+                full_name = full_name.replace(" cardinality [1..*]", "") ## Adicion para quitar el cardinality de la herencia del nombre
+                print("PRINTE DEL FULL NAME EN ONEOF: ",full_name)
                 sanitized_name = self.sanitize_name(full_name)  # Limpiar el nombre completo
                 if ' {default ' in sanitized_name: ### Parte añadida para evitar que se agregue el {default X} como parte del nombre para algunos sub-features generando un error: feature_name_{default X}_asType
                     sanitized_name = re.sub(r'\s*\{default\s\d+\}', '', sanitized_name)
@@ -393,6 +399,10 @@ class SchemaProcessor:
     # Cambia el tipo de dato a 'Boolean' si el nombre del feature o sub_feature contiene algún fragmento en boolean_keywords
         abstract_bool = False
         self.feature_aux_original_type = ''
+
+        #if (self.is_cardinality):
+        #    full_name = f"{full_name} cardinality [1..*]"
+
         if any(keyword in full_name for keyword in self.boolean_keywords) and not full_name.endswith('nameStr') and not full_name.endswith('valueInt'): ### and not '_name' in full_name
             self.feature_aux_original_type = feature_type_data
             ## io_k8s_api_core_v1_PodSecurityContext_seccompProfile
@@ -432,10 +442,13 @@ class SchemaProcessor:
         mandatory_features = [] # Grupo de propiedades obligatorias
         optional_features = [] # Grupo de propiedades opcionales
         abstract_bool = False ## Propiedad que define si un feature es abstracto o no
+        #cardinality_bool = False ## Propiedad para definir la cardinalidad de un feature: si es de tipo array
+        self.is_cardinality = False ## PROBANDO EL SELF PARA DELIMITAR COMPROBAR EL ARRAY
         queue = deque([(properties, required, parent_name, depth)])
 
         while queue:
             current_properties, current_required, current_parent, current_depth = queue.popleft()
+            #self.is_cardinality = False
 
             for prop, details in current_properties.items():
                 sanitized_name = self.sanitize_name(prop)
@@ -443,6 +456,7 @@ class SchemaProcessor:
 
                 if full_name in self.processed_features:
                     continue
+                self.is_cardinality = False ## SE INICIE CON FALSE
 
                 # Verificar si la propiedad es requerida basado en su descripción
                 description = details.get('description', '')
@@ -450,7 +464,7 @@ class SchemaProcessor:
                 feature_type = 'mandatory' if prop in current_required or is_required_by_description else 'optional'
                 # Parseo de los tipos de datos y de los no válidos
                 feature_type_data = details.get('type', 'Boolean')
-                feature_type_data = self.sanitize_type_data (feature_type_data) 
+                feature_type_data = self.sanitize_type_data(feature_type_data) 
                 # *** Aquí llamamos a process_enum para modificar el nombre si tiene un enum ***
                 full_name = self.process_enum_defaultInte(details, full_name, description) #### PROBANDO: cambiado para añadir default Integer
                 #full_name = self.patterns_process_enum(description, full_name) ##PROBANDO
@@ -459,17 +473,19 @@ class SchemaProcessor:
                 if description:
                     feature_type_data, abstract_bool = self.update_type_data(full_name, feature_type_data, description) ### Modificion para que en descriptions_01.json se cambie de String a Boolean si coincide con el nombre
                     self.categorize_description(description, full_name, feature_type_data) # categorized = 
-                    #print(abstract_bool)
 
-                            #if feature_type_data is not 'Boolean' or feature_type_data is not 'boolean':
-                            #    print(full_name)
-                            #    self.boolean_keywords.append(full_name)
-                                #feature_type_data, abstract_bool = self.update_type_data(full_name, feature_type_data) ### Modificion para que en descriptions_01.json se cambie de String a Boolean si coincide con el nombre
+                if (self.is_cardinality) and not 'cardinality' in full_name: ## Quizas falte comprobar algun caso por lo que no funciona del todo correctamente aun
+                    full_name = f"{full_name} cardinality [1..*]"
+                elif (self.is_cardinality) and 'cardinality' in full_name:
+                    print(f"EL NOMBRE SE QUEDA/EMPIEZA DE LA SIGUIENTE MANERA {full_name}")                    
+                    full_name = full_name.replace(" cardinality [1..*]", "")
+                    full_name = f"{full_name} cardinality [1..*]"
+                    print(f"EL NOMBRE SE QUEDA DE LA SIGUIENTE MANERA {full_name}")                    
+                else:
+                    self.is_cardinality = False ## PROBANDO PARA VER SI SE QUITA EL cardinality...
+                    full_name = full_name.replace(" cardinality [1..*]", "")
+                    #full_name = full_name.replace(" {abstract}", "")
 
-                             ### Omision de los Boolen en special_name
-
-                #if feature_type_data == 'Boolean':
-                #    feature_type_data = ''
                 feature = {
                     'name': full_name if not abstract_bool else f"{full_name} {{abstract}}", ## Añadir {abstract} a los features creados para tener mejor definición de las constraints
                     'type': feature_type,
@@ -575,7 +591,10 @@ class SchemaProcessor:
                                 })
                         # Eliminar la referencia de la pila local al salir de esta rama
                         local_stack_refs.pop()
-
+                    elif 'type' in items and self.is_cardinality: ## Adición para generar el nodo hoja con el tipo de dato que se referencia en items
+                        print("Deberia de aplicarse al tener un type en items")
+                        type_data_items = items['type']
+                        print(f"El tipo de dato en el feature:{full_name} es {type_data_items}") ## comprobar el feature y tipo es el correcto
                 # Procesar propiedades adicionales
                 elif 'additionalProperties' in details:
                     additional_properties = details['additionalProperties']
@@ -608,7 +627,7 @@ class SchemaProcessor:
                                 # Agregar la referencia que contiene la caracteristica oneOf
                                 feature['sub_features'].extend(feature_sub)
                             else:
-                                # Si no hay 'properties', procesarlo como un tipo simple
+                                # Si no hay 'properties', procesarlo como un tipo simple  #### Creo que aqui ocurre un paso del cardinality ** AJUSTAR
                                 feature_type = 'mandatory' if prop in current_required else 'optional' # Determinar si la referencia es 'mandatory' u 'optional'                                sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
                                 sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
 
@@ -631,7 +650,7 @@ class SchemaProcessor:
                     ## details['type_data'] = 'Boolean' ## Esto es para acceder al tipo del ESQUEMA
                     feature['type_data'] = '' ## Se accede al tipo de dato del FEATURE actual: De Boolean a vacio '' 
                     #full_name_value = f"{full_name}_{value}"
-        
+                    full_name = full_name.replace(" cardinality [1..*]", "") ## Por si se pasa el cardinality en algun punto ### Proabando añadir cardinality
                     for value in extracted_values:
                         full_name_value = f"{full_name}_{value}"
                         if '_Healthy' in full_name_value: ### Comprobacion para omitir valores que no se deberian de agregar en el modelo
@@ -792,10 +811,10 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
                 #print(f"Procesando oneOf en {schema_name}")
                 oneOf_feature = processor.process_oneOf(schema['oneOf'], processor.sanitize_name(schema_name), type_feature='optional')
                 if oneOf_feature:
+                    uvl_output += properties_to_uvl([oneOf_feature], indent=3) ## Quizas cambiar la estructura general para las referencias a oneOf
                     #uvl_output += f"\t\t\t{type_str_feature} {processor.sanitize_name(schema_name)}\n"
                     #uvl_output += f"\t\t\t\toptional\n"
                     #nameSubfeatures = oneOf_feature['sub_features']
-                    uvl_output += properties_to_uvl([oneOf_feature], indent=3) ## Quizas cambiar la estructura general para las referencias a oneOf
                 """
                     for nameSubfeature in nameSubfeatures:
                         names = nameSubfeature['name']

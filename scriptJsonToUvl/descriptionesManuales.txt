@@ -1494,7 +1494,8 @@ Comparado con mi modelo:
                 optional
                   io_k8s_api_core_v1_PodSpec_containers_lifecycle_postStart_exec_command
 
-Cuando usa cardinality? No es solo para arrays y objects? // En el ejemplo puesto si se sigue la propiedad array como cardinality se define en la propiedad command y no en exec.. // Exec specifies the action to take
+Cuando usa cardinality? No es solo para arrays y objects? // En el ejemplo puesto si se sigue la propiedad array como cardinality se define en la propiedad command y no en exec..  ==> Lo define para no agregar un sub-nivel al exec con un valor array de Strings...
+// Exec specifies the action to take
 
               Boolean CONTAINERS_lifecycle {doc 'Actions that the management system should take in response to container lifecycle events. Cannot be updated.'}
                   optional
@@ -1525,6 +1526,9 @@ definido como object en esquema pero en doc es el command el que esta como array
       },
       "type": "object"
     },
+
+** Para añadir el cardinality se hara el uso de un sub-nivel para afectar lo menos posible al modelo ya diseñado. Ya que el modificar el feature anterior cuando se detecte un "array" y el modificar el actual al tipo que hay dentro de "items" puede alterar tanto la lógica como las constraints de las que se hacen uso. Ya que por ej si cambiamos el tipo de bool a String no permitiria seleccionarlo segun la sintaxis de uvl. 
+Por lo tanto se ha decidido implementar un nuevo sub-nivel (bajo mandatory) con el tipo de dato que haya en "items" y agregar al feature actual "cardinality [1..*]" para definirlo como array... Quizas se pueda variar el rango con las descripciones porque hay algunas que pueden ser null(segun he visto).
 
 ** PENDIENTES: Añadir cardinality a tipos de dato array -- typeData == or "array": add cardinality...cardinality [1..*]
 - Apuntar restricciones que no se pudieron definir por la complejidad (elementos en arrays..., rangos con features etc)
