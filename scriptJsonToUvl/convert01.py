@@ -26,7 +26,6 @@ class SchemaProcessor:
             'dependencies': []
 
         }
-        self.abstract_bool = False
         self.is_cardinality = False
         self.seen_descriptions = set()
 
@@ -60,15 +59,15 @@ class SchemaProcessor:
         return name.replace("-", "_").replace(".", "_").replace("$", "")
 
     def sanitize_type_data(self, type_data):
-        if type_data in ['array']: ## modificar para que en array se guarde un estado diferente a tener en cuenta => cardinality ## SEGUIR PROBANDO
+        if type_data in ['array']: ## modificar para que en array se guarde un estado diferente a tener en cuenta => cardinality
             self.is_cardinality = True ## Etiqueta para saber que hay que agregar cardinality [1..*]
             type_data = 'Boolean'
         elif type_data in ['Object', 'object']: ## Boolean por defecto
             type_data = 'Boolean'
-            self.is_cardinality = False
+            self.is_cardinality = False ## Por si falla el else del properties
         elif type_data in ['number', 'Number']:
             type_data = 'Integer'
-            self.is_cardinality = False
+            self.is_cardinality = False ## Por si falla el else del properties
         elif type_data == 'Boolean':
             type_data = ''
         return type_data
@@ -118,7 +117,7 @@ class SchemaProcessor:
         ## . must be provoca muchas agregaciones de un solo valor ya que hay varias constraints que coinciden con esa expresion... definir mejor en un futuro si son necesarias los valores unitarios
         ## Patrones que se han quitado por 'repetitivos': , 'possible values are', , 'the currently supported values are', 'expected values are'
         palabras_patrones_may = ['Supports', 'Type of job condition', 'Status of the condition for', 'Type of condition', '. One of', 'Host Caching mode'] ## 'values are', ## Type pendiente de sumar Healthy
-
+        
         if not any(keyword in description.lower() for keyword in palabras_patrones_minus) and not any(keyword in description for keyword in palabras_patrones_may): # , '. Must be' , 'allowed valures are'
             return None
         #if 'onPodConditions, but not both,' in description.lower(): ### Por si hace falta evitar alguna descripcion mas especifica
@@ -189,7 +188,6 @@ class SchemaProcessor:
         values = []
         #add_quotes = False  # Variable para verificar si se necesita añadir comillas
         default_value = self.patterns_process_enum_values_default(description)
-
         for pattern in value_patterns:
             matches = pattern.findall(description)
             #if matches:
@@ -219,17 +217,7 @@ class SchemaProcessor:
                         # Agregar el valor si no tiene guion bajo o si es menor a 20 caracteres
                             if v == default_value:
                                 v = f"{v} {{default}}"
-                            #if len(v) < 20 and '_' in v:
-                        # Excluir valores con guion bajo y tamaño >= 20
-                            #    print(f"VALORES CON BARRA BAJA** Comprobarlo: {v}")
                             values.append(v)
-                        """
-                        if v == default_value: ## if default_value and v.lower() == default_value.lower():
-                            v = f"{v} {{default}}"
-                            #print(f"Valores que coinciden {v} COINCIDE CON  {default_value}") ### log para comprobar los valores añadidos y el valor por defecto conseguido
-                            #values.append(v)
-                        values.append(v)
-                        """
                         #if ' ' in v:  # Si un valor contiene un espacio, Era para añadir comillas dobles "", => sintaxis
                         #    add_quotes = True
         case_not_none = ['NodePort', f"ClusterIP {{default}}", 'None', 'LoadBalancer', 'ExternalName'] ## Lista donde se agregaba None y no formaba parte del conjunto posible de valores
@@ -342,17 +330,17 @@ class SchemaProcessor:
         for option in oneOf:
             if 'type' in option: # 'type' in option:
                 option_type_data = option['type'].capitalize()  # Captura el tipo (por ejemplo: string, number, integer)
-                full_name = full_name.replace(" cardinality [1..*]", "") ## Adicion para quitar el cardinality de la herencia del nombre
-                #print("PRINTE DEL FULL NAME EN ONEOF: ",full_name)
-                sanitized_name = self.sanitize_name(full_name)  # Limpiar el nombre completo
+                sanitized_name = full_name.replace(" cardinality [1..*]", "") ## Adicion para quitar el cardinality de la herencia del nombre
+
                 if ' {default ' in sanitized_name: ### Parte añadida para evitar que se agregue el {default X} como parte del nombre para algunos sub-features generando un error: feature_name_{default X}_asType
-                    sanitized_name = re.sub(r'\s*\{default\s\d+\}', '', sanitized_name)
-                    #print("Nombre saneado sin DEFAULT INTEGER",sanitized_name)
+                    sanitized_name = re.sub(r'\s*\{.*?\}', '', sanitized_name) # Se borra todo el contenido dentro de los corchetes y el espacio ## sanitized_name = re.sub(r'\s*\{default\s\d+\}', '', sanitized_name)
                 # Crear subfeature con el nombre adecuado
+                aux_description_sub_feature = f"Sub-feature added of type {option_type_data}"
+
                 sub_feature = {
-                    'name': f"{sanitized_name}_as{option_type_data}",
-                    'type': 'alternative',  # Por defecto, lo ponemos como 'optional'option_type
-                    'description': f"Sub-feature of type {option_type_data}",
+                    'name': f"{sanitized_name}_as{option_type_data} {{doc '{aux_description_sub_feature}'}}", ##  ## quizas mas adelante definir una descr personalizada para el sub_feature
+                    'type': 'alternative',  # Por defecto, se añade como alternative
+                    'description': aux_description_sub_feature,
                     'sub_features': [],
                     'type_data': self.sanitize_type_data(option_type_data)
                 }
@@ -366,15 +354,18 @@ class SchemaProcessor:
         """ Agrega en el nombre del feature el valor por defecto que tiene. Comprueba si el feature tiene la caracteristica enum y añade el contenido de este al valor por defecto"""
         patterns_default_values_numbers = ['defaults to', 'default value is', 'default to'] # Grupo alternativo al anterior para definir los patrones que tienen Integers por defecto o grupos similares
         default_integer = 0
+        default_bool = False
+        cleaned_description = description.replace('\n', '').replace('`', '').replace("´", '').replace("'", "_")
 
         if 'enum' in property and property['enum']:
             #default_name = property.get('enum',[])
             #default_full = default_name[0]
             default_value = property['enum'][0]
-            default_full_name = f"{full_name} {{default '{default_value}'}}"
+            default_full_name = f"{full_name} {{default '{default_value}', doc '{cleaned_description}'}}"
+            default_bool = True
             #print("VALOR EN EL METODO",default_full_name)
             #property['name'] = default_full_name # Opcion de pasar el parametro modificado del property
-            return default_full_name
+            return default_full_name, default_bool
 
             #print("Estos son los valores:: ",default_value)
         if any(keyword in description.lower() for keyword in patterns_default_values_numbers):
@@ -392,43 +383,31 @@ class SchemaProcessor:
                     default_integer = default
                     if default_integer == '0644':
                         default_integer = 644
-                    default_full_name = f"{full_name} {{default {default_integer}}}"
-                    return default_full_name
+                    #default_full_name = f"{full_name} {{default {default_integer}}}"
+                    default_full_name = f"{full_name} {{default {default_integer}, doc '{cleaned_description}'}}"
+                    default_bool = True
+                    return default_full_name, default_bool
                 
-        return full_name
-
-    def is_cardinal_feature(self, full_name, feature_type_data):
-        #self.is_cardinality = False
-        if (self.is_cardinality) and not 'cardinality' in full_name: ## Quizas falte comprobar algun caso por lo que no funciona del todo correctamente aun
-            full_name = f"{full_name} cardinality [1..*]"
-        elif (self.is_cardinality) and 'cardinality' in full_name:
-            print(f"EL NOMBRE SE QUEDA/EMPIEZA DE LA SIGUIENTE MANERA {full_name}")                    
-            full_name = full_name.replace(" cardinality [1..*]", "")
-            full_name = f"{full_name} cardinality [1..*]"
-            print(f"EL NOMBRE SE QUEDA DE LA SIGUIENTE MANERA {full_name}")                    
-        elif not self.is_cardinality:
+        """aux_full_name = full_name
+        if '{default' in full_name:
+            full_name = full_name.replace('}', '')##.replace('{', '')
+            full_name = f"{full_name}, doc '{cleaned_description}'}}" ## despues name: f"{full_name} {{doc, '{cleaned_description}'}}"
             print(full_name)
+        elif 'abs__' in full_name:
+            print("Creo que no me tendria que ejecutar")
         else:
-            self.is_cardinality = False ## PROBANDO PARA VER SI SE QUITA EL cardinality...
-            full_name = full_name.replace(" cardinality [1..*]", "")
-            #full_name = full_name.replace(" {abstract}", "")
+            full_name = aux_full_name"""
+        return full_name, default_bool
 
     def update_type_data(self, full_name, feature_type_data, description): ## sino probar con full_name
     # Cambia el tipo de dato a 'Boolean' si el nombre del feature o sub_feature contiene algún fragmento en boolean_keywords
         abstract_bool = False
         self.feature_aux_original_type = ''
 
-        #if (self.is_cardinality):
-        #    full_name = f"{full_name} cardinality [1..*]"
-        #if 'cardinality' in full_name and self.is_cardinality:
-            #print(f"EL NOMBRE SIN MODIFICAR ES: {full_name}")
-            #print
-        #full_name = full_name.replace(" cardinality [1..*]", "") ## De aqui salia un error antes por el cardinality en medio 
-
-        if any(keyword in full_name for keyword in self.boolean_keywords) and not full_name.endswith('nameStr') and not full_name.endswith('valueInt'): ### and not '_name' in full_name
+        if any(keyword in full_name for keyword in self.boolean_keywords) and not full_name.endswith('nameStr') and not full_name.endswith('valueInt'): ### and not full_name.endswith('StringValue') ## De momento no se comprobo que hiciese falta (todos son string)
             self.feature_aux_original_type = feature_type_data
             ## io_k8s_api_core_v1_PodSecurityContext_seccompProfile
-            #print ("Tipo de dato original: ", self.feature_aux_original_type) ## DEBERIA SER AQUI LAS MAS MOD DE CARDINALITY
+            #print ("Tipo de dato original: ", self.feature_aux_original_type)
             feature_type_data = 'Boolean'
             #full_name = f"{full_name} {{abstract}}"
             abstract_bool = True
@@ -440,7 +419,7 @@ class SchemaProcessor:
             feature_type_data = 'Boolean'
             if self.feature_aux_original_type != 'boolean' and self.feature_aux_original_type != feature_type_data and self.feature_aux_original_type != '': ## hay tipos que son vacios y luego se definen por defecto como bool
                 abstract_bool = True
-
+            ## Por siacaso que no afecte tampoco a StringValue
             #    print(f"EL TIPO DE DATO DEL AUXILIAR ES: {self.feature_aux_original_type}")
 
         # Verificar coincidencias con expresiones regulares
@@ -449,7 +428,7 @@ class SchemaProcessor:
                 self.feature_aux_original_type = feature_type_data
                 feature_type_data = 'Boolean'
                 abstract_bool = True
-                print("LOS TIPOS DEL REGEX SON",self.feature_aux_original_type)
+                #print("LOS TIPOS DEL REGEX SON",self.feature_aux_original_type)
 
                 #print(f"Coincidencia de expresión regular encontrada: {full_name}")
         if full_name == 'io_k8s_api_core_v1_PodSecurityContext_seccompProfile':
@@ -464,8 +443,7 @@ class SchemaProcessor:
         mandatory_features = [] # Grupo de propiedades obligatorias
         optional_features = [] # Grupo de propiedades opcionales
         abstract_bool = False ## Propiedad que define si un feature es abstracto o no
-        #cardinality_bool = False ## Propiedad para definir la cardinalidad de un feature: si es de tipo array
-        #self.is_cardinality = False ## PROBANDO EL SELF PARA DELIMITAR COMPROBAR EL ARRAY
+        
         queue = deque([(properties, required, parent_name, depth)])
 
         while queue:
@@ -489,32 +467,27 @@ class SchemaProcessor:
                 feature_type_data = details.get('type', 'Boolean')
                 feature_type_data = self.sanitize_type_data(feature_type_data) 
                 # *** Aquí llamamos a process_enum para modificar el nombre si tiene un enum ***
-                full_name = self.process_enum_defaultInte(details, full_name, description) #### PROBANDO: cambiado para añadir default Integer
+                full_name, default_bool = self.process_enum_defaultInte(details, full_name, description) ## Modificacion del name para añadir default Integer
                 #full_name = self.patterns_process_enum(description, full_name) ##PROBANDO
 
-                countLocal = 0
-                if self.is_cardinality and 'cardinality' in full_name:
-                    #print(f"EL NOMBRE SE QUEDA/EMPIEZA DE LA SIGUIENTE MANERA {full_name}")                    
+                if self.is_cardinality and 'cardinality' in full_name: ## Bloque de condiciones para agregar el cardinality a los features de tipo array y marcarlos o desmarcarlos para eliminar la etiqueta
                     full_name = full_name.replace(" cardinality [1..*]", "")
                     full_name = f"{full_name} cardinality [1..*]"
-                    #countArrays = countArrays + 1
-                    countLocal = countLocal + 1
-                    #print(f"EL NOMBRE SE QUEDA DE LA SIGUIENTE MANERA {full_name}") 
                 elif self.is_cardinality and not 'cardinality' in full_name: ## Quizas falte comprobar algun caso por lo que no funciona del todo correctamente aun
                     full_name = f"{full_name} cardinality [1..*]"
-                    countLocal = countLocal + 1
                 else:
-                    self.is_cardinality = False ## PROBANDO PARA VER SI SE QUITA EL cardinality...
+                    self.is_cardinality = False ## Para evitar casos en que se mantenga el cardinality del anterior feature
                     full_name = full_name.replace(" cardinality [1..*]", "")
-                    #full_name = full_name.replace(" {abstract}", "")
 
                 #description = details.get('description', '')
                 if description:
                     feature_type_data, abstract_bool = self.update_type_data(full_name, feature_type_data, description) ### Modificion para que en descriptions_01.json se cambie de String a Boolean si coincide con el nombre
                     self.categorize_description(description, full_name, feature_type_data) # categorized = 
-                
-                feature = {
-                    'name': full_name if not abstract_bool else f"{full_name} {{abstract}}", ## Añadir {abstract} a los features creados para tener mejor definición de las constraints
+                    cleaned_description = description.replace('\n', '').replace('`', '').replace("´", '').replace("'", "_").replace('{','').replace('}','').replace('"', '').replace("\\", "_") ## Saneamiento de las descripciones con los caracteres que causan conflicto y errores en el formato uvl
+                    if not default_bool and not abstract_bool: # Condición agregada para agregar el atributo doc a features que no sean default ni abstract
+                        full_name = f"{full_name} {{doc '{cleaned_description}'}}"
+                feature = {                  
+                    'name': full_name if not abstract_bool else f"{full_name} {{abstract, doc '{cleaned_description}'}}", ## Añadir {abstract} a los features creados para tener mejor definición de las constraints
                     'type': feature_type,
                     'description': description,
                     'sub_features': [],
@@ -522,7 +495,7 @@ class SchemaProcessor:
                 }
                 #countArrays = countArrays + countLocal
                 #print(f"El numero de arrays es: {countArrays}")
-
+                full_name = re.sub(r'\s*\{.*?\}', '', full_name)
                 # Procesar referencias
                 if '$ref' in details:
                     ref = details['$ref']
@@ -533,7 +506,7 @@ class SchemaProcessor:
                         #print(f"*****Referencia cíclica detectada: {ref}. Saltando esta propiedad****")
                         # Si es un ciclo, saltamos esta propiedad pero seguimos procesando otras
                         continue
-
+                    
                     # Añadir la referencia a la pila local
                     local_stack_refs.append(ref)
                     ref_schema = self.resolve_reference(ref)
@@ -543,7 +516,7 @@ class SchemaProcessor:
                         ref_name = self.sanitize_name(ref.split('/')[-1])
                         #self.constraints.append(f"{full_name} => {ref_name}")
                         #feature_type = 'mandatory' ## feature_type principal del feature
-          
+
                         if 'properties' in ref_schema:
                             sub_properties = ref_schema['properties']
                             sub_required = ref_schema.get('required', [])
@@ -564,15 +537,16 @@ class SchemaProcessor:
                             # Determinar si la referencia es 'mandatory' u 'optional'
                             #feature_type = 'mandatory' if prop in current_required else 'optional'
                             sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
-                            #ref_name = self.sanitize_name(ref.split('/')[-1])
-
                             # Agregar la referencia procesada como un tipo simple
-                            feature['sub_features'].append({ ## Seguramente habra que quitar el name... ya con el primer kind creo que es suficiente **
-                                'name': f"{full_name}_{sanitized_ref}" , ## Error, si es una ref de un feature, tratar como subfeature (full_name + ref_name) // RefName Aparte {full_name}_{ref_name}
-                                'type': 'mandatory', #mandatory no hay declaradas como optional
-                                'description': ref_schema.get('description', ''),
+                            aux_description_simples_schemas = ref_schema.get('description', '')
+                            aux_description_simples_schemas_sanitized = aux_description_simples_schemas.replace('\n', '').replace('`', '').replace("´", '').replace("'", "_").replace('{','').replace('}','').replace('"', '').replace("\\", "_") ## Saneamiento de las descripciones con los caracteres que causan conflicto y errores en el formato uvl
+                            type_data_schemas_refs_simple = self.sanitize_type_data(ref_schema.get('type', ''))
+                            feature['sub_features'].append({ ## Adición en el último nivel de las referencias a los esquemas simples que no tinenen properties
+                                'name': f"{full_name}_{sanitized_ref} {{doc '{aux_description_simples_schemas_sanitized}'}}" , # RefName Aparte {full_name}_{ref_name}: Nombre de los esquemas simples indexados para mantener referencias a estos esquemas
+                                'type': 'optional', #mandatory, al ser referencias a esquemas simple no se tiene un type. Por defecto se deja mandatory pero puede ser optional
+                                'description': f"{aux_description_simples_schemas}", # ref_schema.get('description', ''),
                                 'sub_features': [],
-                                'type_data': '' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature
+                                'type_data': type_data_schemas_refs_simple, # Se deja el tipo de dato que tenga el esquema simple ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature
                             })
                             #print(f"Referencias simples detectadas: {ref}")
 
@@ -607,15 +581,19 @@ class SchemaProcessor:
                                 feature['sub_features'].extend(item_mandatory + item_optional)
                             else:
                                 # Si no hay 'properties', procesarlo como un tipo simple
-                                feature_type = 'mandatory' if prop in current_required else 'optional' # Determinar si la referencia es 'mandatory' u 'optional'  #sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
+                                #feature_type = 'mandatory' if prop in current_required else 'optional' # Determinar si la referencia es 'mandatory' u 'optional'  #sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
                                 sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
                                 full_name = full_name.replace(" cardinality [1..*]", "") ## Agregado para omitir el cardinality cuando no corresponde...
+                                print(f"ITEMS SIMPLES REFS {full_name}_{sanitized_ref}")
+                                aux_description_items_schemas = ref_schema.get('description', '')
+                                print(aux_description_items_schemas)
+                                aux_description_items_sanitized = aux_description_items_schemas.replace('\n', '').replace('`', '').replace("´", '').replace("'", "_").replace('{','').replace('}','').replace('"', '').replace("\\", "_") ## Saneamiento de las descripciones con los caracteres que causan conflicto y errores en el formato uvl
 
                                 # Agregar la referencia procesada como un tipo simple
                                 feature['sub_features'].append({
-                                    'name': f"{full_name}_{sanitized_ref}", ## RefName Aparte {full_name}_{ref_name}
-                                    'type': feature_type,
-                                    'description': ref_schema.get('description', ''),
+                                    'name': f"{full_name}_{sanitized_ref} {{doc '{aux_description_items_sanitized}'}}", ## RefName Aparte {full_name}_{ref_name}
+                                    'type': 'optional',  # Se deja como optional por defecto (Varia segun la interpretación que se le quiera dar)
+                                    'description': aux_description_items_sanitized,
                                     'sub_features': [],
                                     'type_data': '' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature: Boolean
                                 })
@@ -627,10 +605,11 @@ class SchemaProcessor:
 
                         if type_data_items == 'string':
                             full_name = full_name.replace(" cardinality [1..*]", "") ## Agregado para omitir el cardinality cuando no corresponde...
+                            aux_description_string_items = f"Added String mandatory for complete structure Array in the model. The modified is not in json but provide represents, Array of Strings: StringValue"
                             feature['sub_features'].append({
-                                'name': f"{full_name}_StringValue", ## RefName Aparte {full_name}_{ref_name}
+                                'name': f"{full_name}_StringValue {{doc '{aux_description_string_items}'}}", ## RefName Aparte {full_name}_{ref_name}
                                 'type': 'mandatory',
-                                'description': f"Added String mandatory for adding the structure Array in the model: StringValue",
+                                'description': aux_description_string_items, #f"Added String mandatory for adding the structure Array in the model: StringValue",
                                 'sub_features': [],
                                 'type_data': 'String' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature: Boolean
                             })
@@ -669,14 +648,18 @@ class SchemaProcessor:
                                 feature['sub_features'].extend(feature_sub)
                             else:
                                 # Si no hay 'properties', procesarlo como un tipo simple  #### Creo que aqui ocurre un paso del cardinality ** AJUSTAR
-                                feature_type = 'mandatory' if prop in current_required else 'optional' # Determinar si la referencia es 'mandatory' u 'optional'                                sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
+                                #feature_type = 'mandatory' if prop in current_required else 'optional' # Determinar si la referencia es 'mandatory' u 'optional'                                sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
+                                
                                 sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
+                                print(f"ADDIOTIONAL ITEMS SIMPLES REFS {full_name}_{sanitized_ref}")
+                                aux_description_additional_schemas = ref_schema.get('description', '')
+                                aux_description_additional_sanitized = aux_description_additional_schemas.replace('\n', '').replace('`', '').replace("´", '').replace("'", "_").replace('{','').replace('}','').replace('"', '').replace("\\", "_") ## Saneamiento de las descripciones con los caracteres que causan conflicto y errores en el formato uvl
 
                                 # Agregar la referencia procesada como un tipo simple
                                 feature['sub_features'].append({
-                                    'name': f"{full_name}_{sanitized_ref}", ## Error, si es una ref de un feature, tratar como subfeature (full_name + ref_name) // RefName Aparte {full_name}_{ref_name}
-                                    'type': 'feature_type',
-                                    'description': ref_schema.get('description', ''),
+                                    'name': f"{full_name}_{sanitized_ref} {{doc '{aux_description_additional_sanitized}'}}", ##  RefName Aparte {full_name}_{ref_name}
+                                    'type': 'optional', ## Se deja como optional por defecto (Varia segun la interpretación que se le quiera dar)
+                                    'description': aux_description_additional_schemas, # ref_schema.get('description', '')
                                     'sub_features': [],
                                     'type_data': '' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature: Boolean
                                 })
@@ -690,18 +673,23 @@ class SchemaProcessor:
                 if extracted_values: 
                     ## details['type_data'] = 'Boolean' ## Esto es para acceder al tipo del ESQUEMA
                     feature['type_data'] = '' ## Se accede al tipo de dato del FEATURE actual: De Boolean a vacio '' 
-                    #full_name_value = f"{full_name}_{value}"
+                    #full_name_value = f"{full_name}_{value}" ### ÑFALLA EN LOS VALORES
                     full_name = full_name.replace(" cardinality [1..*]", "") ## Por si se pasa el cardinality en algun punto ### Proabando añadir cardinality
+                    #value_sanitized_name = re.sub(r'\s*\{.*?\}', '', full_name)
+                    #bool_default_value = False
                     for value in extracted_values:
+                        bool_default_value = False
+                        if ('{default' in value): ## Condicion para dejar por defecto el noombre sin añadir el atributo doc... ya que en el value ya tiene agregado el {default}
+                            bool_default_value = True
                         full_name_value = f"{full_name}_{value}"
                         if '_Healthy' in full_name_value: ### Comprobacion para omitir valores que no se deberian de agregar en el modelo
                             print("OMITIENDO HEALTHY", full_name_value)
                             continue
-
+                        aux_description_value = f"Specific value: {value}"
                         feature['sub_features'].append({
-                            'name': full_name_value,
+                            'name': full_name_value if bool_default_value else f"{full_name_value} {{doc '{aux_description_value}'}}",
                             'type': 'alternative', # Todos los valores suelen ser alternatives (Elección de solo uno)
-                            'description': f"Specific value: {value}",
+                            'description': aux_description_value,
                             'sub_features': [],
                             'type_data': ''  # Boolean por defecto: se cambia a vacio
                         })
@@ -711,21 +699,23 @@ class SchemaProcessor:
                     #return 'Boolean'  and not extracted_values
                         #print("El tipo de dato es: ", self.feature_aux_original_type)
                         full_name = full_name.replace(" {abstract}", "")
-                        if full_name == 'io_k8s_api_core_v1_PodSecurityContext_seccompProfile':
-                            print(f"EL NOMBRE Y TIPO DEL FEATURE AUXILIAR EN COINCIDENCIA ES: {self.feature_aux_original_type}")
+                        ##value_sanitized_name = re.sub(r'\s*\{.*?\}', '', full_name) #### PROBANDO ADD DOC
+                        aux_description_mandatory = f"Added String mandatory for changing booleans of boolean_keywords: {self.feature_aux_original_type} *_name"
+                        #if full_name == 'io_k8s_api_core_v1_PodSecurityContext_seccompProfile':
+                        #    print(f"EL NOMBRE Y TIPO DEL FEATURE AUXILIAR EN COINCIDENCIA ES: {self.feature_aux_original_type}")
                         if self.feature_aux_original_type == 'String' or self.feature_aux_original_type == 'string': ## Se comprueba con el valor original del feature. Para añadir el sub-feature como String o Integer
                             feature['sub_features'].append({
-                            'name': f"{full_name}_nameStr",
+                            'name': f"{full_name}_nameStr {{doc '{aux_description_mandatory}'}}", #f"{full_name}_nameStr",
                             'type': 'mandatory', # Todos los valores suelen ser alternatives (Elección de solo uno)
-                            'description': f"Added String mandatory for changing booleans of boolean_keywords: String *_name",
+                            'description': aux_description_mandatory, #f"Added String mandatory for changing booleans of boolean_keywords: String *_name",
                             'sub_features': [],
                             'type_data': 'String'  # String por defecto: se necesita un feature abierto para poder introducir un campo de texto
                         })
                         elif self.feature_aux_original_type == 'Integer' or self.feature_aux_original_type == 'integer':
                             feature['sub_features'].append({
-                            'name': f"{full_name}_valueInt",
+                            'name': f"{full_name}_valueInt {{doc '{aux_description_mandatory}'}}", #f"{full_name}_valueInt",
                             'type': 'mandatory', # Todos los valores suelen ser alternatives (Elección de solo uno)
-                            'description': f"Added Integer mandatory for changing booleans of boolean_keywords: Integer *_name",
+                            'description': aux_description_mandatory, #f"Added Integer mandatory for changing booleans of boolean_keywords: Integer *_name",
                             'sub_features': [],
                             'type_data': 'Integer'  # Integer por defecto: se necesita un feature abierto para poder introducir un entero positivo
                         })
@@ -736,14 +726,15 @@ class SchemaProcessor:
                 if 'properties' in details:
                     sub_properties = details['properties']
                     sub_required = details.get('required', [])
-                    sub_mandatory, sub_optional = self.parse_properties(sub_properties, sub_required, full_name, current_depth + 1, local_stack_refs)
+                    value_sanitized_name = re.sub(r'\s*\{.*?\}', '', full_name)
+                    sub_mandatory, sub_optional = self.parse_properties(sub_properties, sub_required, value_sanitized_name, current_depth + 1, local_stack_refs)
                     feature['sub_features'].extend(sub_mandatory + sub_optional)
-                """
-                else: ##Parte para definir las propiedades anidadas que son simples* Probar
-                    sub_required = details.get('required', [])
-                    sub_mandatory, sub_optional = self.parse_properties([], sub_required, full_name, current_depth + 1, local_stack_refs)
-                    feature['sub_features'].extend(sub_mandatory + sub_optional)
-                """    
+                
+                #else: ##Parte para definir las propiedades anidadas que son simples* Probar
+                    #sub_required = details.get('required', [])
+                    #sub_mandatory, sub_optional = self.parse_properties([], sub_required, full_name, current_depth + 1, local_stack_refs)
+                    #feature['sub_features'].extend(sub_mandatory + sub_optional)
+                   
 
                 if feature_type == 'mandatory':
                     mandatory_features.append(feature)
@@ -798,9 +789,8 @@ def properties_to_uvl(feature_list, indent=1):
             type_str = ''
         #if (keyword in feature['name'] for keyword in boolean_keywords)  
         #    type_str = 'String '
-
         if feature['sub_features']:
-
+            
             uvl_output += f"{indent_str}{type_str}{feature['name']}\n"  # {type_str} opcional si se necesita ## 
             # uvl_output += f"{indent_str}\t{feature['type']}\n" opcional si se necesita
             # Separar características obligatorias y opcionales
@@ -826,17 +816,22 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
     definitions = load_json_file(definitions_file) # Cargar el archivo de definiciones JSON
     processor = SchemaProcessor(definitions) # Inicializar el procesador de esquemas con las definiciones cargadas
     uvl_output = "namespace KubernetesTest1\nfeatures\n\tKubernetes {abstract}\n\t\toptional\n" # Iniciar la estructura base del archivo UVL {{abstract}}
+
     # Procesar cada definición en el archivo JSON
     for schema_name, schema in definitions.get('definitions', {}).items():
         root_schema = schema.get('properties', {})
+        #{{doc '{cleaned_description}'}}
         required = schema.get('required', [])
         #type_str_feature = 'Boolean' ## Por defecto al no tener definido un tipo los features principales se les pone como Boolean
         #print(f"Processing schema: {schema_name}")
         mandatory_features, optional_features = processor.parse_properties(root_schema, required, processor.sanitize_name(schema_name)) # Obtener características obligatorias y opcionales
         
+        schema_description_aux = schema.get('description', "") ## Se obtienen las descripciones de los esquemas principales para mostrarlas tambien
+        cleaned_description = schema_description_aux.replace('\n', '').replace('`', '').replace("´", '').replace("'", "_").replace('{','').replace('}','').replace('"', '').replace("\\", "_") ## Saneamiento de las descripciones con los caracteres que causan conflicto y errores en el formato uvl
+        
         # Agregar las características obligatorias y opcionales al archivo UVL
         if mandatory_features:
-            uvl_output += f"\t\t\t{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '} ## Omitiendo el tipo Boolean de los features 
+            uvl_output += f"\t\t\t{processor.sanitize_name(schema_name)} {{doc '{cleaned_description}'}}\n" # {type_str_feature+' '} ## Omitiendo el tipo Boolean de los features 
             uvl_output += f"\t\t\t\tmandatory\n"
             uvl_output += properties_to_uvl(mandatory_features, indent=5)
 
@@ -844,7 +839,7 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
                 uvl_output += f"\t\t\t\toptional\n"
                 uvl_output += properties_to_uvl(optional_features, indent=5)
         elif optional_features:
-            uvl_output += f"\t\t\t{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '} ## Omitiendo el tipo Boolean de los features 
+            uvl_output += f"\t\t\t{processor.sanitize_name(schema_name)} {{doc '{cleaned_description}'}}\n" # {type_str_feature+' '} ## Omitiendo el tipo Boolean de los features 
             uvl_output += f"\t\t\t\toptional\n"
             uvl_output += properties_to_uvl(optional_features, indent=5)
         # Ajuste adicion esquemas simples
@@ -867,7 +862,7 @@ def generate_uvl_from_definitions(definitions_file, output_file, descriptions_fi
                         print(names)
                 """
             else:
-                uvl_output += f"\t\t\t{processor.sanitize_name(schema_name)}\n" # {type_str_feature+' '} ## Omitiendo Bool
+                uvl_output += f"\t\t\t{processor.sanitize_name(schema_name)} {{doc '{cleaned_description}'}}\n" # {type_str_feature+' '} ## Omitiendo Bool
                 #print("Schemas sin propiedades:",schema_name)
             #print(schema_name)
             #print(count2)
