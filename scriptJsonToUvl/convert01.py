@@ -251,8 +251,9 @@ class SchemaProcessor:
             #re.compile(r'(?<=Implicitly inferred to be\s)["\'](.*?)\\?["\']', re.IGNORECASE), 
             re.compile(r'Implicitly inferred to be\s["\'](.*?)["\']', re.IGNORECASE),
             re.compile(r'default to use\s["\'](.*?)["\'](?=\.)', re.IGNORECASE), #
-            re.compile(r'\. Default is\s["\']?(.*?)["\']?(?=\.)', re.IGNORECASE)
+            re.compile(r'\. Default is\s["\']?(.*?)["\']?(?=\.)', re.IGNORECASE),
             #default to use
+
             #Implicitly inferred to be
         ]
         
@@ -350,16 +351,17 @@ class SchemaProcessor:
 
         return feature
     
-    def process_enum_defaultInte(self, property, full_name, description):
+    def process_enum_defaultInte(self, property, full_name, description): ## AGREGAR modificaciones default false, true
         """ Agrega en el nombre del feature el valor por defecto que tiene. Comprueba si el feature tiene la caracteristica enum y añade el contenido de este al valor por defecto"""
-        patterns_default_values_numbers = ['defaults to', 'default value is', 'default to'] # Grupo alternativo al anterior para definir los patrones que tienen Integers por defecto o grupos similares
+        patterns_default_values_numbers = ['defaults to', 'default value is', 'default to', 'default false', 'Default is false'] # Grupo alternativo al anterior para definir los patrones que tienen Integers por defecto o grupos similares
         default_integer = 0
         default_bool = False
-        cleaned_description = description.replace('\n', '').replace('`', '').replace("´", '').replace("'", "_")
-
+        #cleaned_description = description.replace('\n', '').replace('`', '').replace("´", '').replace("'", "_")
+        default_full_name = ''
         if 'enum' in property and property['enum']:
             #default_name = property.get('enum',[])
             #default_full = default_name[0]
+            cleaned_description = description.replace('\n', '').replace('`', '').replace("´", '').replace("'", "_").replace('{','').replace('}','').replace('"', '').replace("\\", "_") ## Saneamiento de las descripciones con los caracteres que causan conflicto y errores en el formato uvls
             default_value = property['enum'][0]
             default_full_name = f"{full_name} {{default '{default_value}', doc '{cleaned_description}'}}"
             default_bool = True
@@ -374,19 +376,35 @@ class SchemaProcessor:
                 re.compile(r'(?<=Default value is\s)(\d+)(?=\D|$)', re.IGNORECASE),
                 re.compile(r'(?<=Default to\s)(\d+)(?=\D|$)'), # (\d+)[\s\.] ## Prueba insercion mas default.. agregados agregados 250 default 10 y varios... 0 => 20
                 #re.compile(r'Defaults to (\d+)', re.IGNORECASE), ## probar cual es mejor default value is 1 ## agregado casos donde no se tenia en cuenta el default minus
+                re.compile(r'(?<=Default to\s)([\w\s\.])(?=\.)'), ## *** PENDIENTE: definiendo el patron para capturar los true/false*** # Detener captura en el punto literal  (["\']?[\w\s\.\-"\']+?)
+                #re.compile(r'(?<=default to\s)([\w\s\.])(?=\.)', re.IGNORECASE), ## *** PENDIENTE: definiendo el patron para capturar los true/false*** # Detener captura en el punto literal  (["\']?[\w\s\.\-"\']+?)
+
             ]
+            cleaned_description = description.replace('\n', '').replace('`', '').replace("´", '').replace("'", "_").replace('{','').replace('}','').replace('"', '').replace("\\", "_") ## Saneamiento de las descripciones con los caracteres que causan conflicto y errores en el formato uvls
+
             for pattern in default_patterns:
                 matches = pattern.search(description)
                 if matches:
                     default = matches.group(1)
                     #print("MATCH ENCONTRADO",default)
+                    if 'true' == default or 'false' == default:
+                        print(f"BOOLEANOS ENCONTRADOS {default}")
                     default_integer = default
                     if default_integer == '0644':
                         default_integer = 644
                     #default_full_name = f"{full_name} {{default {default_integer}}}"
                     default_full_name = f"{full_name} {{default {default_integer}, doc '{cleaned_description}'}}"
                     default_bool = True
-                    return default_full_name, default_bool
+                    #return default_full_name, default_bool
+            if 'Default to false' in description or 'defaults to false' in description.lower() or 'default false' in description.lower() or 'Default is false' in description:
+                default_bool = True
+                default_full_name = f"{full_name} {{default false, doc '{cleaned_description}'}}"
+            elif 'Default to true' in description or 'defaults to true' in description.lower():
+                default_bool = True
+                default_full_name = f"{full_name} {{default true, doc '{cleaned_description}'}}"
+
+            if default_full_name != '':
+                return default_full_name, default_bool
                 
         """aux_full_name = full_name
         if '{default' in full_name:
