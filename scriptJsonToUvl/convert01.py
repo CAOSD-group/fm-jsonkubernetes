@@ -112,11 +112,13 @@ class SchemaProcessor:
     def extract_values(self, description):
         """Extrae valores que están entre comillas u otros delimitadores, solo si se encuentran ciertas palabras clave"""
         palabras_patrones_minus = ['values are', 'following states', '. must be', 'implicitly inferred to be', 'the currently supported reasons are', '. can be', 'it can be in any of following states',
-                                   'valid options are', 'may be set to', 'a value of `', 'the supported types are', 'valid operators are', 'status of the condition,', 'status of the condition.',
-                                    'type of the condition.', 'status of the condition (', 'node address type', 'should be one of', 'will be one of', 'means that requests that', 'only valid values'] ## , 'condition. known conditions are' # Probando para añadir 2 en vez de solo 1 descr
+                                   'valid options are', 'a value of `', 'the supported types are', 'valid operators are', 'status of the condition,', 'status of the condition.',
+                                    'type of the condition.', 'status of the condition (', 'node address type', 'should be one of', 'will be one of', 'means that requests that', 'only valid values',
+                                    'a volume should be', 'the metric type is', 'valid policies are'] ## , 'condition. known conditions are' # Probando para añadir 2 en vez de solo 1 descr
         ## . must be provoca muchas agregaciones de un solo valor ya que hay varias constraints que coinciden con esa expresion... definir mejor en un futuro si son necesarias los valores unitarios
         ## Patrones que se han quitado por 'repetitivos': , 'possible values are', , 'the currently supported values are', 'expected values are'
-        palabras_patrones_may = ['Supports', 'Type of job condition', 'Status of the condition for', 'Type of condition', '. One of', 'Host Caching mode'] ## 'values are', ## Type pendiente de sumar Healthy
+        palabras_patrones_may = ['Supports', 'Type of job condition', 'Status of the condition for', 'Type of condition', '. One of', 'Host Caching mode', 'This may be set to', 'Supported values:',
+                                'completions are tracked. It can be', 'Services can be', 'this API group are'] ## 'values are', ## Type pendiente de sumar Healthy
         
         if not any(keyword in description.lower() for keyword in palabras_patrones_minus) and not any(keyword in description for keyword in palabras_patrones_may): # , '. Must be' , 'allowed valures are'
             return None
@@ -168,16 +170,22 @@ class SchemaProcessor:
             re.compile(r'(?<=Node address type, one of\s)([a-zA-Z\s,]+)(?=\.)'), ## Patron para una  descripcion: Hostname, ExternalIP or InternalIP 'node address type' (1)
             re.compile(r'(?<=. One of\s)([a-zA-Z\s,]+)(?=\.)'), ## Patron para una  descripcion: [Always, Never, IfNotPresent], Never, PreemptLowerPriority, [Always, OnFailure, Never], \"Success\" or \"Failure\" '. One of' (6)
             re.compile(r'(?<=Host Caching mode:\s)([a-zA-Z\s,]+)(?=\.)'),
-
-
-            #re.compile(r'expected values are\s.*?(Shared|Dedicated|Managed)'),
-            #re.compile(r'(?<=expected values are\s)\b(Shared|Dedicated|Managed)\b(?=\.)'),
-            #re.compile(r'(?<=kind expected values are\s)([A-Za-z]+)(?=[:,]|$)'),
+            re.compile(r'(?<=Supported values:\s)([a-zA-Z\s,]+)(?=\.)'), # Supported values: cpu, memory. (87,87)
             
             re.compile(r'\b(Shared|Dedicated|Managed)\b'),
+            re.compile(r'(?<=a volume should be\s)([a-zA-Z\s,]+)(?=\.)'), ## for a volume should be ThickProvisioned or ThinProvisioned. (38,38)
+            re.compile(r'\b(NonIndexed|Indexed)\b'), # completions are tracked. It can be `NonIndexed` (default) or `Indexed`. (7,7) ## re.compile(r'are tracked\.\s*It can be\s*`([^`]*)`')
+                    
+            re.compile(r'(?<=the metric type is\s)([a-zA-Z\s,]+)'), ## the metric type is Utilization, Value, or AverageValue", (26,26,26)
+            # 
+            re.compile(r'(?<=Valid policies are\s)([a-zA-Z\s,]+)(?=\.)') ## Valid policies are IfHealthyBudget and AlwaysAllow. (3,3)
+
+            ## Otros valores agregados por el regex general: Services can be (3,3,3)
+            #re.compile(r'(?<=It can be\s)`([a-zA-Z\s,]+)`(?=\.)'),
+            # Valid policies are
+            #re.compile(r'(?<=kind expected values are\s)([A-Za-z]+)(?=[:,]|$)'),
 
             ## Host Caching mode
-            
             ## Expresiones agregadas directamente por patrones genericos "[$value]":... 'should be one of', 'will be one of': \"ContainerResource\", \"External\", \"Object\", \"Pods\" or \"Resource\", 'only valid values': 'Apply' and 'Update'
             ##. One of
             ## Node address type, one of 
@@ -189,6 +197,7 @@ class SchemaProcessor:
         #add_quotes = False  # Variable para verificar si se necesita añadir comillas
         default_value = self.patterns_process_enum_values_default(description)
         for pattern in value_patterns:
+
             matches = pattern.findall(description)
             #if matches:
             #    print(f"LOS PRIMEROS MATCHES ENTEROS {matches}")
@@ -221,16 +230,20 @@ class SchemaProcessor:
                         #if ' ' in v:  # Si un valor contiene un espacio, Era para añadir comillas dobles "", => sintaxis
                         #    add_quotes = True
         case_not_none = ['NodePort', f"ClusterIP {{default}}", 'None', 'LoadBalancer', 'ExternalName'] ## Lista donde se agregaba None y no formaba parte del conjunto posible de valores
-        case_not_none = set(case_not_none) # Obtener lista sin tener en cuenta el orden, concretamente se busca omitir "_type_None" en el modelo
+        case_not_policies = {'IfHealthyBudget', 'AlwaysAllow', 'Ready', 'True', 'Running'} ## Conjunto para evitar definir otra lista y usar set(). Comprobar si falla algo
+        case_not_none = set(case_not_none) # Obtener lista sin tener en cuenta el orden
         values = set(values)  # Eliminar duplicados
 
-        if not values:
-            return None
-        elif len(values) == 1:
-            print(f"LOS VALORES DE TAMAÑO 1 SON: {values}")
-            return None
-        elif case_not_none == values:
+        if not values or len(values) == 1:
+            return None ## valores de tamaño 1 {values}
+        
+        if case_not_none == values: ## Se busca omitir "_type_None" en el modelo
             values.remove('None')
+        elif case_not_policies == values: ## Si hay mas casos generalizar la funcionalidad a una auxiliar con los parametros
+            list_policies_to_delete = {'Ready', 'True', 'Running'} ## Conjunto de elementos a borrar de los valores. Se añaden por el regex general "/"/
+            values = case_not_policies - list_policies_to_delete
+            #for not_policies in list_policies_to_delete:
+            #    values.remove({not_policies})
 
         return values #, add_quotes  # Devuelve los valores y el nombre del feature
 
@@ -353,7 +366,7 @@ class SchemaProcessor:
     
     def process_enum_defaultInte(self, property, full_name, description): ## AGREGAR modificaciones default false, true
         """ Agrega en el nombre del feature el valor por defecto que tiene. Comprueba si el feature tiene la caracteristica enum y añade el contenido de este al valor por defecto"""
-        patterns_default_values_numbers = ['defaults to', 'default value is', 'default to', 'default false', 'Default is false'] # Grupo alternativo al anterior para definir los patrones que tienen Integers por defecto o grupos similares
+        patterns_default_values_numbers = ['defaults to', 'default value is', 'default to', 'default false', 'Default is false', 'is \"false', 'is \"true'] # Grupo alternativo al anterior para definir los patrones que tienen Integers por defecto o grupos similares
         default_integer = 0
         default_bool = False
         #cleaned_description = description.replace('\n', '').replace('`', '').replace("´", '').replace("'", "_")
@@ -378,15 +391,14 @@ class SchemaProcessor:
                 #re.compile(r'Defaults to (\d+)', re.IGNORECASE), ## probar cual es mejor default value is 1 ## agregado casos donde no se tenia en cuenta el default minus
                 re.compile(r'(?<=Default to\s)([\w\s\.])(?=\.)'), ## *** PENDIENTE: definiendo el patron para capturar los true/false*** # Detener captura en el punto literal  (["\']?[\w\s\.\-"\']+?)
                 #re.compile(r'(?<=default to\s)([\w\s\.])(?=\.)', re.IGNORECASE), ## *** PENDIENTE: definiendo el patron para capturar los true/false*** # Detener captura en el punto literal  (["\']?[\w\s\.\-"\']+?)
-
+                ## Default is \"*\". (7) para añadir mas default normales
             ]
             cleaned_description = description.replace('\n', '').replace('`', '').replace("´", '').replace("'", "_").replace('{','').replace('}','').replace('"', '').replace("\\", "_") ## Saneamiento de las descripciones con los caracteres que causan conflicto y errores en el formato uvls
-
             for pattern in default_patterns:
                 matches = pattern.search(description)
                 if matches:
                     default = matches.group(1)
-                    #print("MATCH ENCONTRADO",default)
+                    #print("MATCH ENCONTRADO",default)  ["\'](.*?)\\?["\']
                     if 'true' == default or 'false' == default:
                         print(f"BOOLEANOS ENCONTRADOS {default}")
                     default_integer = default
@@ -396,10 +408,22 @@ class SchemaProcessor:
                     default_full_name = f"{full_name} {{default {default_integer}, doc '{cleaned_description}'}}"
                     default_bool = True
                     #return default_full_name, default_bool
+            
+            pattern_defaults = re.compile(r'Default is\s+\\?"(true|false)\\?"') ## Patron para el default is con comillas escapadas en las descripciones 
+            match = pattern_defaults.search(description)
+
+            if match: ## Si coincide se agrega tambien en los features coincidentes Default is \"true\" y Default is \"false\".
+                default_boolean = match.group(1)
+                default_bool = True
+                default_full_name = f"{full_name} {{default {default_boolean}, doc '{cleaned_description}'}}"
+                #print(f"EL PATRON Y LA DESCRIPCION SON {description}: {match} \n {cleaned_description}")
+
             if 'Default to false' in description or 'defaults to false' in description.lower() or 'default false' in description.lower() or 'Default is false' in description:
                 default_bool = True
                 default_full_name = f"{full_name} {{default false, doc '{cleaned_description}'}}"
-            elif 'Default to true' in description or 'defaults to true' in description.lower():
+                #if '\"is false"' in description:
+                #    print(cleaned_description)
+            elif 'Default to true' in description or 'defaults to true' in description.lower(): ## or 'Default is \"t' in description 
                 default_bool = True
                 default_full_name = f"{full_name} {{default true, doc '{cleaned_description}'}}"
 
@@ -502,8 +526,8 @@ class SchemaProcessor:
                     feature_type_data, abstract_bool = self.update_type_data(full_name, feature_type_data, description) ### Modificion para que en descriptions_01.json se cambie de String a Boolean si coincide con el nombre
                     self.categorize_description(description, full_name, feature_type_data) # categorized = 
                     cleaned_description = description.replace('\n', '').replace('`', '').replace("´", '').replace("'", "_").replace('{','').replace('}','').replace('"', '').replace("\\", "_") ## Saneamiento de las descripciones con los caracteres que causan conflicto y errores en el formato uvl
-                    if not default_bool and not abstract_bool: # Condición agregada para agregar el atributo doc a features que no sean default ni abstract
-                        full_name = f"{full_name} {{doc '{cleaned_description}'}}"
+                    #if not default_bool and not abstract_bool: # Condición agregada para agregar el atributo doc a features que no sean default ni abstract
+                    #    full_name = f"{full_name} {{doc '{cleaned_description}'}}"
                 feature = {                  
                     'name': full_name if not abstract_bool else f"{full_name} {{abstract, doc '{cleaned_description}'}}", ## Añadir {abstract} a los features creados para tener mejor definición de las constraints
                     'type': feature_type,
@@ -669,7 +693,7 @@ class SchemaProcessor:
                                 #feature_type = 'mandatory' if prop in current_required else 'optional' # Determinar si la referencia es 'mandatory' u 'optional'                                sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
                                 
                                 sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
-                                print(f"ADDIOTIONAL ITEMS SIMPLES REFS {full_name}_{sanitized_ref}")
+                                #print(f"ADDIOTIONAL ITEMS SIMPLES REFS {full_name}_{sanitized_ref}")
                                 aux_description_additional_schemas = ref_schema.get('description', '')
                                 aux_description_additional_sanitized = aux_description_additional_schemas.replace('\n', '').replace('`', '').replace("´", '').replace("'", "_").replace('{','').replace('}','').replace('"', '').replace("\\", "_") ## Saneamiento de las descripciones con los caracteres que causan conflicto y errores en el formato uvl
 

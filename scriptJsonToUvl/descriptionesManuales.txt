@@ -1422,9 +1422,7 @@ Default to false(5) /true(1)
 defaults to false(33) / defaults to true(4)
 default false (3)
 Default is false (8)
-
-
-
+Default is \"true\" (1) / Default is \"false\" (1)
 
 Descripciones interesantes:
 
@@ -1602,7 +1600,7 @@ spec.paramKind
             "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.ManagedFieldsEntry"
           },
 
-io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy
+io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy --
 
 					io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy {abstract}
 						mandatory
@@ -1610,7 +1608,7 @@ io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy
 						alternative
 							io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy_OnRootMismatch
 							io_k8s_api_core_v1_PodSecurityContext_fsGroupChangePolicy_Always
-Adición para solucionar la incoherencia en el modelo: 
+Adición para solucionar la incoherencia en el modelo: --
 
 and not extracted_values:
 ## se agrega "not extracted_values" para no sobreescribir el tipo alternativo con la adición de un hijo String abierto. Ya que si hay valores que lo definen, solo se puede seleccionar entre los predefinidos
@@ -1701,61 +1699,55 @@ Quizas añadir el or cuando los valores que se añaden tienen el or? ***
       "type": "string"
     },
 
-    Valores:
+Valores:-
     Supported values: 
-          "properties": {
+          "properties": { --
         "resourceName": {
           "description": "Name of the resource to which this resource resize policy applies. Supported values: cpu, memory.",
           "type": "string"
         },
 
-        should be:
+        should be: -- 
         "storageMode": {
           "description": "storageMode indicates whether the storage for a volume should be ThickProvisioned or ThinProvisioned. Default is ThinProvisioned.",
           "type": "string"
         },
 
-        "completionMode": {
+        "completionMode": { -- (Posible mejorar regex)
           "description": "completionMode specifies how Pod completions are tracked. It can be `NonIndexed` (default) or `Indexed`.\n\n`NonIndexed` means that the Job is considered complete when there have been .spec.completions successfully completed Pods. Each Pod completion is homologous to each other.\n\n`Indexed` means that the Pods of a Job get an associated completion index from 0 to (.spec.completions - 1), available in the annotation batch.kubernetes.io/job-completion-index. The Job is considered complete when there is one successfully completed Pod for each index. When value is `Indexed`, .spec.completions must be specified and `.spec.parallelism` must be less than or equal to 10^5. In addition, The Pod name takes the form `$(job-name)-$(index)-$(random-string)`, the Pod hostname takes the form `$(job-name)-$(index)`.\n\nMore completion modes can be added in the future. If the Job controller observes a mode that it doesn't recognize, which is possible during upgrades due to version skew, the controller skips updates for the Job.",
           "type": "string"
         },
 
-        "ipFamilyPolicy": {
+        "ipFamilyPolicy": { -- añadido directamente
           "description": "IPFamilyPolicy represents the dual-stack-ness requested or required by this Service. If there is no value provided, then this field will be set to SingleStack. Services can be \"SingleStack\" (a single IP family), \"PreferDualStack\" (two IP families on dual-stack configured clusters or a single IP family on single-stack clusters), or \"RequireDualStack\" (two IP families on dual-stack configured clusters, otherwise fail). The ipFamilies and clusterIPs fields depend on the value of this field. This field will be wiped when updating a service to type ExternalName.",
           "type": "string"
         },
 
-        },
-        "completionMode": {
-          "description": "completionMode specifies how Pod completions are tracked. It can be `NonIndexed` (default) or `Indexed`.\n\n`NonIndexed` means that the Job is considered complete when there have been .spec.completions successfully completed Pods. Each Pod completion is homologous to each other.\n\n`Indexed` means that the Pods of a Job get an associated completion index from 0 to (.spec.completions - 1), available in the annotation batch.kubernetes.io/job-completion-index. The Job is considered complete when there is one successfully completed Pod for each index. When value is `Indexed`, .spec.completions must be specified and `.spec.parallelism` must be less than or equal to 10^5. In addition, The Pod name takes the form `$(job-name)-$(index)-$(random-string)`, the Pod hostname takes the form `$(job-name)-$(index)`.\n\nMore completion modes can be added in the future. If the Job controller observes a mode that it doesn't recognize, which is possible during upgrades due to version skew, the controller skips updates for the Job.",
-          "type": "string"
-        },
-
-        "completedIndexes": {
+        "completedIndexes": { -x String with integers and commas
           "description": "completedIndexes holds the completed indexes when .spec.completionMode = \"Indexed\" in a text format. The indexes are represented as decimal integers separated by commas. The numbers are listed in increasing order. Three or more consecutive numbers are compressed and represented by the first and last element of the series, separated by a hyphen. For example, if the completed indexes are 1, 3, 4, 5 and 7, they are represented as \"1,3-5,7\".",
           "type": "string"
         },
 
-        "kind": {
+        "kind": { -- añadido directamnte (grupo rbac en los otros no...APIGroup)
           "description": "Kind of object being referenced. Values defined by this API group are \"User\", \"Group\", and \"ServiceAccount\". If the Authorizer does not recognized the kind value, the Authorizer should report an error.",
           "type": "string"
         },
-        "name": {
+        "name": { -x
           "description": "Name of the object being referenced.",
           "type": "string"
         },
-        "namespace": {
+        "namespace": { -x
           "description": "Namespace of the referenced object.  If the object kind is non-namespace, such as \"User\" or \"Group\", and this value is not empty the Authorizer should report an error.",
           "type": "string"
         }
       },
 
-        "unhealthyPodEvictionPolicy": {
+        "unhealthyPodEvictionPolicy": {  -- Valid policies are IfHealthyBudget and AlwaysAllow. (3,3)
           "description": "UnhealthyPodEvictionPolicy defines the criteria for when unhealthy pods should be considered for eviction. Current implementation considers healthy pods, as pods that have status.conditions item with type=\"Ready\",status=\"True\".\n\nValid policies are IfHealthyBudget and AlwaysAllow. If no policy is specified, the default behavior will be used, which corresponds to the IfHealthyBudget policy.\n\nIfHealthyBudget policy means that running pods (status.phase=\"Running\"), but not yet healthy can be evicted only if the guarded application is not disrupted (status.currentHealthy is at least equal to status.desiredHealthy). Healthy pods will be subject to the PDB for eviction.\n\nAlwaysAllow policy means that all running pods (status.phase=\"Running\"), but not yet healthy are considered disrupted and can be evicted regardless of whether the criteria in a PDB is met. This means perspective running pods of a disrupted application might not get a chance to become healthy. Healthy pods will be subject to the PDB for eviction.\n\nAdditional policies may be added in the future. Clients making eviction decisions should disallow eviction of unhealthy pods if they encounter an unrecognized policy in this field.\n\nThis field is beta-level. The eviction API uses this field when the feature gate PDBUnhealthyPodEvictionPolicy is enabled (enabled by default).",
           "type": "string"
-        }
+        } delete: _True, _Running, _Ready
       
-        "type": {
+        "type": { -- the metric type is (26,26,26)
           "description": "type represents whether the metric type is Utilization, Value, or AverageValue",
           "type": "string"
         },
@@ -1764,3 +1756,16 @@ Quizas añadir el or cuando los valores que se añaden tienen el or? ***
           "description": "pathType determines the interpretation of the path matching. PathType can be one of the following values: * Exact: Matches the URL path exactly. * Prefix: Matches based on a URL path prefix split by '/'. Matching is\n  done on a path element by element basis. A path element refers is the\n  list of labels in the path split by the '/' separator. A request is a\n  match for path p if every p is an element-wise prefix of p of the\n  request path. Note that if the last element of the path is a substring\n  of the last element in request path, it is not a match (e.g. /foo/bar\n  matches /foo/bar/baz, but does not match /foo/barbaz).\n* ImplementationSpecific: Interpretation of the Path matching is up to\n  the IngressClass. Implementations can treat this as a separate PathType\n  or treat it identically to Prefix or Exact path types.\nImplementations are required to support all path types.",
           "type": "string"
         }
+--
+
+** ¿Cómo hacer el mapping de los features? **
+
+\ Archivo por archivo: 
+
+\\ Automatizarlo
+
+\\\ Generalizar por objetos
+
+\\\ Seguir linea de documentación
+
+\\\\ Buscar mas repetidos, mas usados
