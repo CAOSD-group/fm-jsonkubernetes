@@ -64,10 +64,10 @@ class SchemaProcessor:
             type_data = 'Boolean'
         elif type_data in ['Object', 'object']: ## Boolean por defecto
             type_data = 'Boolean'
-            self.is_cardinality = False ## Por si falla el else del properties
+            self.is_cardinality = False ## Por si falla el else del properties ## Ajuste para que en object se genere un cardinality...
         elif type_data in ['number', 'Number']:
             type_data = 'Integer'
-            self.is_cardinality = False ## Por si falla el else del properties
+            self.is_cardinality = True ## Por si falla el else del properties
         elif type_data == 'Boolean':
             type_data = ''
         return type_data
@@ -691,7 +691,7 @@ class SchemaProcessor:
                             else:
                                 # Si no hay 'properties', procesarlo como un tipo simple  #### Creo que aqui ocurre un paso del cardinality ** AJUSTAR
                                 #feature_type = 'mandatory' if prop in current_required else 'optional' # Determinar si la referencia es 'mandatory' u 'optional'                                sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
-                                
+
                                 sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
                                 #print(f"ADDIOTIONAL ITEMS SIMPLES REFS {full_name}_{sanitized_ref}")
                                 aux_description_additional_schemas = ref_schema.get('description', '')
@@ -709,6 +709,42 @@ class SchemaProcessor:
                         # Eliminar la referencia de la pila local al salir de esta rama
                         local_stack_refs.pop()
 
+                    elif 'type' in additional_properties and self.is_cardinality:
+                        #elif 'type' in items and self.is_cardinality: ## Adición para generar el nodo hoja con el tipo de dato que se referencia en items
+                        #print("Deberia de aplicarse al tener un type en items")
+                        type_data_additional_properties = additional_properties['type']
+                        #description_additional_properties = additional_properties['description']
+                        aux_description_additional_properties = ref_schema.get('description', '')
+
+                        if type_data_additional_properties == 'string':
+                            full_name = full_name.replace(" cardinality [1..*]", "") ## Agregado para omitir el cardinality cuando no corresponde...
+                            aux_description_string_properties = f"Added String mandatory for complete structure Object in the model. The modified is not in json but provide represents, Array of Strings: StringValue"
+                            aux_description_maps_properties = f"Added Map mandatory for complete structure Object in the model. The modified is not in json but provide represents, Array of Strings: StringValue"
+
+                            if 'Map of' in aux_description_additional_properties: ## Opcion para añadir los sub-features como mapas
+                                feature['sub_features'].append({
+                                'name': f"{full_name}_KeyMap {{doc '{aux_description_string_items}'}}", ## RefName Aparte {full_name}_{ref_name}
+                                'type': 'mandatory',
+                                'description': aux_description_maps_properties, #f"Added String mandatory for adding the structure Array in the model: StringValue",
+                                'sub_features': [],
+                                'type_data': 'String' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature: Boolean
+                            })
+                                feature['sub_features'].append({
+                                'name': f"{full_name}_ValueMap {{doc '{aux_description_maps_properties}'}}", ## RefName Aparte {full_name}_{ref_name}
+                                'type': 'mandatory',
+                                'description': aux_description_maps_properties, #f"Added String mandatory for adding the structure Array in the model: StringValue",
+                                'sub_features': [],
+                                'type_data': 'String' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature: Boolean
+                            })
+                            else:        
+                                feature['sub_features'].append({
+                                    'name': f"{full_name}_StringValue {{doc '{aux_description_string_items}'}}", ## RefName Aparte {full_name}_{ref_name}
+                                    'type': 'mandatory',
+                                    'description': aux_description_string_items, #f"Added String mandatory for adding the structure Array in the model: StringValue",
+                                    'sub_features': [],
+                                    'type_data': 'String' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature: Boolean
+                                })
+                    
                 # Extraer y añadir valores como subfeatures
                 extracted_values = self.extract_values(description)
                 ## Todos los valores que se extraen son "String", para facilitar la representacion de los valores prestablecidos se cambia el tipo a Boolean

@@ -1,0 +1,6 @@
+## List of features of example_pod01.yaml
+# Ejemplo base de las listas con los features
+[io_k8s_api_core_v1_Pod_apiVersion, io_k8s_api_core_v1_Pod_kind, io_k8s_api_core_v1_Pod_metadata, io_k8s_api_core_v1_Pod_metadata_name, io_k8s_api_core_v1_Pod_spec, io_k8s_api_core_v1_Pod_spec_containers, io_k8s_api_core_v1_Pod_spec_containers_name, io_k8s_api_core_v1_Pod_spec_containers_image, io_k8s_api_core_v1_Pod_spec_containers_ports, io_k8s_api_core_v1_Pod_spec_containers_ports_containerPort]
+
+
+[Pod_apiVersion, Pod_kind, Pod_metadata, Pod_metadata_name, Pod_spec, Pod_spec_containers, Pod_spec_containers_name, Pod_spec_containers_image, Pod_spec_containers_ports, Pod_spec_containers_ports_containerPort]
