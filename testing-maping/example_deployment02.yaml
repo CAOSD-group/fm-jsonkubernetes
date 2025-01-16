@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        livenessProbe:
+          httpGet:
+            path: /                # Path to check for liveness probe
+            port: 80               # The port to check on
+          initialDelaySeconds: 15  # Seconds to wait before starting probe
+          periodSeconds: 10        # Check the probe every 10s
+        readinessProbe:
+          httpGet:
+            path: /                # Path to check for readiness probe
+            port: 80               # The port to check on
+          initialDelaySeconds: 5   # Seconds to wait before starting probe
+          periodSeconds: 5         # Check the probe every 5s
