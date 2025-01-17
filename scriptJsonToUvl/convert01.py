@@ -27,6 +27,7 @@ class SchemaProcessor:
 
         }
         self.is_cardinality = False
+        self.is_deprecated = False
         self.seen_descriptions = set()
 
         # Patrones para clasificar descripciones en categorías de valores, restricciones y dependencias
@@ -420,10 +421,13 @@ class SchemaProcessor:
 
             if 'Default to false' in description or 'defaults to false' in description.lower() or 'default false' in description.lower() or 'Default is false' in description:
                 default_bool = True
-                default_full_name = f"{full_name} {{default false, doc '{cleaned_description}'}}"
+                if 'defaults to false' in description.lower() and "deprecated." in description.lower(): ## Caso especifico donde tenia un default y es deprecated
+                    default_full_name = f"{full_name} {{default false, deprecated, doc '{cleaned_description}'}}"
+                else:    
+                    default_full_name = f"{full_name} {{default false, doc '{cleaned_description}'}}"
                 #if '\"is false"' in description:
                 #    print(cleaned_description)
-            elif 'Default to true' in description or 'defaults to true' in description.lower(): ## or 'Default is \"t' in description 
+            elif 'Default to true' in description or 'defaults to true' in description.lower(): ## or 'Default is \"t' in description deprecated. 
                 default_bool = True
                 default_full_name = f"{full_name} {{default true, doc '{cleaned_description}'}}"
 
@@ -500,7 +504,7 @@ class SchemaProcessor:
                     continue
 
                 self.is_cardinality = False ## SE INICIE CON FALSE : ahora se delimita en los tipos
-
+                self.is_deprecated = False
                 # Verificar si la propiedad es requerida basado en su descripción
                 description = details.get('description', '')
                 is_required_by_description = self.is_required_based_on_description(description)
@@ -526,8 +530,16 @@ class SchemaProcessor:
                     feature_type_data, abstract_bool = self.update_type_data(full_name, feature_type_data, description) ### Modificion para que en descriptions_01.json se cambie de String a Boolean si coincide con el nombre
                     self.categorize_description(description, full_name, feature_type_data) # categorized = 
                     cleaned_description = description.replace('\n', '').replace('`', '').replace("´", '').replace("'", "_").replace('{','').replace('}','').replace('"', '').replace("\\", "_") ## Saneamiento de las descripciones con los caracteres que causan conflicto y errores en el formato uvl
-                    #if not default_bool and not abstract_bool: # Condición agregada para agregar el atributo doc a features que no sean default ni abstract
-                    #    full_name = f"{full_name} {{doc '{cleaned_description}'}}"
+                    if "DEPRECATED:" in cleaned_description or "deprecated." in cleaned_description.lower() or "This field is deprecated," in cleaned_description or "deprecated field" in cleaned_description:
+                        self.is_deprecated = True ## Probar si no altera algun otro etiquetado de los features
+                        
+                    if not default_bool and not abstract_bool and not self.is_deprecated: # Condición agregada para agregar el atributo doc a features que no sean default ni abstract
+                        full_name = f"{full_name} {{doc '{cleaned_description}'}}"
+                        self.is_deprecated = False
+                    elif self.is_deprecated and not default_bool:
+                        full_name = f"{full_name} {{deprecated, doc '{cleaned_description}'}}"
+                        self.is_deprecated = False
+
                 feature = {                  
                     'name': full_name if not abstract_bool else f"{full_name} {{abstract, doc '{cleaned_description}'}}", ## Añadir {abstract} a los features creados para tener mejor definición de las constraints
                     'type': feature_type,
@@ -626,9 +638,9 @@ class SchemaProcessor:
                                 #feature_type = 'mandatory' if prop in current_required else 'optional' # Determinar si la referencia es 'mandatory' u 'optional'  #sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
                                 sanitized_ref = self.sanitize_name(ref_name.split('_')[-1]) # ref_name = self.sanitize_name(ref.split('/')[-1])
                                 full_name = full_name.replace(" cardinality [1..*]", "") ## Agregado para omitir el cardinality cuando no corresponde...
-                                print(f"ITEMS SIMPLES REFS {full_name}_{sanitized_ref}")
+                                #print(f"ITEMS SIMPLES REFS {full_name}_{sanitized_ref}") ## Comprobar Referencias simples
                                 aux_description_items_schemas = ref_schema.get('description', '')
-                                print(aux_description_items_schemas)
+                                #print(aux_description_items_schemas)
                                 aux_description_items_sanitized = aux_description_items_schemas.replace('\n', '').replace('`', '').replace("´", '').replace("'", "_").replace('{','').replace('}','').replace('"', '').replace("\\", "_") ## Saneamiento de las descripciones con los caracteres que causan conflicto y errores en el formato uvl
 
                                 # Agregar la referencia procesada como un tipo simple
@@ -717,11 +729,10 @@ class SchemaProcessor:
                         type_data_additional_items = items['type'] ## Tipo de dato items dentro de additionalProperties
 
                         if type_data_additional_items == 'string':
-                            print(f" EN PRINCIPIO SE EJECUTAR N+ REPETICIONES {full_name}" )
                             full_name = full_name.replace(" cardinality [1..*]", "") ## Agregado para omitir el cardinality cuando no corresponde...
                             aux_description_string_AP_items = f"Added String mandatory for complete structure Array in the model into AdditionalProperties array. Array of Strings: StringValue"
                             feature['sub_features'].append({
-                                'name': f"{full_name}_StringValueAdditione {{doc '{aux_description_string_AP_items}'}}", ## RefName Aparte {full_name}_{ref_name}
+                                'name': f"{full_name}_StringValueAdditional {{doc '{aux_description_string_AP_items}'}}", ## RefName Aparte {full_name}_{ref_name}
                                 'type': 'mandatory',
                                 'description': aux_description_string_AP_items, #f"Added String mandatory for adding the structure Array in the model: StringValue",
                                 'sub_features': [],
@@ -740,7 +751,7 @@ class SchemaProcessor:
                             aux_description_string_properties = f"Added String mandatory for complete structure Object in the model. The modified is not in json but provide represents, Array of Strings: StringValue"
                             aux_description_maps_properties = f"Added Map mandatory for complete structure Object in the model. The modified is not in json but provide represents, Array of Strings: StringValue"
                             list_local_features_maps = ['Map of', 'matchLabels is a map of', 'unstructured key value map', 'label keys and values']    
-                            print(f" EN PRINCIPIO SE EJECUTAR N+ MAPASSS {full_name}" )
+                            #print(f" EN PRINCIPIO SE EJECUTAR N+ MAPASSS {full_name}" )
                             if any(wordMap in description for wordMap in list_local_features_maps): ## Opcion para añadir los sub-features como mapas
                                 feature['sub_features'].append({
                                 'name': f"{full_name}_KeyMap {{doc 'key: {aux_description_maps_properties}'}}", ## RefName Aparte {full_name}_{ref_name}
@@ -748,14 +759,14 @@ class SchemaProcessor:
                                 'description': aux_description_maps_properties, #f"Added String mandatory for adding the structure Array in the model: StringValue",
                                 'sub_features': [],
                                 'type_data': 'String' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature: Boolean
-                            })
+                                })
                                 feature['sub_features'].append({
                                 'name': f"{full_name}_ValueMap {{doc 'value: {aux_description_maps_properties}'}}", ## RefName Aparte {full_name}_{ref_name}
                                 'type': 'mandatory',
                                 'description': aux_description_maps_properties, #f"Added String mandatory for adding the structure Array in the model: StringValue",
                                 'sub_features': [],
                                 'type_data': 'String' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature: Boolean
-                            })
+                                })
                             else:        
                                 feature['sub_features'].append({
                                     'name': f"{full_name}_StringValueAdditional {{doc '{aux_description_string_properties}'}}", ## RefName Aparte {full_name}_{ref_name}
@@ -764,7 +775,7 @@ class SchemaProcessor:
                                     'sub_features': [],
                                     'type_data': 'String' ## Por defecto para la compatibilidad en los esquemas simples y la propiedad del feature: Boolean
                                 })
-                            
+
                 # Extraer y añadir valores como subfeatures
                 extracted_values = self.extract_values(description)
                 ## Todos los valores que se extraen son "String", para facilitar la representacion de los valores prestablecidos se cambia el tipo a Boolean
@@ -777,15 +788,17 @@ class SchemaProcessor:
                     #bool_default_value = False
                     for value in extracted_values:
                         bool_default_value = False
-                        if ('{default' in value): ## Condicion para dejar por defecto el noombre sin añadir el atributo doc... ya que en el value ya tiene agregado el {default}
+                        if ('{default' in value): ## Condicion para comprobar si alguno de los valores es default, se marcan y se elimina el default para agregarlo en conjunto con doc
                             bool_default_value = True
+                            value = value.replace(" {default}", "") ## Se elimina el {default} y se marca para añadirlo en conjunto con la doc
+
                         full_name_value = f"{full_name}_{value}"
                         if '_Healthy' in full_name_value: ### Comprobacion para omitir valores que no se deberian de agregar en el modelo
                             print("OMITIENDO HEALTHY", full_name_value)
                             continue
                         aux_description_value = f"Specific value: {value}"
                         feature['sub_features'].append({
-                            'name': full_name_value if bool_default_value else f"{full_name_value} {{doc '{aux_description_value}'}}",
+                            'name': f"{full_name_value} {{default, doc '{aux_description_value}'}}" if bool_default_value else f"{full_name_value} {{doc '{aux_description_value}'}}",
                             'type': 'alternative', # Todos los valores suelen ser alternatives (Elección de solo uno)
                             'description': aux_description_value,
                             'sub_features': [],
@@ -880,7 +893,6 @@ def properties_to_uvl(feature_list, indent=1):
         if type_str == 'Boolean ':
             type_str = ''
             #feature['type_data'] = ''
-
 
         if any(keyword in feature['name'] for keyword in boolean_keywords) and not feature['name'].endswith('nameStr'): #### Caso especifico 002-localhostProfile String a Boolean / Agregado el mantener String los features agregados en la rama Boolean
             #print(f"COINCIDENCIA CON NOMBRES EN:{feature['name']} Los tipos son... {type_str}")

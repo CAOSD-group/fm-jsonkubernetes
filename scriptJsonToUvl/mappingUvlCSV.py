@@ -15,14 +15,18 @@ csv_data = []
 
 #Como recorrer el modelo?
 # Leer el archivo UVL línea por línea
-with open(uvl_model_path, "r") as uvl_model:
+with open(uvl_model_path, encoding="utf-8") as uvl_model:
     for line in uvl_model:
         # Limpiar línea y dividir por espacios
         # Limpiar línea
         line = line.strip()
         ## Se omiten/saltan las lineas que contienen mandatory, optional, alternative, namespace, features... 
-        if not re.match(r"^(String|Integer|io_k8s_)", line): # Saltar líneas que no sean features, se definen por esos 4 tipos: String, Integer o encabezado por io.. Boolean 
+        #if not re.match(r"^(String|Integer|io_k8s_)", line):   ## Alternativa de salto de expresiones que no interesan
+        #    continue
+        if not line.startswith(("String", "Boolean", "Integer", "io_k8s_")): # Saltar líneas que no sean features, se definen por esos 4 tipos: String, Integer o encabezado por io.. Boolean
+            value_row = "-" if "cardinality" in line else "" ## Se le asigna el guión para determinar si un feature es un array
             continue
+
         #parts = line.split("namespace").split("features").split("Kubernetes")
         print(line)
         if "cardinality" in line:
@@ -33,12 +37,12 @@ with open(uvl_model_path, "r") as uvl_model:
         # Determinar si la línea contiene un tipo explícito
         parts = line_feature.split()
         print(f"Las partes divididas son: {parts}")
-        value_row = "-" if "cardinality" in line else "" ## Se le asigna el guión para determinar si un feature es un array
         if len(parts) >= 2: # Si hay tipo explícito de dato (String o Integer), extraer el nombre del feature
             feature = parts[1]
         else:
             # Si no hay tipo de dato explícito, se asume que la primera parte de las partes es el feature
             feature = parts[0]
+        value_row = "-" if "cardinality" in line else "" ## Se le asigna el guión para determinar si un feature es un array
 
         # Obtener las partes del feature
         split_feature = feature.split("_")

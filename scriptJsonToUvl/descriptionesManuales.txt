@@ -1760,12 +1760,117 @@ Valores:-
 
 ** ¿Cómo hacer el mapping de los features? **
 
-\ Archivo por archivo: 
+\ Archivo por archivo: Manualmente
 
-\\ Automatizarlo
+\\ Automatizarlo: ¿Cómo hacerlo? --
 
-\\\ Generalizar por objetos
+\\\ Generalizar por objetos: Seguir la linea de los objetos mas grandes y mapearlos en profundidad
 
-\\\ Seguir linea de documentación
+\\\ Seguir linea de documentación: Indicada en la web ()
 
-\\\\ Buscar mas repetidos, mas usados
+\\\\ Buscar mas repetidos, mas usados: script de Enrique (definirlo)
+
+Quizas haya problema con el array dentro del object:
+
+        "extra": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": "extra contains extra attributes of the user that created the CertificateSigningRequest. Populated by the API server on creation and immutable.",
+          "type": "object"
+        },
+
+
+Cuando definir el key value?
+
+Label keys and values => en las descripciones//coincidencia y posible adicion de los 2 tipos de ramas: 
+
+1- como un string normal
+2- Como un mapa, asignando 2 strings (key,value) cuando haya coincidencia con el texto(definir el texto)
+
+Map of string keys and values
+
+        "matchLabels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is \"key\", the operator is \"In\", and the values array contains only \"value\". The requirements are ANDed.",
+          "type": "object"
+        }
+      },
+
+        "annotations": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. They are not queryable and should be preserved when modifying objects. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations",
+          "type": "object"
+        },
+        "selector": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Route service traffic to pods with label keys and values matching this selector. If empty or not present, the service is assumed to have an external process managing its endpoints, which Kubernetes will not modify. Only applies to types ClusterIP, NodePort, and LoadBalancer. Ignored if type is ExternalName. More info: https://kubernetes.io/docs/concepts/services-networking/service/",
+          "type": "object",
+          "x-kubernetes-map-type": "atomic"
+        },
+      Ejemplo visto que se necesita 
+        "nodeSelector": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "NodeSelector is a selector which must be true for the pod to fit on a node. Selector which must match a node's labels for the pod to be scheduled on that node. More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/",
+          "type": "object",
+          "x-kubernetes-map-type": "atomic"
+        },
+
+No se si deberia de contener un features dobles (Map)
+        "selector": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Route service traffic to pods with label keys and values matching this selector. If empty or not present, the service is assumed to have an external process managing its endpoints, which Kubernetes will not modify. Only applies to types ClusterIP, NodePort, and LoadBalancer. Ignored if type is ExternalName. More info: https://kubernetes.io/docs/concepts/services-networking/service/",
+          "type": "object",
+          "x-kubernetes-map-type": "atomic"
+        },
+
+Deprecated, quizás meter como atributo (PENDIENTE):
+
+        "deprecatedTopology": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "deprecatedTopology contains topology information part of the v1beta1 API. This field is deprecated, and will be removed when the v1beta1 API is removed (no sooner than kubernetes v1.24).  While this field can hold values, it is not writable through the v1 API, and any attempts to write to it will be silently ignored. Topology information can be found in the zone and nodeName fields instead.",
+          "type": "object"
+        },
+
+-- Hecho
+Expresiones posibles para el atributo deprecated:
+Deprecated.
+This field is deprecated,
+DEPRECATED:
+deprecated field
+-- Hecho
+
+Adicion cardinality a Additional...
+
+En arrays dentro de Additional Properties:
+15 features añadidos + 15 mandatorys
+
+En los Maps agregados:
+
++933
+_KeyMap: 933 features agregados 
+_ValueMap: 933 features agregados
+2.799 en total features + mandatorys
+Total: 3.097 lineas 
+Else de los que no son de tipo string
+134 features nuevos
+
+92.943
+89.844
+
++ 3.099 lineas agregadas
